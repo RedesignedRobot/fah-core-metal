@@ -40,14 +40,13 @@ stays short and pushes detail into `docs/`.
 Taken: the first person singular voice. I left out the table of contents, the badges and the
 sponsor banner. A README this short does not need them.
 
-## The page as a short paper
+## The page and its figures
 
-The README reads like a compact compute paper. An abstract of five lines sits under the hero, then a strip
-of key results and a table that pairs each result with the figure behind it. Every figure has a number
-and a one-sentence italic caption that names its data file and its method, so a reader can check a
-figure without reading the text around it. The figures share one palette: blue for Metal (the M2 a
-lighter blue than the M3 Ultra), green for CUDA on NVIDIA, grey for the real core 0x27 run and other
-references. They also share one font stack, and gridlines are the only decoration.
+The figures carry the README. Under the hero, two sentences say what minicore is and what it matches.
+Each section after that is a figure with a numbered, one-sentence italic caption, and the method, data
+file and conditions behind each figure are in `docs/EVIDENCE.md`. The figures share one palette: blue
+for Metal (the M2 a lighter blue than the M3 Ultra), green for CUDA on NVIDIA, grey for the real core
+0x27 run and other references. They also share one font stack, and gridlines are the only decoration.
 
 ## What I avoid
 

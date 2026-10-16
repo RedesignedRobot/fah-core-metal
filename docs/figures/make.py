@@ -137,21 +137,6 @@ def hero(t):
     return svg(20 * 2 + 4 * w + 3 * gap, 200, body, "FAH client to minicore to OpenMM Metal to Apple GPU")
 
 
-def strip(t):
-    r = rows("results.csv")
-    w, h, gap = 176, 108, 10
-    body = []
-    for i, x in enumerate(r):
-        x0 = i * (w + gap)
-        body.append(rect(x0, 0, w, h, t["tile"], 6, t["grid"]))
-        body.append(rect(x0, 0, 4, h, t["ultra"], 2))
-        body.append(text(x0 + 16, 38, x["value"], t["ultra"], 26, "start", "600"))
-        for k, key in enumerate(("line1", "line2", "line3")):
-            body.append(text(x0 + 16, 62 + k * 15, x[key], t["fg"] if k == 0 else t["muted"], 11.5))
-    return svg(len(r) * (w + gap) - gap, h, body, "Key results: " + "; ".join(
-        f'{x["value"]} {x["line1"]} {x["line2"]} {x["line3"]}' for x in r))
-
-
 def speed(t):
     r = rows("speed.csv")
     color = {"RTX 5060 Ti": t["ref"], "M3 Ultra": t["ultra"]}
@@ -382,7 +367,7 @@ def social_png(svg_path, png_path):
 
 
 for theme, t in THEMES.items():
-    for name, make in (("hero", hero), ("results", strip), ("speed", speed), ("progress", progress),
+    for name, make in (("hero", hero), ("speed", speed), ("progress", progress),
                        ("distance", distance), ("volume", volume), ("accuracy", accuracy), ("drift", drift),
                        ("parity", parity)):
         (here / f"{name}-{theme}.svg").write_text(make(t))

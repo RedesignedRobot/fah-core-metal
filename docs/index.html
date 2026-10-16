@@ -56,112 +56,78 @@ footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
 <body>
 <main>
 <h1>fah-core-metal</h1>
-<p class="lede">A Folding@home core that runs real FAH work units on Apple Silicon GPUs through OpenMM's Metal platform.</p>
+<p class="lede">A Folding@home core for Apple Silicon GPUs, built on OpenMM's Metal platform.</p>
 
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/hero-dark.svg">
   <img alt="FAH client to minicore to OpenMM Metal to Apple GPU" src="figures/hero-light.svg" width="808" height="200">
 </picture>
-<figcaption>Figure 1. The path of a work unit: the FAH client hands minicore a unit directory, minicore builds the
-OpenMM System and State from it, OpenMM's Metal platform runs the kernels on the GPU, and the result tar
-goes back to the client.</figcaption>
+<figcaption>Figure 1. A work unit goes from the FAH client through minicore and OpenMM Metal to the Mac's GPU, and the result goes back.</figcaption>
 </figure>
 
-<p>minicore is a Folding@home core for Apple Silicon Macs. It folds FAH's OpenMM work units on the Mac's GPU
-with OpenMM's Metal platform in df64 mixed precision, and writes the result files FAH's CUDA core 0x27
-writes. On one real unit, project 18264 with 919,221 atoms, the M3 Ultra takes 0.87 times core 0x27's time
-per 1% on an RTX 5060 Ti. Its state-test errors sit beside CUDA mixed precision's, and in 10 runs its
-energy drift can't be told apart from CUDA mixed's.</p>
-
-<p>Runs on Apple Silicon Macs (M-series GPUs) through Metal. Tested on the M3 Ultra and the M2.</p>
-
-<p>Background: <a href="https://github.com/openmm/openmm/issues/2489">openmm#2489</a>, "Future of osx GPU support"
-(2019-11-28), and <a href="https://github.com/FoldingAtHome/fah-client-bastet/issues/303">fah-client-bastet#303</a>,
-"Support for Apple's integrated GPUs" (2024-11-05).</p>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/results-dark.svg">
-  <img alt="Key results: 919,221 atoms; 0.87 times the real core's time per 1%; 12 of 12 state tests on the real unit; 101 of 101 parity checks per Mac; energy drift t -0.7 against CUDA mixed" src="figures/results-light.svg">
-</picture>
-
-<h2>Results at a glance</h2>
-<table>
-<tr><th>Result</th><th>Shown in</th></tr>
-<tr><td>On P18264 the M3 Ultra takes 167 s per 1% and 4.66 h per unit. Core 0x27 on an RTX 5060 Ti takes 192 s and 5.37 h.</td><td>Figures 2, 3</td></tr>
-<tr><td>The Metal trajectory parts from the real one as fast as two CUDA seeds part from each other: 0.475 nm against 0.481 nm at step 5,000.</td><td>Figure 4</td></tr>
-<tr><td>A CUDA replay samples the real run's box volume, 9,307.1 nm³ mean for both, so the trajectories that part still sample one ensemble.</td><td>Figure 5</td></tr>
-<tr><td>On four test systems the worst state-test force RMSE is 0.054 kJ/mol/nm on Metal and 0.052 on CUDA mixed, against a limit of 5.</td><td>Figure 6</td></tr>
-<tr><td>Energy drift in NVE is -0.0010 ± 0.0006 kJ/mol/ps on Metal and -0.0001 ± 0.0011 on CUDA mixed (Welch t -0.7).</td><td>Figure 7</td></tr>
-<tr><td>17 of 25 files and behaviours match core 0x27 on both Macs. 6 differ where FAH's design decides, and 2 need FAH's keys.</td><td>Figure 8</td></tr>
-<tr><td>101 of 101 core-parity checks pass on each Mac, and every state test on the real unit passes.</td><td><a href="https://github.com/RedesignedRobot/fah-core-metal#what-was-tested-and-where">What was tested</a></td></tr>
-</table>
+<p>minicore is a Folding@home core that runs FAH's OpenMM work units on the GPU of Apple Silicon Macs
+through Metal. Tested on the M3 Ultra and the M2, it folds a real FAH unit, project 18264 with 919,221
+atoms, and matches FAH's core 0x27 on every check FAH doesn't control.</p>
 
 <h2>Speed</h2>
+<table>
+<tr><th>Machine</th><th>Core</th><th>Per 1%</th><th>Per unit</th></tr>
+<tr><td>RTX 5060 Ti, Linux</td><td>core 0x27 8.2.1, CUDA</td><td>192 s</td><td>5.37 h</td></tr>
+<tr><td>M3 Ultra, macOS 27</td><td>minicore, Metal</td><td>167 s</td><td>4.66 h</td></tr>
+</table>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
   <img alt="Hours per P18264 unit, M3 Ultra against the real core" src="figures/speed-light.svg">
 </picture>
-<figcaption>Figure 2. Hours per P18264 unit: core 0x27 from the real run's wall clock, minicore from 100 times its
-median 1% interval plus start-up and checkpoints.</figcaption>
-</figure>
-<figure>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/progress-dark.svg">
-  <img alt="Seconds per 1% across the unit, real core against the M3 Ultra" src="figures/progress-light.svg">
-</picture>
-<figcaption>Figure 3. Seconds per 1% interval: core 0x27 from the times of its 100 viewer frames across the unit,
-the M3 Ultra from the times of its progress lines over the first 5%.</figcaption>
+<figcaption>Figure 2. Hours per P18264 unit, 5 ns of a 919,221-atom system.</figcaption>
 </figure>
 
-<h2>Does it fold the same science?</h2>
+<h2>Same science</h2>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/distance-dark.svg">
   <img alt="Distance from the real trajectory against the distance between two CUDA seeds" src="figures/distance-light.svg">
 </picture>
-<figcaption>Figure 4. RMS distance between the 2,520 solute atoms of two runs every 5,000 steps, minimum image and
-no fitting: each run against the real one, and CUDA seed 1 against CUDA seed 3.</figcaption>
+<figcaption>Figure 3. Metal's trajectory parts from the real run's as fast as two CUDA runs part from each other.</figcaption>
 </figure>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/volume-dark.svg">
   <img alt="Box volume over the unit, real run against the CUDA replay" src="figures/volume-light.svg">
 </picture>
-<figcaption>Figure 5. Box volume at each of the 250 XTC frames of the unit, the real run and the CUDA replay with
-seed 3.</figcaption>
+<figcaption>Figure 4. Across the whole unit, a CUDA run with another seed samples the real run's box volume.</figcaption>
 </figure>
 
-<h2>Accuracy and energy conservation</h2>
+<h2>Accuracy</h2>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/accuracy-dark.svg">
   <img alt="Worst state-test force and energy error per unit against the Reference platform, Metal and CUDA" src="figures/accuracy-light.svg">
 </picture>
-<figcaption>Figure 6. Worst of six state tests per test system against OpenMM's Reference platform, on a log scale
-with FAHBench's limits dashed: Metal mixed on each Mac, and CUDA mixed (OpenMM 8.6.1) on an RTX 5060 Ti.</figcaption>
+<figcaption>Figure 5. Worst state-test errors on four test systems, Metal on both Macs beside CUDA, against FAHBench's limits.</figcaption>
 </figure>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/drift-dark.svg">
   <img alt="Energy drift of DHFR in NVE, Metal before and after #5492, CUDA mixed and CPU" src="figures/drift-light.svg">
 </picture>
-<figcaption>Figure 7. Energy drift of DHFR (23,558 atoms) over 1 ns of NVE at 2 fs: the least-squares slope of each
-run's total energy, mean ± SE over independent runs.</figcaption>
+<figcaption>Figure 6. Energy drift in NVE: Metal at the OpenMM commit this repo builds can't be told apart from CUDA.</figcaption>
 </figure>
 
-<h2>How it matches</h2>
+<h2>Parity with core 0x27</h2>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/parity-dark.svg">
   <img alt="Parity with core 0x27 item by item on the M3 Ultra and the M2" src="figures/parity-light.svg">
 </picture>
-<figcaption>Figure 8. Each file and behaviour of core 0x27's run of P18264, checked on each Mac: blue where minicore
-matches, outlined where FAH's own code or keys decide the answer, grey where only FAH's keys can make it.</figcaption>
+<figcaption>Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on each Mac.</figcaption>
 </figure>
 
-<p>The source, the build, the full tables, every caveat and the evidence for each number are in the
+<p>Each Mac also passed all 101 core-parity checks and every state test it ran on the real unit.</p>
+
+<p>The source, the build, how to run it, the FAQ and the evidence for each number are in the
 <a href="https://github.com/RedesignedRobot/fah-core-metal">repository</a>: the
 <a href="https://github.com/RedesignedRobot/fah-core-metal#readme">README</a> and
 <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md">docs/EVIDENCE.md</a>.</p>
