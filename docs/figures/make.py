@@ -1,9 +1,14 @@
-"""make.py: writes every SVG in docs/figures from the CSVs in docs/data, in a light and a dark version.
+"""make.py: writes every SVG in docs/figures from the CSVs in docs/data, in a light and a dark version,
+and docs/social.png.
 
 Standard library only, and no clock or random state outside a fixed seed, so a second run writes the
 same bytes.
+
+One palette across the figures: blue for Metal (darker for the M3 Ultra, lighter for the M2), green for
+CUDA on NVIDIA, grey for the real core 0x27 run and other references.
 """
 import csv
+import math
 import random
 from pathlib import Path
 
@@ -11,12 +16,10 @@ here = Path(__file__).resolve().parent
 data = here.parent / "data"
 
 THEMES = {
-    "light": dict(fg="#1f2328", muted="#59636e", grid="#d1d9e0", paper="#ffffff", ultra="#0969da",
-                  m2="#8250df", cuda="#1a7f37", pair="#9a6700", match="#1a7f37", design="#9a6700",
-                  fah="#59636e"),
-    "dark": dict(fg="#e6edf3", muted="#9198a1", grid="#3d444d", paper="#0d1117", ultra="#4493f8",
-                 m2="#ab7df8", cuda="#3fb950", pair="#d29922", match="#3fb950", design="#d29922",
-                 fah="#9198a1"),
+    "light": dict(fg="#1f2328", muted="#59636e", grid="#d1d9e0", paper="#ffffff", tile="#f6f8fa",
+                  ultra="#0969da", m2="#54aeff", cuda="#1a7f37", ref="#818b98"),
+    "dark": dict(fg="#e6edf3", muted="#9198a1", grid="#3d444d", paper="#0d1117", tile="#151b23",
+                 ultra="#4493f8", m2="#a5d6ff", cuda="#3fb950", ref="#848d97"),
 }
 FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 
@@ -32,10 +35,11 @@ def svg(width, height, body, label):
             + "".join(body) + "</svg>\n")
 
 
-def text(x, y, s, fill, size=13, anchor="start", weight="normal"):
+def text(x, y, s, fill, size=12, anchor="start", weight="normal", style=None):
     s = s.replace("&", "&amp;").replace("<", "&lt;")
+    st = f' font-style="{style}"' if style else ""
     return (f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" fill="{fill}" text-anchor="{anchor}" '
-            f'font-weight="{weight}">{s}</text>\n')
+            f'font-weight="{weight}"{st}>{s}</text>\n')
 
 
 def line(x1, y1, x2, y2, stroke, width=1.0, dash=None):
@@ -44,10 +48,43 @@ def line(x1, y1, x2, y2, stroke, width=1.0, dash=None):
             f'stroke-width="{width}"{d}/>\n')
 
 
+def rect(x, y, w, h, fill, rx=3, stroke=None):
+    s = f' stroke="{stroke}" stroke-width="1.2"' if stroke else ""
+    return f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx}" fill="{fill}"{s}/>\n'
+
+
+def circle(x, y, r, fill, stroke=None):
+    s = f' stroke="{stroke}" stroke-width="1.8"' if stroke else ""
+    return f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{fill}"{s}/>\n'
+
+
+def diamond(x, y, r, fill):
+    return (f'<path d="M{x:.1f},{y - r:.1f} L{x + r:.1f},{y:.1f} L{x:.1f},{y + r:.1f} L{x - r:.1f},{y:.1f} Z" '
+            f'fill="{fill}"/>\n')
+
+
 def polyline(points, stroke, width=2.0, dash=None):
     d = f' stroke-dasharray="{dash}"' if dash else ""
     p = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
     return f'<polyline points="{p}" fill="none" stroke="{stroke}" stroke-width="{width}"{d} stroke-linejoin="round"/>\n'
+
+
+def axes(body, t, left, right, top, bottom, xticks, yticks, sx, sy, xfmt, yfmt):
+    for v in yticks:
+        body.append(line(left, sy(v), right, sy(v), t["grid"]))
+        body.append(text(left - 8, sy(v) + 4, yfmt(v), t["muted"], 11, "end"))
+    for v in xticks:
+        body.append(line(sx(v), bottom, sx(v), bottom + 4, t["muted"]))
+        body.append(text(sx(v), bottom + 18, xfmt(v), t["muted"], 11, "middle"))
+    body.append(line(left, bottom, right, bottom, t["muted"]))
+
+
+def legend(body, t, x, y, items):
+    # items: (label, color, dash); one row each.
+    for i, (label, color, dash) in enumerate(items):
+        yy = y + i * 18
+        body.append(line(x, yy, x + 24, yy, color, 2.5, dash))
+        body.append(text(x + 32, yy + 4, label, t["fg"], 12))
 
 
 def rough_rect(rng, x, y, w, h, stroke, fill):
@@ -75,8 +112,8 @@ def rough_arrow(rng, x1, y, x2, stroke):
 def hero(t):
     rng = random.Random(30)
     boxes = [("FAH client", "fah-client 8.5"), ("minicore", "this repo"), ("OpenMM Metal", "df64 mixed precision"),
-             ("Apple GPU", "M2 to M3 Ultra")]
-    colors = [t["muted"], t["ultra"], t["m2"], t["cuda"]]
+             ("Apple GPU", "Apple Silicon")]
+    colors = [t["ref"], t["ultra"], t["ultra"], t["m2"]]
     w, h, gap, top = 170, 70, 62, 40
     body = []
     for i, ((name, sub), c) in enumerate(zip(boxes, colors)):
@@ -100,56 +137,78 @@ def hero(t):
     return svg(20 * 2 + 4 * w + 3 * gap, 200, body, "FAH client to minicore to OpenMM Metal to Apple GPU")
 
 
+def strip(t):
+    r = rows("results.csv")
+    w, h, gap = 176, 108, 10
+    body = []
+    for i, x in enumerate(r):
+        x0 = i * (w + gap)
+        body.append(rect(x0, 0, w, h, t["tile"], 6, t["grid"]))
+        body.append(rect(x0, 0, 4, h, t["ultra"], 2))
+        body.append(text(x0 + 16, 38, x["value"], t["ultra"], 26, "start", "600"))
+        for k, key in enumerate(("line1", "line2", "line3")):
+            body.append(text(x0 + 16, 62 + k * 15, x[key], t["fg"] if k == 0 else t["muted"], 11.5))
+    return svg(len(r) * (w + gap) - gap, h, body, "Key results: " + "; ".join(
+        f'{x["value"]} {x["line1"]} {x["line2"]} {x["line3"]}' for x in r))
+
+
 def speed(t):
     r = rows("speed.csv")
-    color = {"RTX 5060 Ti": t["cuda"], "M3 Ultra": t["ultra"], "M2": t["m2"]}
-    left, right, top, bar, step = 210, 620, 34, 26, 48
-    xmax = 50.0
+    color = {"RTX 5060 Ti": t["ref"], "M3 Ultra": t["ultra"]}
+    left, right, top, bar, step = 210, 600, 12, 28, 46
+    xmax = 6.0
     sx = lambda h: left + (right - left) * h / xmax
-    body = [text(left, 18, "Hours per unit, P18264 (919,221 atoms, 5 ns)", t["fg"], 13, "start", "600")]
-    for v in range(0, 51, 10):
-        body.append(line(sx(v), top - 4, sx(v), top + step * len(r) - 10, t["grid"]))
-        body.append(text(sx(v), top + step * len(r) + 6, f"{v} h", t["muted"], 11, "middle"))
-    body.append(line(sx(48), top - 4, sx(48), top + step * len(r) - 10, t["fg"], 1.2, "4 3"))
-    body.append(text(sx(48) - 4, top + 8, "48 h timeout", t["fg"], 11, "end"))
+    body = []
+    bottom = top + step * len(r) - 10
+    for v in range(0, 7):
+        body.append(line(sx(v), top - 4, sx(v), bottom, t["grid"]))
+        body.append(text(sx(v), bottom + 16, f"{v} h", t["muted"], 11, "middle"))
+    body.append(text((left + right) / 2, bottom + 34, "Hours per unit", t["muted"], 11, "middle"))
     for i, x in enumerate(r):
         y = top + i * step
         body.append(text(left - 10, y + 12, x["machine"], t["fg"], 13, "end", "600"))
-        body.append(text(left - 10, y + 27, f'{x["core"].split(" (")[0]}, {x["os"]}', t["muted"], 11, "end"))
-        body.append(f'<rect x="{left}" y="{y}" width="{sx(float(x["unit_h"])) - left:.1f}" height="{bar}" '
-                    f'rx="3" fill="{color[x["machine"]]}"/>\n')
+        body.append(text(left - 10, y + 27, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 11, "end"))
+        body.append(rect(left, y, sx(float(x["unit_h"])) - left, bar, color[x["machine"]]))
         body.append(text(sx(float(x["unit_h"])) + 8, y + 18,
-                         f'{float(x["unit_h"]):.1f} h ({float(x["s_per_1pct"]):,.0f} s per 1%)', t["fg"], 12))
-    return svg(right + 30, top + step * len(r) + 16, body, "Hours per P18264 unit by machine")
+                         f'{float(x["unit_h"]):.2f} h, {float(x["s_per_1pct"]):,.0f} s per 1%', t["fg"], 12))
+    return svg(right + 150, bottom + 42, body, "Hours per P18264 unit, M3 Ultra against the real core")
 
 
-def axes(body, t, left, right, top, bottom, xticks, yticks, sx, sy, xfmt, yfmt):
-    for v in yticks:
-        body.append(line(left, sy(v), right, sy(v), t["grid"]))
-        body.append(text(left - 8, sy(v) + 4, yfmt(v), t["muted"], 11, "end"))
-    for v in xticks:
-        body.append(line(sx(v), bottom, sx(v), bottom + 4, t["muted"]))
-        body.append(text(sx(v), bottom + 18, xfmt(v), t["muted"], 11, "middle"))
-    body.append(line(left, bottom, right, bottom, t["muted"]))
-
-
-def legend(body, t, x, y, items):
-    for i, (label, color, dash) in enumerate(items):
-        yy = y + i * 18
-        body.append(line(x, yy, x + 24, yy, color, 2.5, dash))
-        body.append(text(x + 32, yy + 4, label, t["fg"], 12))
+def progress(t):
+    r = rows("progress.csv")
+    left, right, top, bottom = 58, 640, 14, 230
+    lo, hi = 150, 210
+    sx = lambda p: left + (right - left) * p / 100
+    sy = lambda s: bottom - (bottom - top) * (s - lo) / (hi - lo)
+    body = []
+    axes(body, t, left, right, top, bottom, range(0, 101, 10), range(lo, hi + 1, 10), sx, sy,
+         lambda p: f"{p}%", lambda s: f"{s} s")
+    body.append(text((left + right) / 2, bottom + 36, "Progress through the unit (each point is one 1% interval, 12,500 steps)",
+                     t["muted"], 11, "middle"))
+    real = [(int(x["pct"]), float(x["real_s"])) for x in r]
+    ultra = [(int(x["pct"]), float(x["ultra_s"])) for x in r if x["ultra_s"]]
+    body.append(polyline([(sx(p), sy(s)) for p, s in real], t["ref"], 1.5))
+    body.append(polyline([(sx(p), sy(s)) for p, s in ultra], t["ultra"], 2.0))
+    for p, s in ultra:
+        body.append(circle(sx(p), sy(s), 3, t["ultra"]))
+    med = lambda v: sorted(v)[len(v) // 2] if len(v) % 2 else sum(sorted(v)[len(v) // 2 - 1:len(v) // 2 + 1]) / 2
+    rm, um = med([s for _, s in real]), med([s for _, s in ultra])
+    legend(body, t, left + 300, top + 16, [(f"real core 0x27, RTX 5060 Ti: median {rm:.0f} s", t["ref"], None),
+                                          (f"minicore, M3 Ultra: median {um:.0f} s", t["ultra"], None)])
+    return svg(right + 20, bottom + 46, body, "Seconds per 1% across the unit, real core against the M3 Ultra")
 
 
 def distance(t):
     r = rows("distance.csv")
-    left, right, top, bottom = 58, 640, 34, 270
+    left, right, top, bottom = 58, 640, 30, 266
     sx = lambda s: left + (right - left) * s / 60000
     sy = lambda d: bottom - (bottom - top) * d / 1.8
-    body = [text(left, 18, "Solute distance between trajectories (nm), first 60,000 steps", t["fg"], 13, "start", "600")]
+    body = []
     axes(body, t, left, right, top, bottom, range(0, 60001, 10000), [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8], sx, sy,
          lambda s: f"{s // 1000}k" if s else "0", lambda d: f"{d:.1f}")
     body.append(text((left + right) / 2, bottom + 36, "MD step (4 fs each; 60,000 steps = 0.24 ns)", t["muted"], 11, "middle"))
-    series = [("cuda_seed1_vs_seed3_nm", "CUDA seed 1 vs CUDA seed 3", t["pair"], "6 4"),
+    body.append(text(left - 8, top - 16, "nm", t["muted"], 11, "end"))
+    series = [("cuda_seed1_vs_seed3_nm", "CUDA seed 1 vs CUDA seed 3", t["cuda"], "6 4"),
               ("cuda_seed1_vs_real_nm", "CUDA seed 1 vs real", t["cuda"], None),
               ("ultra_vs_real_nm", "M3 Ultra (Metal) vs real", t["ultra"], None),
               ("m2_vs_real_nm", "M2 (Metal) vs real", t["m2"], None)]
@@ -161,52 +220,195 @@ def distance(t):
 
 def volume(t):
     r = rows("volume.csv")
-    left, right, top, bottom = 64, 640, 34, 250
+    left, right, top, bottom = 64, 640, 30, 246
     lo, hi = 9285, 9325
     sx = lambda s: left + (right - left) * s / 1250000
     sy = lambda v: bottom - (bottom - top) * (v - lo) / (hi - lo)
-    body = [text(left, 18, "Box volume over the unit (nm³), the 250 frames both runs wrote", t["fg"], 13, "start", "600")]
+    body = []
     axes(body, t, left, right, top, bottom, range(0, 1250001, 250000), range(lo, hi + 1, 10), sx, sy,
          lambda s: f"{s / 250000:.0f} ns", lambda v: f"{v:,}")
-    for key, color, dash in (("real_nm3", t["cuda"], None), ("cuda_seed3_nm3", t["pair"], None)):
-        body.append(polyline([(sx(int(x["step"])), sy(float(x[key]))) for x in r], color, 1.0, dash))
+    body.append(text(left - 8, top - 16, "nm³", t["muted"], 11, "end"))
+    for key, color in (("real_nm3", t["ref"]), ("cuda_seed3_nm3", t["cuda"])):
+        body.append(polyline([(sx(int(x["step"])), sy(float(x[key]))) for x in r], color, 1.0))
     def stats(key):
         v = [float(x[key]) for x in r]
         m = sum(v) / len(v)
         return m, (sum((a - m) ** 2 for a in v) / (len(v) - 1)) ** 0.5
     (rm, rs), (cm, cs) = stats("real_nm3"), stats("cuda_seed3_nm3")
-    legend(body, t, left, bottom + 40, [(f"real core 0x27: mean {rm:,.1f}, sd {rs:.1f}", t["cuda"], None),
-                                         (f"CUDA replay, seed 3: mean {cm:,.1f}, sd {cs:.1f}", t["pair"], None)])
+    legend(body, t, left, bottom + 40, [(f"real core 0x27: mean {rm:,.1f}, sd {rs:.1f}", t["ref"], None),
+                                         (f"CUDA replay, seed 3: mean {cm:,.1f}, sd {cs:.1f}", t["cuda"], None)])
     return svg(right + 20, bottom + 76, body, "Box volume over the unit, real run against the CUDA replay")
+
+
+def accuracy(t):
+    r = rows("accuracy.csv")
+    units = list(dict.fromkeys(x["unit"] for x in r))
+    arms = [("M3 Ultra", "M3 Ultra, Metal mixed", t["ultra"], -7), ("M2", "M2, Metal mixed", t["m2"], 0),
+            ("RTX 5060 Ti", "RTX 5060 Ti, CUDA mixed", t["cuda"], 7)]
+    label_w, pw, gap, top, rh = 84, 270, 40, 40, 34
+    bottom = top + rh * len(units)
+    body = []
+    panels = [("worst_force_rmse", "force_limit", "Force RMSE (kJ/mol/nm)", -3, 1),
+              ("worst_dpe", "energy_limit", "|ΔPE| (kJ/mol)", -2, 2)]
+    for k, (key, lim_key, title, e0, e1) in enumerate(panels):
+        left = label_w + k * (pw + gap)
+        sx = lambda v, left=left, e0=e0, e1=e1: left + pw * (math.log10(v) - e0) / (e1 - e0)
+        body.append(text(left, top - 12, title, t["fg"], 12, "start", "600"))
+        for e in range(e0, e1 + 1):
+            body.append(line(sx(10 ** e), top, sx(10 ** e), bottom, t["grid"]))
+            body.append(text(sx(10 ** e), bottom + 16, f"{10.0 ** e:g}", t["muted"], 11, "middle"))
+        lim = float(r[0][lim_key])
+        body.append(line(sx(lim), top - 4, sx(lim), bottom, t["ref"], 1.5, "5 3"))
+        body.append(text(sx(lim) - 4, bottom - 6, f"limit {lim:g}", t["muted"], 11, "end"))
+        body.append(line(left, bottom, left + pw, bottom, t["muted"]))
+        for i, u in enumerate(units):
+            y = top + rh * i + rh / 2
+            if k == 0:
+                body.append(text(label_w - 12, y + 4, u, t["fg"], 12, "end"))
+            for m, _, color, dy in arms:
+                v = float(next(x[key] for x in r if x["unit"] == u and x["machine"] == m))
+                body.append(diamond(sx(v), y + dy, 5, color) if m == "RTX 5060 Ti" else circle(sx(v), y + dy, 4, color))
+    lx = label_w
+    for m, lab, color, _ in arms:
+        body.append(diamond(lx + 5, bottom + 40, 5, color) if m == "RTX 5060 Ti" else circle(lx + 5, bottom + 40, 4, color))
+        body.append(text(lx + 15, bottom + 44, lab, t["fg"], 12))
+        lx += 200
+    return svg(label_w + 2 * pw + gap + 20, bottom + 56, body,
+               "Worst state-test force and energy error per unit against the Reference platform, Metal and CUDA")
+
+
+def drift(t):
+    r = rows("drift.csv")
+    label_w, left, right, top, rh = 250, 260, 600, 12, 32
+    lo, hi = -0.007, 0.005
+    sx = lambda v: left + (right - left) * (v - lo) / (hi - lo)
+    bottom = top + rh * len(r)
+    body = []
+    for v in (-0.006, -0.004, -0.002, 0.0, 0.002, 0.004):
+        body.append(line(sx(v), top, sx(v), bottom, t["muted"] if v == 0 else t["grid"], 1.0))
+        body.append(text(sx(v), bottom + 16, f"{v:+.3f}" if v else "0", t["muted"], 11, "middle"))
+    body.append(text((left + right) / 2, bottom + 34, "Energy drift, kJ/mol/ps (mean ± SE)", t["muted"], 11, "middle"))
+    color = {"Metal mixed": t["ultra"], "CUDA mixed": t["cuda"], "CPU": t["ref"]}
+    for i, x in enumerate(r):
+        y = top + rh * i + rh / 2
+        m, se = float(x["mean_kj_mol_ps"]), float(x["se_kj_mol_ps"])
+        c = color[x["platform"]]
+        body.append(text(label_w - 12, y, x["arm"], t["fg"], 12, "end", "600"))
+        body.append(text(label_w - 12, y + 13, f'{x["openmm"]}, {x["seeds"]} runs', t["muted"], 11, "end"))
+        body.append(line(sx(m - se), y + 3, sx(m + se), y + 3, c, 2.0))
+        for e in (m - se, m + se):
+            body.append(line(sx(e), y - 2, sx(e), y + 8, c, 2.0))
+        hollow = x["arm"].endswith("#5492")
+        body.append(circle(sx(m), y + 3, 5, t["paper"] if hollow else c, c if hollow else None))
+        body.append(text(right + 10, y + 7, f"{m:+.4f} ± {se:.4f}", t["fg"], 12))
+    return svg(right + 130, bottom + 42, body, "Energy drift of DHFR in NVE, Metal before and after #5492, CUDA mixed and CPU")
 
 
 def parity(t):
     r = rows("parity.csv")
-    mark = {"match": ("match", t["match"]), "by-design": ("differs by design", t["design"]),
-            "fah-only": ("FAH only", t["fah"])}
-    cols, cw, ch, left, top = 3, 228, 30, 10, 54
+    mark = {"match": ("match", t["ultra"], "✓"), "by-design": ("differs by FAH's design", t["tile"], "≠"),
+            "fah-only": ("needs FAH's keys", t["ref"], "FAH")}
+    item_w, cw, rh, top = 196, 76, 22, 52
     body = []
-    x = left
+    x = 0
     for key in ("match", "by-design", "fah-only"):
-        n = sum(1 for e in r if e["verdict"] == key)
-        label, color = mark[key]
-        body.append(f'<rect x="{x}" y="10" width="14" height="14" rx="3" fill="{color}"/>\n')
-        body.append(text(x + 20, 22, f"{label} ({n})", t["fg"], 12))
-        x += 170
-    order = sorted(range(len(r)), key=lambda i: (["match", "by-design", "fah-only"].index(r[i]["verdict"]), i))
-    for k, i in enumerate(order):
-        e = r[i]
-        cx, cy = left + (k % cols) * cw, top + (k // cols) * ch
-        color = mark[e["verdict"]][1]
-        body.append(f'<rect x="{cx}" y="{cy}" width="{cw - 8}" height="{ch - 6}" rx="4" fill="none" '
-                    f'stroke="{color}" stroke-width="1.2"/>\n')
-        body.append(f'<rect x="{cx}" y="{cy}" width="6" height="{ch - 6}" rx="2" fill="{color}"/>\n')
-        body.append(text(cx + 14, cy + 16, e["item"], t["fg"], 12))
-    rows_n = (len(r) + cols - 1) // cols
-    return svg(left * 2 + cols * cw - 8, top + rows_n * ch, body, "Parity with core 0x27, item by item")
+        n = sum(1 for e in r if e["ultra"] == key)
+        label, fill, glyph = mark[key]
+        body.append(rect(x, 6, 34, 18, fill, 3, t["ultra"] if key == "by-design" else None))
+        body.append(text(x + 17, 19, glyph, t["paper"] if key != "by-design" else t["ultra"], 12, "middle", "600"))
+        body.append(text(x + 42, 20, f"{label} ({n})", t["fg"], 12))
+        x += 200
+    body.append(text(item_w + cw / 2, top - 8, "M3 Ultra", t["fg"], 12, "middle", "600"))
+    body.append(text(item_w + cw * 1.5, top - 8, "M2", t["fg"], 12, "middle", "600"))
+    for i, e in enumerate(r):
+        y = top + i * rh
+        body.append(text(item_w - 10, y + 15, e["item"], t["fg"], 12, "end"))
+        for j, key in enumerate(("ultra", "m2")):
+            label, fill, glyph = mark[e[key]]
+            cx = item_w + j * cw
+            body.append(rect(cx + 2, y + 2, cw - 4, rh - 4, fill, 3, t["ultra"] if e[key] == "by-design" else None))
+            body.append(text(cx + cw / 2, y + 15, glyph, t["paper"] if e[key] != "by-design" else t["ultra"],
+                             12, "middle", "600"))
+        body.append(text(item_w + 2 * cw + 12, y + 15, e["detail"], t["muted"], 11.5))
+    return svg(item_w + 2 * cw + 400, top + len(r) * rh + 4, body,
+               "Parity with core 0x27 item by item on the M3 Ultra and the M2")
+
+
+# docs/social.png: a 1280x640 card drawn without a font library. Text comes from a 5x7 pixel font,
+# uppercase, digits and a few marks, each pixel drawn as a filled square.
+GLYPHS = {
+    "A": "01110 10001 10001 11111 10001 10001 10001", "B": "11110 10001 10001 11110 10001 10001 11110",
+    "C": "01110 10001 10000 10000 10000 10001 01110", "D": "11110 10001 10001 10001 10001 10001 11110",
+    "E": "11111 10000 10000 11110 10000 10000 11111", "F": "11111 10000 10000 11110 10000 10000 10000",
+    "G": "01110 10001 10000 10111 10001 10001 01111", "H": "10001 10001 10001 11111 10001 10001 10001",
+    "I": "01110 00100 00100 00100 00100 00100 01110", "J": "00111 00010 00010 00010 00010 10010 01100",
+    "K": "10001 10010 10100 11000 10100 10010 10001", "L": "10000 10000 10000 10000 10000 10000 11111",
+    "M": "10001 11011 10101 10101 10001 10001 10001", "N": "10001 10001 11001 10101 10011 10001 10001",
+    "O": "01110 10001 10001 10001 10001 10001 01110", "P": "11110 10001 10001 11110 10000 10000 10000",
+    "Q": "01110 10001 10001 10001 10101 10010 01101", "R": "11110 10001 10001 11110 10100 10010 10001",
+    "S": "01111 10000 10000 01110 00001 00001 11110", "T": "11111 00100 00100 00100 00100 00100 00100",
+    "U": "10001 10001 10001 10001 10001 10001 01110", "V": "10001 10001 10001 10001 10001 01010 00100",
+    "W": "10001 10001 10001 10101 10101 10101 01010", "X": "10001 10001 01010 00100 01010 10001 10001",
+    "Y": "10001 10001 01010 00100 00100 00100 00100", "Z": "11111 00001 00010 00100 01000 10000 11111",
+    "0": "01110 10001 10011 10101 11001 10001 01110", "1": "00100 01100 00100 00100 00100 00100 01110",
+    "2": "01110 10001 00001 00010 00100 01000 11111", "3": "11111 00010 00100 00010 00001 10001 01110",
+    "4": "00010 00110 01010 10010 11111 00010 00010", "5": "11111 10000 11110 00001 00001 10001 01110",
+    "6": "00110 01000 10000 11110 10001 10001 01110", "7": "11111 00001 00010 00100 01000 01000 01000",
+    "8": "01110 10001 10001 01110 10001 10001 01110", "9": "01110 10001 10001 01111 00001 00010 01100",
+    " ": "00000 00000 00000 00000 00000 00000 00000", ".": "00000 00000 00000 00000 00000 01100 01100",
+    ",": "00000 00000 00000 00000 01100 00100 01000", "-": "00000 00000 00000 11111 00000 00000 00000",
+    "%": "11000 11001 00010 00100 01000 10011 00011", "/": "00001 00001 00010 00100 01000 10000 10000",
+    "@": "01110 10001 10111 10101 10111 10000 01111", "X'": "00000 00000 10001 01010 00100 01010 10001",
+}
+
+
+def social():
+    W, H = 1280, 640
+    t = THEMES["dark"]
+    rgb = lambda c: tuple(int(c[i:i + 2], 16) for i in (1, 3, 5))
+    px = bytearray(rgb(t["paper"]) * (W * H))
+
+    def fill(x0, y0, w, h, c):
+        c = bytes(rgb(c))
+        for y in range(max(0, y0), min(H, y0 + h)):
+            a, b = 3 * (y * W + max(0, x0)), 3 * (y * W + min(W, x0 + w))
+            px[a:b] = c * ((b - a) // 3)
+
+    def write(x, y, s, c, scale):
+        for ch in s:
+            g = GLYPHS["X'" if ch == "×" else ch].split()
+            for j, row in enumerate(g):
+                for i, bit in enumerate(row):
+                    if bit == "1":
+                        fill(x + i * scale, y + j * scale, scale, scale, c)
+            x += 6 * scale
+
+    fill(0, 0, 16, H, t["ultra"])
+    write(80, 80, "FAH-CORE-METAL", t["fg"], 10)
+    write(80, 200, "FOLDING@HOME ON APPLE SILICON GPUS", t["muted"], 5)
+    write(80, 250, "THROUGH OPENMM METAL", t["muted"], 5)
+    # Hours per P18264 unit, the same numbers as the speed figure.
+    r = rows("speed.csv")
+    for k, x in enumerate(r):
+        y = 360 + k * 90
+        c = t["ultra"] if x["machine"] == "M3 Ultra" else t["ref"]
+        write(80, y + 4, x["machine"].upper(), t["fg"], 4)
+        write(80, y + 40, f'{x["core"].split(" (")[0]}, {x["api"]}'.upper(), t["muted"], 2)
+        fill(420, y, int(110 * float(x["unit_h"])), 50, c)
+        write(440 + int(110 * float(x["unit_h"])), y + 12, f'{float(x["unit_h"]):.2f} H', t["fg"], 4)
+    write(80, 560, "P18264, 919,221 ATOMS, HOURS PER UNIT", t["muted"], 3)
+
+    import struct
+    import zlib
+    raw = b"".join(b"\x00" + bytes(px[3 * W * y:3 * W * (y + 1)]) for y in range(H))
+    chunk = lambda kind, d: struct.pack(">I", len(d)) + kind + d + struct.pack(">I", zlib.crc32(kind + d))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", W, H, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
 
 
 for theme, t in THEMES.items():
-    for name, make in (("hero", hero), ("speed", speed), ("distance", distance), ("volume", volume),
+    for name, make in (("hero", hero), ("results", strip), ("speed", speed), ("progress", progress),
+                       ("distance", distance), ("volume", volume), ("accuracy", accuracy), ("drift", drift),
                        ("parity", parity)):
         (here / f"{name}-{theme}.svg").write_text(make(t))
+(here.parent / "social.png").write_bytes(social())

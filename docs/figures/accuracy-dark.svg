@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="684" height="232" viewBox="0 0 684 232" role="img" aria-label="Worst state-test force and energy error per unit against the Reference platform, Metal and CUDA" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<text x="84.0" y="28.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">Force RMSE (kJ/mol/nm)</text>
+<line x1="84.0" y1="40.0" x2="84.0" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="84.0" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">0.001</text>
+<line x1="151.5" y1="40.0" x2="151.5" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="151.5" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">0.01</text>
+<line x1="219.0" y1="40.0" x2="219.0" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="219.0" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">0.1</text>
+<line x1="286.5" y1="40.0" x2="286.5" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="286.5" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">1</text>
+<line x1="354.0" y1="40.0" x2="354.0" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="354.0" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">10</text>
+<line x1="333.7" y1="36.0" x2="333.7" y2="176.0" stroke="#848d97" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="329.7" y="170.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">limit 5</text>
+<line x1="84.0" y1="176.0" x2="354.0" y2="176.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="72.0" y="61.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">gbsa</text>
+<circle cx="154.4" cy="50.0" r="4" fill="#4493f8"/>
+<circle cx="155.4" cy="57.0" r="4" fill="#a5d6ff"/>
+<path d="M155.1,59.0 L160.1,64.0 L155.1,69.0 L150.1,64.0 Z" fill="#3fb950"/>
+<text x="72.0" y="95.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">neq</text>
+<circle cx="174.5" cy="84.0" r="4" fill="#4493f8"/>
+<circle cx="173.8" cy="91.0" r="4" fill="#a5d6ff"/>
+<path d="M170.9,93.0 L175.9,98.0 L170.9,103.0 L165.9,98.0 Z" fill="#3fb950"/>
+<text x="72.0" y="129.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">tip3p-hmr</text>
+<circle cx="189.0" cy="118.0" r="4" fill="#4493f8"/>
+<circle cx="190.9" cy="125.0" r="4" fill="#a5d6ff"/>
+<path d="M188.9,127.0 L193.9,132.0 L188.9,137.0 L183.9,132.0 Z" fill="#3fb950"/>
+<text x="72.0" y="163.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">tip4pew</text>
+<circle cx="201.1" cy="152.0" r="4" fill="#4493f8"/>
+<circle cx="201.1" cy="159.0" r="4" fill="#a5d6ff"/>
+<path d="M199.9,161.0 L204.9,166.0 L199.9,171.0 L194.9,166.0 Z" fill="#3fb950"/>
+<text x="394.0" y="28.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="600">|ΔPE| (kJ/mol)</text>
+<line x1="394.0" y1="40.0" x2="394.0" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="394.0" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">0.01</text>
+<line x1="461.5" y1="40.0" x2="461.5" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="461.5" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">0.1</text>
+<line x1="529.0" y1="40.0" x2="529.0" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="529.0" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">1</text>
+<line x1="596.5" y1="40.0" x2="596.5" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="596.5" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">10</text>
+<line x1="664.0" y1="40.0" x2="664.0" y2="176.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="664.0" y="192.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">100</text>
+<line x1="596.5" y1="36.0" x2="596.5" y2="176.0" stroke="#848d97" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="592.5" y="170.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">limit 10</text>
+<line x1="394.0" y1="176.0" x2="664.0" y2="176.0" stroke="#9198a1" stroke-width="1.0"/>
+<circle cx="437.5" cy="50.0" r="4" fill="#4493f8"/>
+<circle cx="438.1" cy="57.0" r="4" fill="#a5d6ff"/>
+<path d="M453.2,59.0 L458.2,64.0 L453.2,69.0 L448.2,64.0 Z" fill="#3fb950"/>
+<circle cx="448.0" cy="84.0" r="4" fill="#4493f8"/>
+<circle cx="441.3" cy="91.0" r="4" fill="#a5d6ff"/>
+<path d="M433.0,93.0 L438.0,98.0 L433.0,103.0 L428.0,98.0 Z" fill="#3fb950"/>
+<circle cx="511.2" cy="118.0" r="4" fill="#4493f8"/>
+<circle cx="514.4" cy="125.0" r="4" fill="#a5d6ff"/>
+<path d="M483.2,127.0 L488.2,132.0 L483.2,137.0 L478.2,132.0 Z" fill="#3fb950"/>
+<circle cx="505.5" cy="152.0" r="4" fill="#4493f8"/>
+<circle cx="510.1" cy="159.0" r="4" fill="#a5d6ff"/>
+<path d="M491.3,161.0 L496.3,166.0 L491.3,171.0 L486.3,166.0 Z" fill="#3fb950"/>
+<circle cx="89.0" cy="216.0" r="4" fill="#4493f8"/>
+<text x="99.0" y="220.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">M3 Ultra, Metal mixed</text>
+<circle cx="289.0" cy="216.0" r="4" fill="#a5d6ff"/>
+<text x="299.0" y="220.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">M2, Metal mixed</text>
+<path d="M489.0,211.0 L494.0,216.0 L489.0,221.0 L484.0,216.0 Z" fill="#3fb950"/>
+<text x="499.0" y="220.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">RTX 5060 Ti, CUDA mixed</text>
+</svg>

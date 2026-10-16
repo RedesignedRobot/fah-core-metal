@@ -1,26 +1,26 @@
-item,verdict,detail
-Unit header fields,match,"Project, run, clone, gen and payload size read from the 512-byte header"
-core.xml keys,match,All seven of P18264's keys read
-Output intervals,match,"Checkpoint 5%, viewer 1%, XTC 0.4%"
-State test limits,match,"Force 1e7, energy 1e9, from core.xml"
-State test platform,match,CPU
-State tests,match,"Step 0, then every 5%, against CPU"
-Interrupt at start-up,match,"Same four lines, exit 102"
-wuinfo_01.dat,match,"512 B, same layout and values"
-viewerTop.json,match,Byte-identical
-viewerFrameN.json,match,"101 frames, same format"
-positions.xtc,match,"250 frames, same format"
-xtcAtoms.csv.bz2,match,Byte-identical
-Result members and order,match,"Six files, same order"
-Result tar format,match,Plain ustar
-Exit code,match,100 FINISHED_UNIT
-Box volume,match,"9,299 to 9,317 nm³ in every run over the first 62,500 steps"
-Log sections and order,match,Same sections in the same order
-Log wording,by-design,18 of 87 logfile line shapes word for word
-OpenMM version strings,by-design,8.6 against 8.2
-checkpointIntegrator.xml,by-design,OpenMM 8.6 adds integrationForceGroups
-Final step count,by-design,The real core takes one step past numSteps
-Checkpoint format,by-design,The client never reads it
-Work dir layout,by-design,The real core works in 01/
-Result header signature,fah-only,Signed with FAH's private key
-Unit signature check,fah-only,Needs FAH's public key and scheme
+item,ultra,m2,detail
+Unit header fields,match,match,"Project, run, clone, gen and payload size from the 512-byte header"
+core.xml keys,match,match,All seven of P18264's keys read
+Output intervals,match,match,"Checkpoint 5%, viewer frame 1%, XTC frame 0.4%"
+State test platform,match,match,CPU
+State test limits,match,match,"Force 1e7, energy 1e9, from core.xml"
+State test schedule,match,match,"Step 0, then at every checkpoint"
+Interrupt at start-up,match,match,"The same four lines, exit 102"
+wuinfo_01.dat,match,match,"512 B, same layout and values"
+viewerTop.json,match,match,"56,183 B, byte-identical"
+viewerFrameN.json,match,match,"101 frames on a finished unit, same format"
+positions.xtc,match,match,"2,520 solute atoms every 5,000 steps, same format"
+xtcAtoms.csv.bz2,match,match,"2,824 B, byte-identical"
+Result members and order,match,match,"Six files, same order"
+Result tar format,match,match,"ustar, mode 0666, uid and gid 0"
+Exit code,match,match,100 FINISHED_UNIT
+Box volume,match,match,"9,299 to 9,317 nm³ over the first 62,500 steps"
+Log sections and order,match,match,Same sections in the same order
+Log wording,by-design,by-design,19 of 87 logfile line shapes word for word
+OpenMM version strings,by-design,by-design,8.6 where core 0x27 says 8.2
+checkpointIntegrator.xml,by-design,by-design,OpenMM 8.6 adds integrationForceGroups
+Final step count,by-design,by-design,core 0x27 takes one step past numSteps
+Checkpoint format,by-design,by-design,The client never reads it
+Work dir layout,by-design,by-design,core 0x27 keeps its work files in 01/
+Result header signature,fah-only,fah-only,Signed with FAH's private key
+Unit signature check,fah-only,fah-only,Needs FAH's public key and scheme

@@ -1,0 +1,6 @@
+value,line1,line2,line3
+"919,221",atoms in P18264,"a real FAH unit,",5 ns of dynamics
+0.87×,the real core's time per 1%,"M3 Ultra against core 0x27",on an RTX 5060 Ti
+12 / 12,state tests passed,"on the real unit,",M3 Ultra; M2 5 / 5
+101 / 101,core-parity checks,passed on each Mac,M3 Ultra and M2
+t = −0.7,energy drift against,"CUDA mixed, 10 × 1 ns",DHFR in NVE
