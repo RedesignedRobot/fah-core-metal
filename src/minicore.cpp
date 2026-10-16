@@ -6,9 +6,9 @@
 // It takes the arguments fah-client passes a core (Unit.cpp:627-672 at fah-client-bastet 0ea081e, the same
 // in master 706d6a0), picks the OpenMM platform from them, and passes the platform only the properties it
 // declares. The work unit is <dir>/wudata_01.dat (a tar, or a bzip2 tar, behind FAH's 512-byte header or
-// not), unpacked into <dir>/01 on the first start, or the same files loose in <dir>. Each of system,
-// integrator and state is found as core 0x27 finds it (.xml, .xml.gz or .xml.bz2; the .enc forms need FAH's
-// key). core.xml sets the run with core 0x27's 26 options (S:19427-19472, alchemiscale-fah
+// not), unpacked into <dir>/01 until a start writes every member, or the same files loose in <dir>. Each of
+// system, integrator and state is found as core 0x27 finds it (.xml, .xml.gz or .xml.bz2; the .enc forms need
+// FAH's key). core.xml sets the run with core 0x27's 26 options (S:19427-19472, alchemiscale-fah
 // FahOpenMMCoreSettings): numSteps, checkpointFreq, xtcFreq, viewerFreq, globalVarFreq, trrFreq (a negative
 // interval is a percentage), precision, xtcAtoms, xtcMinAtom, xtcMaxAtom, trrAtoms, trrMinAtom, trrMaxAtom,
 // saveForcesInTrr, forceTolerance, energyTolerance, maxRetriesFromLastCheckpoint, disableCheckpointStateTests,
@@ -495,13 +495,6 @@ static void gpuInfo(const PlatformChoice& choice) {
 static const char* const InputSuffixes[] = {".xml.enc", ".xml.gz.enc", ".xml.bz2.enc", ".xml", ".xml.gz", ".xml.bz2"};
 static const char* const Inputs[] = {"integrator", "state", "system"};
 
-static bool hasInput(const string& dir, const string& base) {
-    for (const char* suffix : InputSuffixes)
-        if (fileExists(dir+"/"+base+suffix))
-            return true;
-    return false;
-}
-
 static string findInput(const string& dir, const string& base) {
     for (const char* suffix : InputSuffixes) {
         string name = base+suffix;
@@ -534,8 +527,14 @@ static string unpackInput(const string& path) {
     }
 }
 
-// The unit: <dir>/wudata_01.dat, unpacked into <dir>/01 on the first start as core 0x27 does, or its files
-// loose in <dir>. A unit from a FAH work server has a 512-byte header before the tar, and core 0x27 logs
+// Core 0x27 extracts the tar while 01/checkpt.crc is missing and creates checkpt.crc after the last member
+// (obs strace-1.txt lines 7274-7305 and 7752; a restart finds it at line 690 and extracts nothing), so a
+// start stopped partway through extracts again. minicore has no checkpt.crc (PARITY K3), and this empty file
+// takes its place.
+static const char* const UnpackedFile = "unpacked";
+
+// The unit: <dir>/wudata_01.dat, unpacked into <dir>/01 as core 0x27 does, or its files loose in <dir>. A
+// unit from a FAH work server has a 512-byte header before the tar, and core 0x27 logs
 // "Project: P (Run R, Clone C, Gen G)" from it on every start, then "Digital signatures verified". This core
 // reads the plain fields only: checking the digests and signature needs FAH's key.
 static void readWorkUnit(const Options& opt, WorkUnit& unit) {
@@ -556,8 +555,8 @@ static void readWorkUnit(const Options& opt, WorkUnit& unit) {
                                     to_string(archive.size()-512));
             archive.erase(0, 512);
         }
-        bool unpacked = all_of(begin(Inputs), end(Inputs), [&](const char* base) { return hasInput(unit.workDir, base); });
-        if (!unpacked) {
+        string unpacked = unit.workDir+"/"+UnpackedFile;
+        if (!fileExists(unpacked)) {
             if (isBzip2(archive))
                 archive = bunzip2(archive, wudata);
             for (auto& member : readTar(archive)) {
@@ -567,6 +566,7 @@ static void readWorkUnit(const Options& opt, WorkUnit& unit) {
                 tell("Reading tar file %s", name.c_str());
                 replaceFile(unit.workDir+"/"+name, member.second);
             }
+            replaceFile(unpacked, "");
         }
         if (unit.header)
             tell("Digital signatures not checked: version %u header for core 0x%02x, signature scheme private to FAH",
@@ -628,7 +628,7 @@ static AtomSelection configSelection(const map<string, string>& config, const st
 static bool isCoreFileName(const string& name) {
     static const char* const prefixes[] = {"wudata_", "wuresults_", "wuinfo_", "logfile_", "checkpoint",
         "viewerFrame", "viewerTop", "core.xml", "system.xml", "integrator.xml", "state.xml", "positions.xtc",
-        "records.trr", "science.log", "xtcAtoms.csv", "stepsDone", "numRetries"};
+        "records.trr", "science.log", "xtcAtoms.csv", "stepsDone", "numRetries", UnpackedFile};
     for (const char* prefix : prefixes)
         if (name.compare(0, strlen(prefix), prefix) == 0)
             return true;
