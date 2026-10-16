@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="748" height="606" viewBox="0 0 748 606" role="img" aria-label="Parity with core 0x27 item by item on the M3 Ultra and the M2" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
 <rect x="0.0" y="6.0" width="34.0" height="18.0" rx="3" fill="#4493f8"/>
 <text x="17.0" y="19.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
-<text x="42.0" y="20.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">match (17)</text>
+<text x="42.0" y="20.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">match (20)</text>
 <rect x="200.0" y="6.0" width="34.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
 <text x="217.0" y="19.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<text x="242.0" y="20.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">differs by FAH's design (6)</text>
+<text x="242.0" y="20.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">differs by FAH's design (3)</text>
 <rect x="400.0" y="6.0" width="34.0" height="18.0" rx="3" fill="#848d97"/>
 <text x="417.0" y="19.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">FAH</text>
 <text x="442.0" y="20.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">needs FAH's keys (2)</text>
@@ -112,42 +112,42 @@
 <rect x="274.0" y="406.0" width="72.0" height="18.0" rx="3" fill="#4493f8"/>
 <text x="310.0" y="419.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
 <text x="360.0" y="419.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">Same sections in the same order</text>
-<text x="186.0" y="441.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Log wording</text>
-<rect x="198.0" y="428.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
-<text x="234.0" y="441.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<rect x="274.0" y="428.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
-<text x="310.0" y="441.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<text x="360.0" y="441.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">19 of 87 logfile line shapes word for word</text>
-<text x="186.0" y="463.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">OpenMM version strings</text>
-<rect x="198.0" y="450.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
-<text x="234.0" y="463.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<rect x="274.0" y="450.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
-<text x="310.0" y="463.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<text x="360.0" y="463.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">8.6 where core 0x27 says 8.2</text>
-<text x="186.0" y="485.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">checkpointIntegrator.xml</text>
-<rect x="198.0" y="472.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
-<text x="234.0" y="485.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<rect x="274.0" y="472.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
-<text x="310.0" y="485.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<text x="360.0" y="485.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">OpenMM 8.6 adds integrationForceGroups</text>
-<text x="186.0" y="507.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Final step count</text>
+<text x="186.0" y="441.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">checkpointIntegrator.xml</text>
+<rect x="198.0" y="428.0" width="72.0" height="18.0" rx="3" fill="#4493f8"/>
+<text x="234.0" y="441.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
+<rect x="274.0" y="428.0" width="72.0" height="18.0" rx="3" fill="#4493f8"/>
+<text x="310.0" y="441.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
+<text x="360.0" y="441.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">171 B, byte-identical</text>
+<text x="186.0" y="463.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Final step count</text>
+<rect x="198.0" y="450.0" width="72.0" height="18.0" rx="3" fill="#4493f8"/>
+<text x="234.0" y="463.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
+<rect x="274.0" y="450.0" width="72.0" height="18.0" rx="3" fill="#4493f8"/>
+<text x="310.0" y="463.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
+<text x="360.0" y="463.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">One step past numSteps</text>
+<text x="186.0" y="485.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Work dir layout</text>
+<rect x="198.0" y="472.0" width="72.0" height="18.0" rx="3" fill="#4493f8"/>
+<text x="234.0" y="485.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
+<rect x="274.0" y="472.0" width="72.0" height="18.0" rx="3" fill="#4493f8"/>
+<text x="310.0" y="485.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">✓</text>
+<text x="360.0" y="485.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">Work files in 01/, removed at the end</text>
+<text x="186.0" y="507.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Log wording</text>
 <rect x="198.0" y="494.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
 <text x="234.0" y="507.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
 <rect x="274.0" y="494.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
 <text x="310.0" y="507.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<text x="360.0" y="507.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">core 0x27 takes one step past numSteps</text>
-<text x="186.0" y="529.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Checkpoint format</text>
+<text x="360.0" y="507.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">35 of 87 logfile line shapes word for word</text>
+<text x="186.0" y="529.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">OpenMM version strings</text>
 <rect x="198.0" y="516.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
 <text x="234.0" y="529.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
 <rect x="274.0" y="516.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
 <text x="310.0" y="529.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<text x="360.0" y="529.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">The client never reads it</text>
-<text x="186.0" y="551.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Work dir layout</text>
+<text x="360.0" y="529.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">8.6 where core 0x27 says 8.2</text>
+<text x="186.0" y="551.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Checkpoint format</text>
 <rect x="198.0" y="538.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
 <text x="234.0" y="551.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
 <rect x="274.0" y="538.0" width="72.0" height="18.0" rx="3" fill="#151b23" stroke="#4493f8" stroke-width="1.2"/>
 <text x="310.0" y="551.0" font-size="12" fill="#4493f8" text-anchor="middle" font-weight="600">≠</text>
-<text x="360.0" y="551.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">core 0x27 keeps its work files in 01/</text>
+<text x="360.0" y="551.0" font-size="11.5" fill="#9198a1" text-anchor="start" font-weight="normal">checkpt.crc is FAH's, so minicore checks its own footer</text>
 <text x="186.0" y="573.0" font-size="12" fill="#e6edf3" text-anchor="end" font-weight="normal">Result header signature</text>
 <rect x="198.0" y="560.0" width="72.0" height="18.0" rx="3" fill="#848d97"/>
 <text x="234.0" y="573.0" font-size="12" fill="#0d1117" text-anchor="middle" font-weight="600">FAH</text>

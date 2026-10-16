@@ -68,18 +68,22 @@ atoms, and matches FAH's core 0x27 on every check FAH doesn't control.
 
 *Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on each Mac.*
 
-Each Mac also passed all 101 core-parity checks and every state test it ran on the real unit. The runs
-and raw records behind every number are in [docs/EVIDENCE.md](docs/EVIDENCE.md).
+Each Mac also passed all 101 core-parity checks and every state test it ran on the real unit. The build
+in this commit passed 65 of 65 failure and stop-resume cases on the M3 Ultra; the M2 ran the build before
+it, and the change since is the same C++ on both Macs. [docs/PARITY.md](docs/PARITY.md) lists every
+behaviour of core 0x27 next to minicore's. The runs and raw records behind every number are in
+[docs/EVIDENCE.md](docs/EVIDENCE.md).
 
 ## Where it differs
 
-Each difference is FAH's call:
+Each difference comes from FAH's keys, FAH's build or the hardware:
 
 - **Signed result header.** It needs FAH's private key, so minicore returns the tar alone and signs nothing.
-- **Checkpoint format.** minicore writes its own, and the client reads neither.
+- **Checkpoint format.** Core 0x27 checks `01/checkpoint` against checkpt.crc, a FAH file format. minicore
+  writes the same file name with a length and hash footer instead, and the client reads neither.
 - **OpenMM version strings.** minicore builds OpenMM 8.6 with the Metal platform, and core 0x27 uses 8.2.
-- **Log wording.** 19 of core 0x27's 87 log line shapes match word for word, and the rest are minicore's own.
-- **One extra MD step.** Core 0x27 takes one step past numSteps, and minicore stops at numSteps.
+- **Log wording.** 35 of core 0x27's 87 log line shapes match word for word. The rest name FAH's build and
+  signature check, the client's arguments, or the Mac's hardware and the Metal platform.
 
 ## Try it
 

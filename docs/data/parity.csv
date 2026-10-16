@@ -16,11 +16,11 @@ Result tar format,match,match,"ustar, mode 0666, uid and gid 0"
 Exit code,match,match,100 FINISHED_UNIT
 Box volume,match,match,"9,299 to 9,317 nm³ over the first 62,500 steps"
 Log sections and order,match,match,Same sections in the same order
-Log wording,by-design,by-design,19 of 87 logfile line shapes word for word
+checkpointIntegrator.xml,match,match,"171 B, byte-identical"
+Final step count,match,match,One step past numSteps
+Work dir layout,match,match,"Work files in 01/, removed at the end"
+Log wording,by-design,by-design,35 of 87 logfile line shapes word for word
 OpenMM version strings,by-design,by-design,8.6 where core 0x27 says 8.2
-checkpointIntegrator.xml,by-design,by-design,OpenMM 8.6 adds integrationForceGroups
-Final step count,by-design,by-design,core 0x27 takes one step past numSteps
-Checkpoint format,by-design,by-design,The client never reads it
-Work dir layout,by-design,by-design,core 0x27 keeps its work files in 01/
+Checkpoint format,by-design,by-design,"checkpt.crc is FAH's, so minicore checks its own footer"
 Result header signature,fah-only,fah-only,Signed with FAH's private key
 Unit signature check,fah-only,fah-only,Needs FAH's public key and scheme

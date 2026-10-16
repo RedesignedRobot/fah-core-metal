@@ -22,6 +22,7 @@ statistics taken from them.
 | P18264 on the M2: 1% from the input, the 5,000-step cut to the end, a start-up interrupt | this repo's source as in 3fc8475, built on the M2 by `build.sh -j 4` (minicore sha256 0af48ff0) |
 | Accuracy on four test systems (Figure 5) | Metal: minicore at lab commit 7a92bbba. CUDA: `cuda-ref/scripts/pycore.py`, a Python port of minicore's straight run and FAHBench's state test, on conda-forge OpenMM 8.6.1 |
 | Energy drift (Figure 6) | OpenMM's own VerletIntegrator through `drift/scripts/run1ns.py`, no core |
+| Core-gap checks, the holdout stop and resume, the second P18264 cut (gpuq 2235, 2236) | this repo's source as in ceb9707, linked by `src/link.sh` against the OpenMM prefix of the fresh clone of 3fc8475 (minicore sha256 5e7cc197761cb69f) |
 
 This repo's minicore is the lab's 416b78c7 reworked after two code reviews (`docs/design-notes.md`).
 On a clean run it writes the same files, members and log lines.
@@ -84,6 +85,7 @@ of the unit) are those tables' columns.
 | This repo's build on P18264 | Start, SIGINT, resume from the checkpoint, SIGINT: 2 state tests pass, 0 fail, exit 102 both times | gpuq job 2180, test 4 |
 | This repo's build, P18264 to the end, M3 Ultra | A copy of the unit with numSteps 5,000 and checkpointFreq 2,500, all else unchanged: exit 100, 101 viewer frames, viewerTop.json sha256 9431b3ab and xtcAtoms.csv.bz2 sha256 616d8e69 as the real run's, wuinfo_01.dat 512 B, the six result members in order with mode 0666 and uid and gid 0, checkpointIntegrator.xml 199 B, stepCount 341,105,271 (input 341,100,271 + 5,000), 3 state tests pass, 0 fail | gpuq job 2199 |
 | This repo's build, P18264, M2 | From the input to 1%: viewerTop.json and xtcAtoms.csv.bz2 hashes as above, wuinfo_01.dat 512 B, 1 state test pass. The 5,000-step copy to the end: the same facts as the M3 Ultra's row, 3 state tests pass, 0 fail. SIGINT 3 s into start-up: the four lines, exit 102 | Runs under the M2's job lock on 2026-10-16 |
+| This repo's build at ceb9707, P18264 to the end, M3 Ultra | The same 5,000-step copy: exit 100 in 121 s, viewerTop.json sha256 9431b3ab and xtcAtoms.csv.bz2 sha256 616d8e69 as the real run's, wuinfo_01.dat 512 B, 101 viewer frames, one XTC frame at step 5,000, the six members in core 0x27's order, checkpointIntegrator.xml 171 B with sha256 53b47b00 as the real result's member, stepCount 341,105,272 (input 341,100,271 + 5,001, as core 0x27), "Ewald parameters: alpha 2.62826 nx 189 ny 180 nz 160" as core 0x27's science.log, `01/` removed, 3 state tests pass, 0 fail | gpuq job 2235, [core-gap runs](#core-gap-runs) |
 | State tests on the real unit, this repo's build | 5 pass on the M3 Ultra (2180 test 4: 2; 2199: 3), 4 pass on the M2 (1; 3), 0 fail | The rows above |
 | "The M2, a base 8 GB chip" | Apple M2, 8 GB (8,589,934,592 B from `sysctl hw.memsize`) | The M2 run's own header line |
 
@@ -99,6 +101,26 @@ grep -h 'State test at step' $files | grep -c FAIL
 ```
 
 and the same with `m2-units` for the M2.
+
+## Core-gap runs
+
+`docs/PARITY.md` cites these as "run `<case>`". The cases are the core-gap lane's `failure.sh`, one
+minicore run or a stop and its resume per case, each checking the exit code and one fact in the files
+the run left. All ran on the M3 Ultra's GPU through gpuq correctness tickets on 2026-10-16, on the
+build in the "Which code" table.
+
+| Units | Cases | Result | Job |
+| --- | --- | --- | --- |
+| `test/alanine-dipeptide` | 53: straight, 10 unit damages, 14 core.xml cases, 4 bad states and retries, 9 signal cases, 3 checkpoint damages, lock, lifeline, 7 argument cases, 3 file system faults | 52 pass. checkpoint-other-unit failed on a harness bug: it appended a newline after the state's XML root, which OpenMM's reader refuses, so the unit itself failed (114) before the checkpoint check ran | gpuq 2235 |
+| fah-gbsa, fah-neq, fah-tip4pew (holdout units) | straight, a SIGINT mid-run, its resume | 9 of 9 pass | gpuq 2235 |
+| fah-tip3p-hmr | straight | pass | gpuq 2235 |
+| fah-tip3p-hmr | a SIGINT mid-run, its resume | 2 of 2 pass (102, then 100) | gpuq 2236 |
+| `test/alanine-dipeptide` | checkpoint-other-unit, the state's stepCount changed by one instead | pass: exit 100, a fresh start after "Could not resume from checkpoint" | gpuq 2236 |
+| P18264, the 5,000-step copy | straight to the end | the row "This repo's build at ceb9707" above | gpuq 2235 |
+
+gpuq 2236 exists because the harness was edited while gpuq 2235 ran it, and `sh` reads a script by
+offset: tip3p-hmr's stop and resume died on a syntax error after its straight case passed. The fix went
+into a copy for 2236. 65 cases in all, 65 pass on the final runs.
 
 ## How it matches
 
@@ -119,7 +141,7 @@ section 1, which names the evidence file for each.
 | xtcAtoms.csv.bz2 | 2,824 B, byte-identical | "xtcAtoms.csv.bz2" |
 | Result members | six, same order, plain ustar | "wuresults members", "wuresults_01.dat container" |
 | Exit | 100 | "Exit" |
-| Log shapes | 87 in the real logfile_01.txt, 19 word for word | "logfile_01.txt". The lab's comparison (`core-realwu/results/logs/shapes-real-logfile-vs-commit4.txt`) found 18; this repo's build adds "Saving result file positions.xtc". `core-realwu/scripts/logshape.py` on the real log and each Mac's 5,000-step copy (gpuq 2199 and the M2 run) prints "real 87 shapes, minicore 28, shared 19" |
+| Log shapes | 87 in the real logfile_01.txt, 35 word for word | `core-realwu/scripts/logshape.py` on the real log (`fah-wu/p18264-r153-c0-g272/results/final/logfile_01.txt`) and the logfile_01.txt of gpuq 2235's 5,000-step copy prints "real 87 shapes, minicore 59, shared 35". Before ceb9707 the same on gpuq 2199 and the M2 run printed "minicore 28, shared 19". The 52 left name FAH's build and libraries, the signature check, the client's arguments, the CPU and GPU, the CUDA and OpenCL platforms, and four cbang System rows (CPU ID, Free Memory, Has Battery, On Battery) whose values come from cbang's hardware probes |
 | Energy conservation | Metal mixed -0.0010 ± 0.0006, CUDA mixed -0.0001 ± 0.0011 kJ/mol/ps (mean ± SE, 10 seeds each), Welch t -0.7 | Not from core-realwu: `drift-fix/REPORT.md`, Verdict and the drift table (lab commit 3ec69c3c). Metal on fork 90fa9544c, the commit `build.sh` pins, raw `drift-fix/results/raw/mm90fa/s1..s10` and `drift-fix/results/drift-runs.csv`; CUDA is OpenMM 8.6.1, raw `cuda-ref/results/drift/cuda-mixed/` |
 
 ## Where it differs
@@ -127,10 +149,9 @@ section 1, which names the evidence file for each.
 | README claim | Source |
 | --- | --- |
 | Signed result header | `core-realwu/REPORT.md` section 1 row "wuresults_01.dat container" and section 2 |
-| Checkpoint format | Real: section 1 row "Checkpoint files in the work dir". minicore: `src/wufiles.cpp` `writeAtomically` (length and 64-bit FNV-1a footer) and `src/minicore.cpp` `checkpointHeader` |
-| OpenMM version strings | Section 1 rows "checkpointIntegrator.xml" and "checkpointState.xml.bz2" |
-| Log wording, 19 of 87 | Section 1 row "logfile_01.txt" and the "Log shapes" row above |
-| One extra MD step, 1,250,001 steps | Section 2, last paragraph; `core-realwu/results/real/extra-step.txt`, made by `core-realwu/scripts/extrastep.py` |
+| Checkpoint format | Real: section 1 row "Checkpoint files in the work dir"; checkpt.crc's strings in the core (`docs/PARITY.md` row K3). minicore: `src/wufiles.cpp` `writeAtomically` (length and 64-bit FNV-1a footer) and `src/minicore.cpp` `checkpointHeader` |
+| OpenMM version strings | Section 1 row "checkpointState.xml.bz2" |
+| Log wording, 35 of 87 | Section 1 row "logfile_01.txt" and the "Log shapes" row above |
 
 ## Try it and Build it
 
@@ -179,14 +200,15 @@ where each Mac showed it.
 | State test schedule | `core-realwu/results/ultra-fin-10000/` (step 0 and each checkpoint) | `core-realwu/results/m2-fin-5000/`, `m2-62500` (step 0 and 5%) |
 | Interrupt at start-up | gpuq 2197 | The M2 SIGINT run of this repo's build |
 | wuinfo_01.dat, viewerTop.json, xtcAtoms.csv.bz2 | gpuq 2199 | The M2 1% and 5,000-step runs |
-| viewerFrameN.json, result members and order, result tar format, exit code, final step count, checkpointIntegrator.xml, OpenMM version strings | gpuq 2199 | The M2 5,000-step run |
+| viewerFrameN.json, result members and order, result tar format, exit code, OpenMM version strings | gpuq 2199 | The M2 5,000-step run |
+| Final step count, checkpointIntegrator.xml, work dir layout | gpuq 2235 | Not rerun. The M2 ran 3fc8475, before ceb9707 changed these three; the change is the same C++ on both Macs and touches no Metal code |
 | positions.xtc | `core-realwu/results/ultra-62500/xtc-frames.tsv` | `core-realwu/results/m2-62500/xtc-frames.tsv` |
 | Box volume | `core-realwu/REPORT.md` section 3 | same |
-| Log sections and order, log wording | `logshape.py` on gpuq 2199's log | `logshape.py` on the M2 5,000-step run's log |
-| Checkpoint format, work dir layout | `src/wufiles.cpp`, `src/minicore.cpp`; the same binary on both | same |
+| Log sections and order, log wording | `logshape.py` on gpuq 2235's log | `logshape.py` on the M2 5,000-step run's log, 19 of 87 before ceb9707 |
+| Checkpoint format | `src/wufiles.cpp`, `src/minicore.cpp`; the same binary on both | same |
 | Result header signature, unit signature check | Need FAH's keys; `core-realwu/REPORT.md` section 2 | same |
 
-Counts: 17 match, 6 by design, 2 FAH only, the same on both Macs.
+Counts: 20 match, 3 by design, 2 FAH only, the same on both Macs.
 
 ## Which Macs
 
@@ -201,7 +223,7 @@ Counts: 17 match, 6 by design, 2 FAH only, the same on both Macs.
 
 The two sentences under Figure 1 repeat facts from the sections above: project 18264 with 919,221 atoms
 (the unit), the M3 Ultra and the M2 (which Macs), and "matches core 0x27 on every check FAH doesn't
-control", which is Figure 7: 17 of 25 items match on both Macs, 6 differ where FAH's design decides and 2
+control", which is Figure 7: 20 of 25 items match on both Macs, 3 differ where FAH's design decides and 2
 need FAH's keys (parity per Mac). The line under Figure 7 is "what was tested and where": 101 of 101
 checks per Mac and every real-unit state test each Mac ran.
 
@@ -380,21 +402,20 @@ matches, outlined where FAH's own code or keys decide the answer, grey where onl
 
 ### Where it differs
 
-Each difference sits where FAH's own code, keys or release choices decide the answer.
+Each difference sits where FAH's own code, keys or release choices decide the answer, or names the
+hardware.
 
 - **Signed result header.** Core 0x27 puts a 512-byte header with FAH's signature in front of the result
   tar. FAH's private key makes that signature, so minicore returns the tar alone and signs nothing.
-- **Checkpoint format.** Core 0x27 writes `checkpoint` and `checkpt.crc` in a format FAH's code defines.
-  minicore writes `checkpoint.bin`: a text header, OpenMM's checkpoint and a footer with the length and
-  a 64-bit FNV-1a hash, with the previous one kept as `checkpoint.prev.bin`. The client reads neither.
+- **Checkpoint format.** Core 0x27 writes `01/checkpoint` and guards it with `checkpt.crc`, a file of
+  hashes in a format FAH's code defines. minicore writes `01/checkpoint` too: a text header naming the
+  unit, OpenMM's checkpoint and a footer with the length and a 64-bit FNV-1a hash. The client reads
+  neither.
 - **OpenMM version strings.** FAH chose OpenMM 8.2 for core 0x27. minicore builds OpenMM 8.6 with the
-  Metal platform, so checkpointState.xml.bz2 says 8.6 and checkpointIntegrator.xml carries
-  `integrationForceGroups`, which 8.6's serializer adds.
-- **Log wording.** 19 of the 87 line shapes in core 0x27's logfile_01.txt appear word for word. The
-  rest carry minicore's own words, including the banner, since copying core 0x27's would claim to be it.
-- **One extra MD step.** Core 0x27 returned a state 1,250,001 steps past its input, one step more than
-  numSteps, taken after its last XTC frame. minicore stops at numSteps. Only the step count the next
-  gen starts from changes.
+  Metal platform, so checkpointState.xml.bz2 says 8.6.
+- **Log wording.** 35 of the 87 line shapes in core 0x27's logfile_01.txt appear word for word. The
+  rest name FAH's build and libraries, the signature check, the client's arguments, the CPU and GPU,
+  and the CUDA and OpenCL platforms, since copying core 0x27's would claim to be it.
 
 
 ### Try it
@@ -411,7 +432,7 @@ cp -R test/alanine-dipeptide unit
 
 `test/alanine-dipeptide` is alanine dipeptide in 2,269 atoms of water, set up as P18264 is: Amber14 with
 TIP3P, PME, hydrogen mass repartitioning, a 4 fs LangevinMiddle step, a barostat and mixed precision.
-It runs 25,000 steps (100 ps). On the M3 Ultra the fold took 16 s and printed this, shortened:
+It runs 25,000 steps (100 ps). On the M3 Ultra the fold of 3fc8475 took 16 s and printed this, shortened:
 
 ```
 minicore (fah-core-metal), OpenMM 8.6
@@ -453,8 +474,10 @@ Saving result file xtcAtoms.csv.bz2
 Folding@home Core Shutdown: FINISHED_UNIT
 ```
 
-The unit directory then holds `wuresults_01.dat`, the result tar the client would return, and the
-viewer frames, XTC and logs it was built from. `test/make-unit.py` rebuilds the unit from OpenMM's own
+From ceb9707 on, minicore prints nothing. It writes its lines where core 0x27 does, in core 0x27's
+words, to `unit/logfile_01.txt` and to science.log inside the result. The unit directory then holds
+`wuresults_01.dat`, the result tar the client would return, with logfile_01.txt, wuinfo_01.dat and the
+viewer frames beside it. positions.xtc and science.log are in the tar, and `unit/01/` is gone. `test/make-unit.py` rebuilds the unit from OpenMM's own
 test PDB.
 
 
@@ -472,6 +495,6 @@ no plugin directory. The script refuses a binary that links anything outside the
 `core/minicore` and `BUILD-INFO`, which records the commit, the patches' hashes, the toolchain and the
 sizes. `./build/core/minicore --info` lists the platforms built in.
 
-A FAH client starts a core with arguments such as `-dir 01 -suffix 01 -version 8.5.6 -lifeline <pid>
--gpu-vendor apple -gpu 0`. minicore takes those, plus `--platform Reference|CPU|Metal` to force a
+fah-client main starts a core on an Apple GPU with `-dir <unit id> -suffix 01 -version 8.5.7 -lifeline
+<pid> -gpu-platform opencl -gpu-vendor apple -opencl-platform 0 -opencl-device 0 -gpu 0`. minicore takes those, plus `--platform Reference|CPU|Metal` to force a
 platform. It never opens a network connection.
