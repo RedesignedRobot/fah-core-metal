@@ -14,11 +14,11 @@ xtcAtoms.csv.bz2,match,match,"2,824 B, byte-identical"
 Result members and order,match,match,"Six files, same order"
 Result tar format,match,match,"ustar, mode 0666, uid and gid 0"
 Exit code,match,match,100 FINISHED_UNIT
-Box volume,match,match,"9,299 to 9,317 nm³ over the first 62,500 steps"
-Log sections and order,match,match,Same sections in the same order
-checkpointIntegrator.xml,match,match,"171 B, byte-identical"
-Final step count,match,match,One step past numSteps
-Work dir layout,match,match,"Work files in 01/, removed at the end"
+Box volume,match,match,"9,299 to 9,318 nm³ over the first 62,500 steps"
+Log sections and order,match,not-rerun,Same sections in the same order
+checkpointIntegrator.xml,match,not-rerun,"171 B, byte-identical"
+Final step count,match,not-rerun,One step past numSteps
+Work dir layout,match,not-rerun,"Work files in 01/, removed at the end"
 Log wording,by-design,by-design,35 of 87 logfile line shapes word for word
 OpenMM version strings,by-design,by-design,8.6 where core 0x27 says 8.2
 Checkpoint format,by-design,by-design,"checkpt.crc is FAH's, so minicore checks its own footer"

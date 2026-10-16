@@ -18,6 +18,13 @@ xdrfile, from OpenMM's wrappers/python/openmm/app/internal/xtc_utils, compiled i
     Copyright (c) Erik Lindahl, David van der Spoel 2003, 2004. Coordinate compression (c) Frans van
     Hoesel. GNU Lesser General Public License 3 or later.
 
+xtc.cpp, the xtc writer beside xdrfile in the same directory, compiled into the core by src/link.sh
+    Copyright (c) 2023 Accellera. MIT License, in the file's header.
+
+metal-cpp, in the fetched tree at libraries/metal-cpp, compiled into the Metal platform
+    Copyright 2020-2024 Apple Inc. Apache License 2.0, in libraries/metal-cpp/LICENSE.txt. OpenMM's
+    Licenses.txt does not list it.
+
 Inter 4.1, in docs/figures/fonts, from https://github.com/rsms/inter at tag v4.1
     Copyright (c) 2016 The Inter Project Authors. SIL Open Font License 1.1, in
     docs/figures/fonts/OFL-Inter.txt. make.py uses it to draw docs/social.png.

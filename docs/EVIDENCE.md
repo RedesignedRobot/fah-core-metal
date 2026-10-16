@@ -67,7 +67,7 @@ interval that also holds the step-0 checkpoint).
 | CUDA seed 1 against CUDA seed 3 at step 5,000 | 0.481 nm | `core-realwu/results/frames/s1-vs-s3.tsv` |
 | randomSeed 0 | A new seed per Context | The unit's integrator.xml; `core-realwu/REPORT.md` section 3 |
 | Box volume over the unit | 9,307.1 nm³ mean for both, sd 5.9 (real) and 6.2 (CUDA seed 3) | 250 frames each; `core-realwu/results/frames/real-s3-full.tsv` and `real-s3-summary.txt` |
-| Box volume range, first 62,500 steps | 9,299 to 9,317 nm³ in all four runs | `core-realwu/REPORT.md` section 3 |
+| Box volume range, first 62,500 steps | 9,299 to 9,318 nm³ in all four runs (9,299.23 to 9,317.67) | `core-realwu/REPORT.md` section 3 |
 
 `docs/data/distance.csv` (every 5,000 steps to 60,000) and `docs/data/volume.csv` (every 5,000 steps
 of the unit) are those tables' columns.
@@ -119,8 +119,11 @@ build in the "Which code" table.
 | P18264, the 5,000-step copy | straight to the end | the row "This repo's build at ceb9707" above | gpuq 2235 |
 
 gpuq 2236 exists because the harness was edited while gpuq 2235 ran it, and `sh` reads a script by
-offset: tip3p-hmr's stop and resume died on a syntax error after its straight case passed. The fix went
-into a copy for 2236. 65 cases in all, 65 pass on the final runs.
+offset: tip3p-hmr's stop and resume died on a syntax error after its straight case passed, and
+tip4pew's run ended on one after its three cases passed. The fix went into a copy for 2236. 65 cases in
+all, 65 pass on the final runs. The bench directories of 2235 and 2236 are gone; their output survives
+in the core-gap lane's session record, which is private, and each case name in `docs/PARITY.md` has a
+pass line there.
 
 ## How it matches
 
@@ -161,6 +164,7 @@ section 1, which names the evidence file for each.
 | Transcript, 16 s | Lines from the fold's standard output, exit 100, 101 viewer frames, 100 XTC frames, state tests 11 pass and 0 fail | gpuq job 2197: `./build/core/minicore -dir unit -gpu-vendor apple -gpu 0` in the fresh clone of 3fc8475 |
 | OpenMM commit | 90fa9544c, three patches | `build.sh`, `patches/` |
 | Build time, 15 minutes | 906 s: fetch and configure 16 s, build and install 880 s, link 10 s; load average about 70 at the start | gpuq job 2196, `BUILD-INFO` of the fresh clone of 3fc8475 (`git clone --no-local` of this branch). minicore 7,036,640 bytes, sha256 aabfedc0acd41d4e |
+| The same command at 0d2d901 | Nothing on the terminal (0 bytes of stdout and stderr), exit 100 in 15 s; `unit/logfile_01.txt` ends "Folding@home Core Shutdown: FINISHED_UNIT", 101 viewer frames, `unit/wuresults_01.dat` holds the six members, and its science.log has 11 "All tests passed." | gpuq job 2237, ceb9707's source linked by `src/link.sh` against the fresh clone's OpenMM prefix (minicore sha256 5e7cc197761cb69f) |
 | Start-up interrupt on this repo's build | P18264 SIGINT 3 s into start-up: "Caught signal SIGINT(2)", "Exiting, please wait. . .", "ERROR:102: Core startup was interrupted by client.", "Folding@home Core Shutdown: INTERRUPTED", exit 102 | gpuq job 2197 |
 
 ## Accuracy (Figure 5)
@@ -201,14 +205,15 @@ where each Mac showed it.
 | Interrupt at start-up | gpuq 2197 | The M2 SIGINT run of this repo's build |
 | wuinfo_01.dat, viewerTop.json, xtcAtoms.csv.bz2 | gpuq 2199 | The M2 1% and 5,000-step runs |
 | viewerFrameN.json, result members and order, result tar format, exit code, OpenMM version strings | gpuq 2199 | The M2 5,000-step run |
-| Final step count, checkpointIntegrator.xml, work dir layout | gpuq 2235 | Not rerun. The M2 ran 3fc8475, before ceb9707 changed these three; the change is the same C++ on both Macs and touches no Metal code |
+| Final step count, checkpointIntegrator.xml, work dir layout, log sections and order | gpuq 2235; `logshape.py` on its log | Not rerun. The M2 ran 3fc8475, before ceb9707 changed these four (`docs/PARITY.md` rows O8, O10, I4, O13, L1, L2, L13); the change is the same C++ on both Macs and touches no Metal code |
 | positions.xtc | `core-realwu/results/ultra-62500/xtc-frames.tsv` | `core-realwu/results/m2-62500/xtc-frames.tsv` |
 | Box volume | `core-realwu/REPORT.md` section 3 | same |
-| Log sections and order, log wording | `logshape.py` on gpuq 2235's log | `logshape.py` on the M2 5,000-step run's log, 19 of 87 before ceb9707 |
+| Log wording | `logshape.py` on gpuq 2235's log | `logshape.py` on the M2 5,000-step run's log, 19 of 87 before ceb9707 |
 | Checkpoint format | `src/wufiles.cpp`, `src/minicore.cpp`; the same binary on both | same |
 | Result header signature, unit signature check | Need FAH's keys; `core-realwu/REPORT.md` section 2 | same |
 
-Counts: 20 match, 3 by design, 2 FAH only, the same on both Macs.
+Counts: on the M3 Ultra 20 match, 3 by design and 2 FAH only; on the M2 16 match, 4 not rerun, 3 by
+design and 2 FAH only.
 
 ## Which Macs
 
@@ -218,14 +223,15 @@ Counts: 20 match, 3 by design, 2 FAH only, the same on both Macs.
 | macOS 15.0 or later | `build.sh`, `-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0`, and the comment above it; `src/link.sh` fails a binary whose minos is below 15.0 |
 | Metal Shading Language 3.2 | Fork 90fa9544c, `platforms/metal/src/MetalContext.cpp` line 454, `options->setLanguageVersion(MTL::LanguageVersion3_2)` |
 | Apple7 and later | The GPU families of Apple Silicon Macs. The Metal platform checks no family; the M3 Ultra and the M2 are the two I ran |
+| Tested on macOS 27.2 | `BUILD-INFO` of gpuq 2196, "host macOS 27.2 26B5101f, Apple M3 Ultra"; `core-timing/results/m2/BUILD-INFO-static`, "host macOS 27.2 26B5101f, Apple M2". No run on an earlier macOS |
 
 ## The opening lines
 
-The two sentences under Figure 1 repeat facts from the sections above: project 18264 with 919,221 atoms
-(the unit), the M3 Ultra and the M2 (which Macs), and "matches core 0x27 on every check FAH doesn't
-control", which is Figure 7: 20 of 25 items match on both Macs, 3 differ where FAH's design decides and 2
-need FAH's keys (parity per Mac). The line under Figure 7 is "what was tested and where": 101 of 101
-checks per Mac and every real-unit state test each Mac ran.
+The sentences under Figure 1 repeat facts from the sections above: project 18264 with 919,221 atoms
+(the unit), the first 5% and the shortened copies run to the end (what was tested and where), and "20
+of the 25 items in Figure 7" on the M3 Ultra, where 3 differ by design and 2 need FAH's keys (parity per
+Mac). The lines under Figure 7 are "what was tested and where": 101 of 101 checks per Mac with the lab
+build 7a92bbba, every real-unit state test each Mac ran, and the 65 core-gap cases.
 
 ## Background and FAQ
 
@@ -233,7 +239,7 @@ checks per Mac and every real-unit state test each Mac ran.
 | --- | --- |
 | openmm#2489 "Future of osx GPU support", 2019-11-28 | `gh api repos/openmm/openmm/issues/2489`: title and created_at |
 | fah-client-bastet#303 "Support for Apple's integrated GPUs", 2024-11-05, open | `gh api repos/FoldingAtHome/fah-client-bastet/issues/303`: title, created_at and state, read 2026-10-16 |
-| fah-client ran minicore against a local stand-in for FAH's servers and took its results | `core-parity/REPORT.md` section 5 (`loopback.sh`): fah-client master 706d6a0 against a fake work server on the same machine |
+| fah-client ran the lab's build of minicore against a local stand-in for FAH's servers and took its results | `core-parity/REPORT.md` section 5 (`loopback.sh`): fah-client master 706d6a0, patched only to trust a test CA, against a fake work server on the same machine; the core was core v3 (lab 7a92bbba), gpuq 2095 and 2096 |
 | Results carry no FAH signature, nothing connects to FAH's servers | "Where it differs"; `src/` opens no socket |
 
 ## Credits and the last line
@@ -246,7 +252,7 @@ checks per Mac and every real-unit state test each Mac ran.
 
 ## The Pages files
 
-`docs/index.html`, `docs/llms.txt` and the Open Graph text repeat sentences of the README word for word,
+`docs/index.html`, `docs/llms.txt` and the Open Graph text repeat or shorten sentences of the README,
 so each claim there has its source in the sections above. `docs/social.png` repeats Figure 2's hours.
 
 ## Detail moved from the README
@@ -262,7 +268,7 @@ barostat and mixed precision. One 1% is 12,500 steps.
 | Machine | Core | Time per 1% | Time per unit |
 | --- | --- | ---: | ---: |
 | RTX 5060 Ti, Linux | core 0x27 8.2.1 (OpenMM 8.2.0, CUDA mixed), a real FAH run | 192 s | 5.37 h |
-| M3 Ultra, macOS 27 | minicore, Metal mixed | 167 s | 4.66 h |
+| M3 Ultra, macOS 27 | minicore 416b78c7, Metal mixed, the first 5% | 167 s | 4.66 h, estimated |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
@@ -280,10 +286,10 @@ median 1% interval plus start-up and checkpoints (`docs/data/speed.csv`).*
 *Figure S1. Seconds per 1% interval: core 0x27 from the times of its 100 viewer frames across the unit,
 the M3 Ultra from the times of its progress lines over the first 5% (`docs/data/progress.csv`).*
 
-The M3 Ultra takes 0.87 times the real core's time per 1%.
+Over the first 5% the M3 Ultra takes 0.87 times the real core's time per 1% across the whole unit.
 
 
-### Same science
+### Trajectories and box volume
 
 No two runs of this unit share a trajectory, on any platform. The unit's integrator has randomSeed 0,
 which OpenMM reads as "pick a new seed for each Context". So I compared minicore's trajectory with the
@@ -313,7 +319,7 @@ seed 3 (`docs/data/volume.csv`).*
 
 Over the whole unit the CUDA replay samples the same box volume as the real run: a mean of 9,307.1 nm³
 for both, with a standard deviation of 5.9 for the real run and 6.2 for the replay. Over the first 62,500
-steps, the part all four runs share, every run's box stays between 9,299 and 9,317 nm³.
+steps, the part all four runs share, every run's box stays between 9,299 and 9,318 nm³.
 
 
 ### Accuracy and energy conservation
@@ -368,7 +374,7 @@ precision core 0x27 runs, drifts -0.0001 ± 0.0011, and 10 runs each can't tell 
   xtcAtoms.csv.bz2 are byte-identical to the real core's, the result tar holds the same six members, and
   all its state tests passed: 5 of 5 on the M3 Ultra and 4 of 4 on the M2.
 
-The M2, a base 8 GB chip, passes the same checks.
+The M2, a base 8 GB chip, passes the same checks at 3fc8475; it has not run ceb9707.
 
 
 ### How it matches
@@ -396,14 +402,14 @@ The M2, a base 8 GB chip, passes the same checks.
 </picture>
 
 *Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on each Mac: blue where minicore
-matches, outlined where FAH's own code or keys decide the answer, grey where only FAH's keys can make it
-(`docs/data/parity.csv`).*
+matches, outlined where FAH's own code or keys decide the answer, grey where only FAH's keys can make it,
+and a dash where the M2 has not run ceb9707, which changed the row (`docs/data/parity.csv`).*
 
 
 ### Where it differs
 
-Each difference sits where FAH's own code, keys or release choices decide the answer, or names the
-hardware.
+Each difference in Figure 7 sits where FAH's own code, keys or release choices decide the answer, or
+names the hardware. `docs/PARITY.md` lists six more behaviours it leaves open.
 
 - **Signed result header.** Core 0x27 puts a 512-byte header with FAH's signature in front of the result
   tar. FAH's private key makes that signature, so minicore returns the tar alone and signs nothing.

@@ -82,8 +82,10 @@ and `-X-platform` read and ignored), `--platform` to force Reference, CPU or Met
 
 - The step-0 checkpoint comes after the step-0 viewer frame and globals row, so a kill right after it
   no longer loses frame 0 on restart.
-- A checkpoint that fails its resume test is renamed `checkpoint.bin.failed`, and the core falls back to
-  `checkpoint.prev.bin`. One bad pause no longer costs the unit.
+- A checkpoint that fails its resume test counts as a bad state: the core adds one to `01/numRetries`
+  and exits 98 for a restart from `01/checkpoint`, and gives up with 114 at maxRetries, as core 0x27
+  does. A good checkpoint clears the count. Since ceb9707 the core keeps the one `01/checkpoint` and
+  writes none on a stop, so a pause no longer leaves an untested checkpoint behind.
 - A stop that lands on an output step writes that step's frames first. Before, a SIGINT during the last
   chunk before a 1% step lost that viewer frame and XTC frame, and the resumed unit returned 100 frames
   instead of 101. The lab code has the same bug.

@@ -37,7 +37,7 @@ Sources:
 | --- | --- | --- | --- | --- | --- |
 | A1 | Core package | The client checks the package's sha256 and FAH's certificate, then unpacks `<base>/FahCore_27` (Bm `Core.cpp:126-196`) | One static binary, no package | FAH's call: only FAH signs cores | cl 1.1, 1.2 |
 | A2 | Core test | `FahCore_27 --info` must exit 0 (Bm `Core.cpp:200-269`; S:20100) | `--info` lists OpenMM's version and platforms, exit 0 | match | cl 1.3 |
-| A3 | Library path and core-meta.json | Dynamic, so it needs the client's `DYLD_LIBRARY_PATH`; the client never reads core-meta.json | Static, reads no environment variable | match | cl 1.4, 1.5, 2.9 |
+| A3 | Library path and core-meta.json | Dynamic, with NEEDED libOpenMM and RPATH `/opt/conda/envs/build/lib` (`FahCore_27.dynamic.txt`), so it needs the library path the client sets (Bm `CoreProcess.cpp:40-53`); the client never reads core-meta.json (no reference in Bm or Cm) | Static, reads no environment variable | match | cl 1.4, 1.5, 2.9 |
 | A4 | Before the launch | The client unlinks wuresults_01.dat and rotates logfile_01.txt (Bm `Unit.cpp:622-632`) | Opens both logs to append | match | cl 2.1 |
 | A5 | Arguments a client sends | `-dir -suffix -version -lifeline [-gpu-uuid] -gpu-platform -gpu-vendor -opencl-platform -opencl-device [-cuda-platform -cuda-device] -gpu` (Bm `Unit.cpp:635-680`; obs capture 3) | Takes every one; `-gpu-uuid`, `-np` and the `-<api>-platform` values go unused | match | cl 2.2, 2.3 |
 | A6 | An argument the core doesn't know | Ignored: core 0x27 ran with `-gpu-uuid` and `-cuda-platform`, and neither is in its strings (obs capture 3); cbang's warning is "Ignoring invalid or unsupported argument '" (S:20359) | Was 115 before the log opened. Now prints cbang's warning to stderr and goes on (run `args-unknown`, `args-verbose`: 100) | fixed, ceb9707 | cl 2.4, fa A1 |
@@ -68,19 +68,19 @@ Sources:
 
 | # | Behaviour | Core 0x27 (source) | minicore | Verdict | Rows |
 | --- | --- | --- | --- | --- | --- |
-| X1 | Both XML forms | Attributes (WU2) or text elements (perses) | Reads both | match | sc 41 |
+| X1 | Both XML forms | Attributes (WU2's core.xml, rw) or text elements (perses) | Reads both | match | sc 41 |
 | X2 | The 26 options and their defaults | numSteps, checkpointFreq (-5), xtcFreq, viewerFreq (-1), globalVarFreq, globalVarFilename, trrFreq, the xtc and trr atom options, saveForcesInTrr, precision (single), forceTolerance (5), energyTolerance (10), maxRetriesFromLastCheckpoint (2), disableCheckpointStateTests, disableViewer, MWExclusionThreshold (0), DisablePmeStream (1), minimize (0), minimizeTolerance (10), minimizeMaxIterations (5000), minimizeReportFreq (5) (S:19427-19472) | Read all but the trr options and minimizeReportFreq. Now all 26, same defaults | fixed, ceb9707 | sc 42-56 |
 | X3 | An interval as a percent | "negative numbers indicate percentage"; WU2 sends `-5%` (S:19456) | Takes `-5` and `-5%` | match | sc 36 |
 | X4 | checkpointFreq 0 | "0 disables checkpointing" (S:19456) | Was numSteps. Now no periodic checkpoint; step 0 and the end still get one (run `corexml-checkpoint-zero`: 2) | fixed, ceb9707 | sc 35 |
 | X5 | trrFreq | Writes `records.trr` in GROMACS format ("GMX_trn_file"), forces when saveForcesInTrr is 1; "Appending to TRR file" (S:19322-19323, 19573, 19653) | Was 114. Now the same file and line, returned in the result (run `corexml-trr`: 4 frames, steps 500 to 2000, forces) | fixed, ceb9707 | sc 33, 47, fa C8 |
 | X6 | globalVarFreq | Header `Step,Time`, the Context parameters, the integrator globals, `volume`, 15 digits (alchemiscale's globals.csv; S:19574-19575) | Was `step`, globals in declaration order, no Time or volume. Now core 0x27's columns (run `corexml-globals`) | fixed, ceb9707 | sc 29, 52 |
-| X7 | minimize | Before the sanity checks, with CoreMinReporter: "  Minimization: iteration: N System energy: E Restraint energy R Max constraint error: C" every minimizeReportFreq iterations, then "  Minimization complete" (S:19355-19361, 19606, 19615) | Was after the first check, no reporter. Now core 0x27's order and lines (run `corexml-minimize`) | fixed, ceb9707 | sc 28, 55, 56 |
+| X7 | minimize | Before the sanity checks, with CoreMinReporter: "  Minimization: iteration: N System energy: E Restraint energy R Max constraint error: C" every minimizeReportFreq iterations, then "  Minimization complete" (S:19355-19361, 19545, 19606, 19615) | Was after the first check, no reporter. Now core 0x27's order and lines (run `corexml-minimize`) | fixed, ceb9707 | sc 28, 55, 56 |
 | X8 | A bad precision value | Option text "platform precision ['mixed', 'double', 'single']" (S:19462) | Was 125 with no results. Now 114 with the logs (run `corexml-precision`) | fixed, ceb9707 | fa C6 |
 | X9 | precision double | Fails on a GPU without fp64: "Failed to create a GPU-enabled OpenMM Context." (S:19514) | Metal has no fp64: 125 with OpenMM's reason (run `corexml-double`) | match | sc 10, fa C7 |
-| X10 | Missing core.xml, numSteps 0, a cut tag, a non-numeric value | Not public; cbang prints "Invalid value for option '" (S:20159-20162) | 114 naming the key (run `corexml-missing`, `corexml-numsteps-zero`, `corexml-cut-tag`, `corexml-numsteps-text`, `corexml-checkpoint-text`) | not observable | fa C1-C4 |
+| X10 | Missing core.xml, numSteps 0, a cut tag, a non-numeric value | Not public; cbang prints "Invalid value for option '" (S:20386) | 114 naming the key (run `corexml-missing`, `corexml-numsteps-zero`, `corexml-cut-tag`, `corexml-numsteps-text`, `corexml-checkpoint-text`) | not observable | fa C1-C4 |
 | X11 | An unknown option, a negative tolerance or retry limit | Not public | Ignores an unknown option (logged with `-verbose`); the tolerance fails the first test, 114; the limit gives up at the first bad state (run `corexml-unknown`, `corexml-negative-tolerance`, `corexml-negative-retries`) | not observable | sc 57, fa C5, C9, C10 |
 | X12 | disableCheckpointStateTests | Skips the checkpoint tests: "  Disabling checkpoint state tests." (S:19442, 19585) | Skipped them silently. Now logs the line | fixed, ceb9707 | sc 22, 49 |
-| X13 | DisablePmeStream, MWExclusionThreshold, the xtc atom options | Read with the defaults above | Same; DisablePmeStream goes to a platform that declares it, which Metal doesn't | match | sc 11, 46, 51, 54 |
+| X13 | DisablePmeStream, MWExclusionThreshold, the xtc atom options | Read with the defaults above (S:19432-19435, 19459-19460, 19465, 19470; log:362) | Same; DisablePmeStream goes to a platform that declares it, which Metal doesn't | match | sc 11, 46, 51, 54 |
 
 ## Checkpoints
 
@@ -90,7 +90,7 @@ Sources:
 | K2 | Files | One `01/checkpoint`, with `stepsDone` and `numRetries` ("0") rewritten after each (obs capture 4) | Kept checkpoint.bin, checkpoint.prev.bin and retries.txt in `<dir>`. Now `01/checkpoint`, `stepsDone` and `numRetries` alone | fixed, ceb9707 | ca F3, F4, sc 34, fa K1 |
 | K3 | checkpt.crc | FAH's ChecksumManager file of hashes beside the checkpoint (S:19659-19672) | None | FAH's call: the format is FAH's | ca F4, sc 34 |
 | K4 | Write method | Rewrites `checkpoint` in place and relies on checkpt.crc to catch a cut-off write (obs strace) | Writes a temp file with a length and FNV-1a footer, then renames it | FAH's call: without checkpt.crc an in-place write would leave a torn checkpoint undetected | ca F3, F13, fa S4 |
-| K5 | Contents | `Context::createCheckpoint` (strings:53) | Same blob behind a header that names the unit | match | sc 34 |
+| K5 | Contents | `Context::createCheckpoint` (S:53) | Same blob behind a header that names the unit | match | sc 34 |
 | K6 | Resume | "  Binary checkpoint file found. Restoring context from checkpoint...", "  Binary checkpoint read. Resuming from step N" (S:19589-19590) | Logged "resumed from checkpoint at step N". Now core 0x27's lines (run `sigkill-resume`) | fixed, ceb9707 | ca C5, sc 37 |
 | K7 | Outputs past the checkpoint | "File is longer than at last checksum, truncating: " (S:19664); positions.xtc cut back (obs capture 6) | Cuts positions.xtc, records.trr, the globals file and later viewer frames back; now with core 0x27's line | fixed, ceb9707 | sc 37, fa S6 |
 | K8 | A damaged checkpoint | checkpt.crc fails: "Failed to validate checkpoint"; "Could not resume from checkpoint:" (S:19597, 19725); what follows is not public | "  Could not resume from checkpoint: ... failed its length, hash or header check", then a fresh start from step 0 (run `checkpoint-truncate`, `checkpoint-flip`) | fixed, ceb9707 (the line); not observable (what follows) | fa K1-K3 |
@@ -141,7 +141,7 @@ Sources:
 | S5 | Stop during the final write | Not observed | Waited for the result. Now a stop past the final checkpoint exits at once, and the next start writes the result; once it is written, stops are ignored while `01/` goes (run `sigint-final`) | not observable | fa S5 |
 | S6 | SIGHUP, SIGQUIT | Named in the core (S:20457-20458); no capture shows handlers | SIGINT and SIGTERM | not observable | cl 6.3 |
 | S7 | The client's SIGKILL | 60 s after SIGINT (obs capture 4) | Answers within a second | match | ca X4, cl 6.1, 6.8, 6.9 |
-| S8 | Lifeline | `kill(pid, 0)` from start-up, then "Lost lifeline PID N, exiting" (obs; S:20122) | Checked between stepping chunks only, wrote a checkpoint, exit 103. Now a thread polls every 500 ms from start-up, logs that line and exits 103 with no checkpoint (run `lifeline-dead`) | fixed, ceb9707 (the polling and line); not observable (the exit) | cl 3.1, 3.2, fa S7 |
+| S8 | Lifeline | `kill(pid, 0)` from start-up, then "Lost lifeline PID N, exiting" (obs; S:20122-20123) | Checked between stepping chunks only, wrote a checkpoint, exit 103. Now a thread polls every 500 ms from start-up, logs that line and exits 103 with no checkpoint (run `lifeline-dead`) | fixed, ceb9707 (the polling and line); not observable (the exit) | cl 3.1, 3.2, fa S7 |
 | S9 | Watchdog | "  Starting watchdog..." before the step-0 tests; "Watchdog triggered, requesting soft shutdown down", exit 127 (S:19567, 19682; forum p=370662, p=335096) | Armed at stepping, its own line. Now armed at "Starting watchdog...", core 0x27's line, 127 after 600 s without progress | fixed, ceb9707 (not run: a 600 s GPU hang can't be injected) | cl 5.2, fa D4 |
 | S10 | Exits seen from core 0x27 | 98, 100, 102, 114, 127 (obs; log; forum) | The same for the same causes | match | cl 7 |
 | S11 | Exits no record shows from core 0x27 | 103, 115, 116, 117, 121, 125, 126 | ExitCode.h's code for each cause | not observable | cl 7 |
@@ -160,8 +160,8 @@ Sources:
 | T7 | A unit that fails its first check | "ERROR:Potential energy error of X, threshold of Y" and the reference line, then 114 with logfile, science.log and the state file (cores 0x23 and 0x24, forum t=42176) | Same (run `start-energy-tolerance`) | match | fa B1 |
 | T8 | A NaN in the unit's state | Same path as T7 | Was 121 with no result. Now 114 with the logs and the state file (run `start-nan-position`) | fixed, ceb9707 | fa B1 |
 | T9 | A bad state while stepping | "An exception occurred at step N: ...", "ERROR:98: Attempting to restart from last good checkpoint by restarting core.", 98 (forum p=338624; S:19598, 19602) | Same (run `blowup-retries`) | match | fa B2, B3, D1 |
-| T10 | Retry limit | Gives up at the second bad state with maxRetries 2: "Max number of attempts to resume from last checkpoint (2) reached. Aborting.", "ERROR:114: ...", returns logfile, globals, science.log and state.xml (forum p=338624; S:19600-19601) | Gave up at the third with "Max Retries Reached" and returned the logs. Now as core 0x27 (run `blowup-retries`: 98, then 114) | fixed, ceb9707 | fa B4, sc 40, ca C9, cl 7 (114) |
-| T11 | Retry count | `numRetries`: "Checking for existence of retries file (numRetries) ...", "There have been N retries already.", "Updating retries file (numRetries) with N retries." (S:19564-19566, 19581-19583) | Kept retries.txt silently. Now the file and lines | fixed, ceb9707 | fa B5, ca C8 |
+| T10 | Retry limit | Gives up at the second bad state with maxRetries 2: "Max number of attempts to resume from last checkpoint (2) reached. Aborting.", "ERROR:114: ...", returns logfile, globals, science.log and state.xml (forum p=338624; S:19584, 19600-19601) | Gave up at the third with "Max Retries Reached" and returned the logs. Now as core 0x27 (run `blowup-retries`: 98, then 114) | fixed, ceb9707 | fa B4, sc 40, ca C9, cl 7 (114) |
+| T11 | Retry count | `numRetries`: "Checking for existence of retries file (numRetries) ...", "There have been N retries already.", "Updating retries file (numRetries) with N retries." (S:19564-19566, 19581-19583, 19592) | Kept retries.txt silently. Now the file and lines | fixed, ceb9707 | fa B5, ca C8 |
 | T12 | A resumed checkpoint fails its test | Not public | 98, then 114 at the limit (run `restart-test-fails`) | not observable | fa B6 |
 | T13 | The client's own retry ceiling | Ten 98s under 2 min each delete the unit (Bm `Unit.cpp:1037-1047`) | Gives up at 114 first | match | fa B7 |
 
@@ -180,7 +180,7 @@ Sources:
 | O9 | checkpointState.xml.bz2 | Positions, velocities, forces, energies, parameters, box (log) | Same members, by OpenMM 8.6, which 8.2's reader takes | match | ca E2, sc 8, 32 |
 | O10 | checkpointIntegrator.xml | The unit's integrator.xml byte for byte, from a third read (log) | Was re-serialized (199 B against 171). Now the third read's bytes | fixed, ceb9707 | ca E3, T6 |
 | O11 | PME | Alpha and grid from the default box, rounded to 7-smooth sizes, pinned with `setPMEParameters`: "Ewald parameters: alpha 2.62826 nx 189 ny 180 nz 160" (log:345-346) | Left both to each platform (189 x 176 x 154). Now the same alpha, grid and line (P18264 cut) | fixed, ceb9707 | sc 4, 5 |
-| O12 | Barostat, motion remover, seeds, custom integrators | Left as the unit has them (sc 24-27) | Same | match | sc 24-27 |
+| O12 | Barostat, motion remover, seeds, custom integrators | Left as the unit has them (S:94, 129, 132, 162; WU2's system.xml) | Same | match | sc 24-27 |
 | O13 | Clean-up | Unlinks the 13 files in `01/` and removes it, then exits 100 (obs strace) | Left about 342 MB. Now removes `01/` (P18264 cut, run `straight`) | fixed, ceb9707 | ca E6, cl 9.4 |
 | O14 | A full disk | cbang's "write() failed", "xtc write failed..." (S:19321, 20755) | 117 for each file; an xtc frame that didn't grow the file was lost silently, and is now 117 too (run `disk-full`) | fixed, ceb9707 | fa F2, F3 |
 | O15 | A work dir it can't write | Can't log either (S:19730, 20440) | 117 with no log (run `dir-readonly`, `dir-missing`) | match | fa F1 |
@@ -192,7 +192,7 @@ Sources:
 | --- | --- | --- | --- | --- | --- |
 | R1 | Container | 512-byte header (version 1100, digests, a 200-byte signature), then the tar | The tar alone | FAH's call: the signature needs FAH's key | ca T1, E5, cl 9.2 |
 | R2 | Members and order | logfile_01.txt, checkpointIntegrator.xml, checkpointState.xml.bz2, positions.xtc, science.log, xtcAtoms.csv.bz2 (log) | Same (P18264 cut), plus records.trr and the globals file when core.xml asks | match | ca T2, cl 9.3 |
-| R3 | Member headers | Mode 0666, uid and gid 0, one mtime, ustar | Same | match | ca T3 |
+| R3 | Member headers | Mode 0666, uid and gid 0, one mtime, ustar (rw `real-files.txt`) | Same | match | ca T3 |
 | R4 | Where each log member ends | logfile_01.txt at "Saving result file ../logfile_01.txt", science.log at "Saving result file science.log" (log) | Ran on past both. Now ends at each (P18264 cut) | fixed, ceb9707 | ca T4, T5 |
 | R5 | A unit given up on | Logs, state and globals, 114 (forum t=42176, p=338624) | Same (run `start-nan-position`, `blowup-retries`) | fixed, ceb9707 | fa B1, B4 |
 
