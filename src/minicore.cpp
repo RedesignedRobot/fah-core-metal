@@ -528,7 +528,7 @@ static string unpackInput(const string& path) {
 }
 
 // Core 0x27 extracts the tar while 01/checkpt.crc is missing and creates checkpt.crc after the last member
-// (obs strace-1.txt lines 7274-7305 and 7752; a restart finds it at line 690 and extracts nothing), so a
+// (obs strace-1.txt lines 7274-7313 and 7752; a restart finds it at line 690 and extracts nothing), so a
 // start stopped partway through extracts again. minicore has no checkpt.crc (PARITY K3), and this empty file
 // takes its place.
 static const char* const UnpackedFile = "unpacked";
