@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-// minicore: runs one FAH work unit the way a GPU core does, with OpenMM and its Metal platform linked in.
+// minicore: runs one FAH work unit the way a GPU core does, on OpenMM's Metal platform on macOS (linked in)
+// or its CUDA platform on Linux (a shared OpenMM and its plugins).
 // Formats match core 0x27 8.2.1 as observed on project 18264 in October 2026; "core 0x27" below means
 // that build. docs/PARITY.md lists each behaviour with its source; "S:N" cites line N of the core's strings.
 //
@@ -48,13 +49,16 @@
 //   --platform NAME                    override, for Reference or CPU control runs
 //   -metal-platform P -metal-device D  Metal, device D (fah-client-bastet#459 with cbang#215)
 //   -gpu-vendor apple                  Metal, device -opencl-device or -gpu (what client master sends)
-//   -gpu-platform cuda|opencl|hip      that platform, if this build has it; else BAD_ARGUMENTS
+//   -gpu-platform cuda|opencl|hip      that platform, device -<api>-device or -gpu, if this build has it;
+//                                      else BAD_ARGUMENTS (fah-client 8.5 sends cuda to core 0x27 on NVIDIA)
+//   -gpu-vendor nvidia                 CUDA, device -cuda-device or -gpu
 //
 // Exit codes are the client's (ExitCode.h). Where the public record shows the real core's choice (98, 102,
 // 114, 127) this follows it. The real wudata/wuresults containers carry FAH's signatures, which this core
 // neither checks nor writes.
 
 #include "OpenMM.h"
+#include "host.h"
 #include "wufiles.h"
 #include "xtc.h"
 #include <algorithm>
@@ -71,19 +75,17 @@
 #include <cstring>
 #include <ctime>
 #include <dirent.h>
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <fstream>
 #include <map>
 #include <memory>
-#include <mach-o/dyld.h>
-#include <mach/mach.h>
 #include <optional>
 #include <set>
 #include <sstream>
 #include <string>
 #include <sys/file.h>
 #include <sys/stat.h>
-#include <sys/sysctl.h>
 #include <thread>
 #include <typeinfo>
 #include <unistd.h>
@@ -179,11 +181,14 @@ static int logFds[2] = {-1, -1};
 static atomic<bool> pendingNewline[2];
 static bool verbose = false;
 
-// write(2) only: this runs in a signal handler. Apple clang honours the void cast for warn_unused_result.
+// write(2) only: this runs in a signal handler, and a short write has nowhere to be reported. GCC ignores a
+// void cast on warn_unused_result, hence the named result.
 static void writeAll(const char* text) {
     for (int fd : logFds)
-        if (fd >= 0)
-            (void) write(fd, text, strlen(text));
+        if (fd >= 0) {
+            ssize_t written = write(fd, text, strlen(text));
+            (void) written;
+        }
 }
 
 // cbang's ExitSignalHandler as core 0x27 runs it: the first signal asks the core to stop, the second warns
@@ -355,20 +360,6 @@ static void startMonitor(long lifeline) {
     }).detach();
 }
 
-static string sysctlText(const char* name) {
-    char value[256] = "";
-    size_t size = sizeof(value);
-    return sysctlbyname(name, value, &size, NULL, 0) == 0 ? value : "unknown";
-}
-
-template <class T>
-static T sysctlNumber(const char* name) {
-    T value = 0;
-    size_t size = sizeof(value);
-    sysctlbyname(name, &value, &size, NULL, 0);
-    return value;
-}
-
 // The core type from the executable's name, as the client installs cores (FahCore_27 for 0x27).
 static optional<uint32_t> namedCoreType(const string& exec) {
     unsigned type;
@@ -406,26 +397,28 @@ static void writeBanner(const Options& opt) {
     infoRow("Core", "minicore");
     if (optional<uint32_t> type = namedCoreType(opt.exec))
         infoRow("Type", stringf("0x%02x", *type));
+#ifdef __clang__
     infoRow("Compiler", "Clang " __clang_version__);
+#else
+    infoRow("Compiler", "GNU " __VERSION__);
+#endif
     infoRow("Bits", to_string(8*sizeof(void*)));
     infoRow("Args", opt.args);
     say("%s", starRow("System").c_str());
-    char host[256] = "", cwd[PATH_MAX] = "", exec[PATH_MAX] = "", real[PATH_MAX] = "";
-    uint32_t execSize = sizeof(exec);
+    HostInfo machine = hostInfo(opt.exec);
+    char host[256] = "", cwd[PATH_MAX] = "";
     gethostname(host, sizeof(host));
     if (getcwd(cwd, sizeof(cwd)) == NULL)
         strcpy(cwd, "unknown");
-    if (_NSGetExecutablePath(exec, &execSize) != 0 || realpath(exec, real) == NULL)
-        strcpy(real, opt.exec.c_str());
-    infoRow("CPU", sysctlText("machdep.cpu.brand_string"));
-    infoRow("CPUs", to_string(sysctlNumber<int>("hw.ncpu")));
-    infoRow("Memory", stringf("%.2fGiB", sysctlNumber<uint64_t>("hw.memsize")/1073741824.0));
-    infoRow("OS Version", sysctlText("kern.osproductversion"));
+    infoRow("CPU", machine.cpu);
+    infoRow("CPUs", to_string(machine.cpus));
+    infoRow("Memory", stringf("%.2fGiB", machine.memoryGiB));
+    infoRow("OS Version", machine.os);
     infoRow("Hostname", host);
     infoRow("UTC Offset", to_string(localtime(&launchTime)->tm_gmtoff/3600));
     infoRow("PID", to_string(getpid()));
     infoRow("CWD", cwd);
-    infoRow("Exec", real);
+    infoRow("Exec", machine.executable);
     say("%s", starRow("OpenMM").c_str());
     infoRow("Version", Platform::getOpenMMVersion());
     say("%s", string(80, '*').c_str());
@@ -470,24 +463,29 @@ static PlatformChoice choosePlatform(const Options& opt) {
         deviceFrom(opt.gpuPlatform);
         c.reason = "client passed -gpu-platform "+opt.gpuPlatform+" -gpu-vendor "+opt.gpuVendor;
     }
+    else if (opt.gpuVendor == "nvidia") {
+        c.platform = "CUDA";
+        deviceFrom("cuda");
+        c.reason = "client passed -gpu-vendor nvidia";
+    }
     else
         throw Failure(BAD_ARGUMENTS, "Core requires at least one of 'cuda-device' or 'opencl-device' to be "
                       "specified and not disabled.");  // S:19510
     return c;
 }
 
-// Core 0x27's nine "GPU info" lines, after its version line and again after "Using ...". An Apple GPU has
-// no PCI address or CUDA compute capability, and Metal ships with macOS, so its version stands in for a driver.
-static void gpuInfo(const PlatformChoice& choice) {
+// Core 0x27's nine "GPU info" lines, after its version line and again after "Using ...".
+static void logGpuInfo(const PlatformChoice& choice) {
+    GpuInfo gpu = gpuInfo(choice.platform, choice.device);
     say("  GPU info: Platform: %s", choice.platform.c_str());
     say("  GPU info: PlatformIndex: 0");
-    say("  GPU info: Device: %s", sysctlText("machdep.cpu.brand_string").c_str());
+    say("  GPU info: Device: %s", gpu.device.c_str());
     say("  GPU info: DeviceIndex: %d", choice.device);
-    say("  GPU info: Vendor: 0x106b");
-    say("  GPU info: PCI: none");
-    say("  GPU info: Compute: unknown");
-    say("  GPU info: Driver: macOS %s", sysctlText("kern.osproductversion").c_str());
-    say("  GPU info: GPU: %s", choice.platform == "Metal" ? "true" : "false");
+    say("  GPU info: Vendor: %s", gpu.vendor.c_str());
+    say("  GPU info: PCI: %s", gpu.pci.c_str());
+    say("  GPU info: Compute: %s", gpu.compute.c_str());
+    say("  GPU info: Driver: %s", gpu.driver.c_str());
+    say("  GPU info: GPU: %s", choice.platform != "Reference" && choice.platform != "CPU" ? "true" : "false");
 }
 
 // Core 0x27 looks for each input under these names in turn and takes the first ("Checking for state.xml.enc"
@@ -713,15 +711,6 @@ static void writeProgress(const Options& opt, const WorkUnit& unit, const Settin
     replaceFile(opt.dir+"/wuinfo_"+opt.suffix+".dat", string(info, sizeof(info)));
 }
 
-// The footprint Activity Monitor shows, so a leak over a multi-hour unit shows up in a -verbose log.
-static double footprintMB() {
-    task_vm_info_data_t info;
-    mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
-    if (task_info(mach_task_self(), TASK_VM_INFO, (task_info_t) &info, &count) != KERN_SUCCESS)
-        return -1;
-    return info.phys_footprint/1048576.0;
-}
-
 static void usage(const string& why) {
     fprintf(stderr, "minicore: %s\n"
             "usage: minicore -dir DIR [client arguments] [-verbose] [--platform NAME]\n"
@@ -810,8 +799,9 @@ static Options parseOptions(int argc, char** argv) {
     return opt;
 }
 
-// The property map core 0x27 passes, reduced to the names the platform declares: Context creation throws
-// "Illegal property name" on any other (ContextImpl.cpp:100-101). Metal declares Precision only.
+// The property map core 0x27 passes, in its order, reduced to the names the platform declares: Context
+// creation throws "Illegal property name" on any other (ContextImpl.cpp:100-101). Metal declares Precision
+// only; CUDA declares all four.
 static map<string, string> chooseProperties(const Settings& s, const PlatformChoice& choice, Platform& platform) {
     const vector<string>& names = platform.getPropertyNames();
     auto offered = [&](const char* name) {
@@ -828,6 +818,10 @@ static map<string, string> chooseProperties(const Settings& s, const PlatformCho
     else if (choice.device != 0 && platform.getName() == "Metal")
         throw Failure(GPU_UNAVAILABLE_ERROR, "the Metal platform has no DeviceIndex property and uses the system GPU; "
                       "the client asked for device "+to_string(choice.device));
+    if (offered("UseBlockingSync")) {
+        properties["UseBlockingSync"] = "false";
+        note("    Disabling UseBlockingSync on %s platform", platform.getName().c_str());
+    }
     if (offered("Precision")) {
         properties["Precision"] = s.precision;
         note("    Setting platform precision to %s", s.precision.c_str());
@@ -1283,7 +1277,15 @@ static void registerPlatforms() {
 #endif
     registerMetalPlatform();
 #else
-    Platform::loadPluginsFromDirectory(Platform::getDefaultPluginsDirectory());
+    // A shared OpenMM, as build-linux.sh links it, has its plugins in lib/plugins beside libOpenMM. OpenMM itself
+    // looks in OPENMM_PLUGIN_DIR or /usr/local/openmm/lib/plugins; conda's Python sets the variable, a core can't.
+    string dir = Platform::getDefaultPluginsDirectory();
+    Dl_info lib;
+    if (getenv("OPENMM_PLUGIN_DIR") == NULL && dladdr((void*) &Platform::getNumPlatforms, &lib) != 0) {
+        dir = lib.dli_fname;
+        dir = dir.substr(0, dir.rfind('/'))+"/plugins";
+    }
+    Platform::loadPluginsFromDirectory(dir);
 #endif
 }
 
@@ -1365,7 +1367,7 @@ int CoreRun::run() {
     unit.coreType = named ? *named : unit.header ? unit.header->coreType : 0x24;
     choice = choosePlatform(opt);
     say("minicore (fah-core-metal), OpenMM %s", Platform::getOpenMMVersion().c_str());
-    gpuInfo(choice);
+    logGpuInfo(choice);
     settings = readSettings(unit);
     unit.globalsFile = settings.globalsFile;
     globalsPath = unit.workDir+"/"+settings.globalsFile;
@@ -1379,7 +1381,7 @@ int CoreRun::run() {
     note("[ Initialized Core Contexts... ]");
     prepareOutputs();
     say("  Using %s on %s Platform and gpu %d", choice.platform.c_str(), choice.platform.c_str(), choice.device);
-    gpuInfo(choice);
+    logGpuInfo(choice);
     note("  Creating a list of all Context parameters:");
     for (auto& param : context->getParameters())
         note("    %s", param.first.c_str());
@@ -1397,7 +1399,7 @@ int CoreRun::run() {
     watchdogArmed = true;
     lastCheckpointStep = context->getStepCount();
     lastCheckpointTime = time(NULL);
-    detail("start-up %.1f s since exec, footprint %.0f MB", since(processStart), footprintMB());
+    detail("start-up %.1f s since exec, footprint %.0f MB", since(processStart), memoryMB());
     if (!resumed) {
         startOutputs();
         if (int code = writeOutputs(0, context->getState(State::Energy | State::Positions), true))
@@ -1749,7 +1751,7 @@ int CoreRun::writeOutputs(long long step, const State& state, bool checkpointNow
         saveCheckpoint(step);
         note("  Binary checkpoint complete. Cleared numRetries file.");
         say("Checkpoint completed at step %lld", step);
-        detail("  energy %.6f kJ/mol, footprint %.1f MB", state.getPotentialEnergy()+state.getKineticEnergy(), footprintMB());
+        detail("  energy %.6f kJ/mol, footprint %.1f MB", state.getPotentialEnergy()+state.getKineticEnergy(), memoryMB());
         lastCheckpointStep = step;
         lastCheckpointTime = time(NULL);
     }
@@ -1895,7 +1897,7 @@ void CoreRun::writeFinalState() {
     for (int i = 0; custom && i < custom->getNumGlobalVariables(); i++)
         detail("global %s %.17g", custom->getGlobalVariableName(i).c_str(), custom->getGlobalVariable(i));
     detail("done, final energy %.6f kJ/mol, %.1f s in the core, footprint %.1f MB",
-           final.getPotentialEnergy()+final.getKineticEnergy(), since(processStart), footprintMB());
+           final.getPotentialEnergy()+final.getKineticEnergy(), since(processStart), memoryMB());
 }
 
 // wuresults_01.dat: a plain ustar tar of the result files, in the order core 0x27 saves them. Its own file

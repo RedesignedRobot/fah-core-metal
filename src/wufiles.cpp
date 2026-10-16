@@ -187,13 +187,16 @@ string writeTar(const vector<pair<string, string>>& members) {
     for (auto& member : members) {
         if (member.first.size() > 99)
             throw runtime_error("tar member name too long: "+member.first);
+        unsigned long long size = member.second.size();
+        if (size > 077777777777)  // the 11 octal digits of the size field
+            throw runtime_error("tar member too big: "+member.first);
         char header[512];
         memset(header, 0, sizeof(header));
         strncpy(header, member.first.c_str(), 99);
         snprintf(header+100, 8, "%07o", 0666);  // mode as core 0x27's results tar has it
         snprintf(header+108, 8, "%07o", 0);
         snprintf(header+116, 8, "%07o", 0);
-        snprintf(header+124, 12, "%011llo", (unsigned long long) member.second.size());
+        snprintf(header+124, 12, "%011llo", size);
         snprintf(header+136, 12, "%011llo", (unsigned long long) time(NULL));
         memset(header+148, ' ', 8);
         header[156] = '0';
@@ -284,7 +287,16 @@ static void writeAll(int fd, const char* data, size_t size, const string& path) 
     }
 }
 
-// F_FULLFSYNC: on macOS fsync leaves the data in the drive's cache.
+// F_FULLFSYNC: on macOS fsync leaves the data in the drive's cache. Linux has no such fcntl.
+static void syncFile(int fd, const string& path) {
+#ifdef F_FULLFSYNC
+    if (fcntl(fd, F_FULLFSYNC) == 0)
+        return;
+#endif
+    if (fsync(fd) != 0)
+        throw FileError("cannot sync "+path+": "+strerror(errno));
+}
+
 static void writeSynced(const string& tmp, const string& data, const void* footer, size_t footerSize) {
     int fd = open(tmp.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0)
@@ -292,8 +304,7 @@ static void writeSynced(const string& tmp, const string& data, const void* foote
     try {
         writeAll(fd, data.data(), data.size(), tmp);
         writeAll(fd, (const char*) footer, footerSize, tmp);
-        if (fcntl(fd, F_FULLFSYNC) != 0 && fsync(fd) != 0)
-            throw FileError("cannot sync "+tmp+": "+strerror(errno));
+        syncFile(fd, tmp);
     }
     catch (...) {
         close(fd);
