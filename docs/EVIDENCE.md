@@ -222,3 +222,8 @@ strip's text.
 | Andrew Thall, "Extended-Precision Floating-Point Numbers for GPU Computation" (2006) | The df64 operations in the fork's Metal mixed precision follow it; the paper's own title page |
 | openmm#5488 "Metal Platform", by Peter Eastman, merged 2026-10-14 | GitHub |
 | "Built and tested with Claude Opus 5.5." | The model that wrote this repo and ran its tests |
+
+## The Pages files
+
+`docs/index.html`, `docs/llms.txt` and the Open Graph text repeat sentences of the README word for word,
+so each claim there has its source in the sections above. `docs/social.png` repeats Figure 2's hours.

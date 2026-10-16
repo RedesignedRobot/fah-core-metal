@@ -1,0 +1,19 @@
+# fah-core-metal
+
+> A Folding@home core that runs real FAH work units on Apple Silicon GPUs through OpenMM's Metal platform. Runs on Apple Silicon Macs (M-series GPUs) through Metal. Tested on the M3 Ultra and the M2.
+
+minicore is a Folding@home core for Apple Silicon Macs. It folds FAH's OpenMM work units on the Mac's GPU with OpenMM's Metal platform in df64 mixed precision, and writes the result files FAH's CUDA core 0x27 writes. On one real unit, project 18264 with 919,221 atoms, the M3 Ultra takes 0.87 times core 0x27's time per 1% on an RTX 5060 Ti. Its state-test errors sit beside CUDA mixed precision's, and in 10 runs its energy drift can't be told apart from CUDA mixed's.
+
+fah-core-metal is not affiliated with or endorsed by Folding@home. It never connects to FAH servers. Its results carry no FAH signature.
+
+## Docs
+
+- [README](https://github.com/RedesignedRobot/fah-core-metal#readme): results, figures, what was tested, how it matches core 0x27, where it differs, how to build and run it, FAQ
+- [Evidence](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md): the run and raw record behind every number in the README
+- [Design notes](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/design-notes.md): how the README and the core are laid out, and why
+
+## Source
+
+- [src/](https://github.com/RedesignedRobot/fah-core-metal/tree/main/src): minicore, the core
+- [build.sh](https://github.com/RedesignedRobot/fah-core-metal/blob/main/build.sh): fetches OpenMM with the Metal platform, builds it as static libraries and links the core
+- [docs/data/](https://github.com/RedesignedRobot/fah-core-metal/tree/main/docs/data): the CSVs behind every figure

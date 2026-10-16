@@ -1,5 +1,5 @@
 """make.py: writes every SVG in docs/figures from the CSVs in docs/data, in a light and a dark version,
-and docs/social.png.
+and docs/social.png (see social_png for how).
 
 Standard library only, and no clock or random state outside a fixed seed, so a second run writes the
 same bytes.
@@ -334,76 +334,51 @@ def parity(t):
                "Parity with core 0x27 item by item on the M3 Ultra and the M2")
 
 
-# docs/social.png: a 1280x640 card drawn without a font library. Text comes from a 5x7 pixel font,
-# uppercase, digits and a few marks, each pixel drawn as a filled square.
-GLYPHS = {
-    "A": "01110 10001 10001 11111 10001 10001 10001", "B": "11110 10001 10001 11110 10001 10001 11110",
-    "C": "01110 10001 10000 10000 10000 10001 01110", "D": "11110 10001 10001 10001 10001 10001 11110",
-    "E": "11111 10000 10000 11110 10000 10000 11111", "F": "11111 10000 10000 11110 10000 10000 10000",
-    "G": "01110 10001 10000 10111 10001 10001 01111", "H": "10001 10001 10001 11111 10001 10001 10001",
-    "I": "01110 00100 00100 00100 00100 00100 01110", "J": "00111 00010 00010 00010 00010 10010 01100",
-    "K": "10001 10010 10100 11000 10100 10010 10001", "L": "10000 10000 10000 10000 10000 10000 11111",
-    "M": "10001 11011 10101 10101 10001 10001 10001", "N": "10001 10001 11001 10101 10011 10001 10001",
-    "O": "01110 10001 10001 10001 10001 10001 01110", "P": "11110 10001 10001 11110 10000 10000 10000",
-    "Q": "01110 10001 10001 10001 10101 10010 01101", "R": "11110 10001 10001 11110 10100 10010 10001",
-    "S": "01111 10000 10000 01110 00001 00001 11110", "T": "11111 00100 00100 00100 00100 00100 00100",
-    "U": "10001 10001 10001 10001 10001 10001 01110", "V": "10001 10001 10001 10001 10001 01010 00100",
-    "W": "10001 10001 10001 10101 10101 10101 01010", "X": "10001 10001 01010 00100 01010 10001 10001",
-    "Y": "10001 10001 01010 00100 00100 00100 00100", "Z": "11111 00001 00010 00100 01000 10000 11111",
-    "0": "01110 10001 10011 10101 11001 10001 01110", "1": "00100 01100 00100 00100 00100 00100 01110",
-    "2": "01110 10001 00001 00010 00100 01000 11111", "3": "11111 00010 00100 00010 00001 10001 01110",
-    "4": "00010 00110 01010 10010 11111 00010 00010", "5": "11111 10000 11110 00001 00001 10001 01110",
-    "6": "00110 01000 10000 11110 10001 10001 01110", "7": "11111 00001 00010 00100 01000 01000 01000",
-    "8": "01110 10001 10001 01110 10001 10001 01110", "9": "01110 10001 10001 01111 00001 00010 01100",
-    " ": "00000 00000 00000 00000 00000 00000 00000", ".": "00000 00000 00000 00000 00000 01100 01100",
-    ",": "00000 00000 00000 00000 01100 00100 01000", "-": "00000 00000 00000 11111 00000 00000 00000",
-    "%": "11000 11001 00010 00100 01000 10011 00011", "/": "00001 00001 00010 00100 01000 10000 10000",
-    "@": "01110 10001 10111 10101 10111 10000 01111", "X'": "00000 00000 10001 01010 00100 01010 10001",
-}
+# docs/social.png, the 1280x640 card for link previews. make.py writes it as figures/social.svg, set in
+# Inter 4.1 (figures/fonts, SIL Open Font License), and renders that SVG to PNG with headless Google
+# Chrome, since Pillow is not in the toolchain. The PNG is byte-identical across runs with the same
+# Chrome; make.py records the version it used in figures/social-renderer.txt and leaves the PNG alone
+# when it finds no Chrome.
+CHROME = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "google-chrome", "chromium"]
 
 
-def social():
-    W, H = 1280, 640
+def social_svg():
     t = THEMES["dark"]
-    rgb = lambda c: tuple(int(c[i:i + 2], 16) for i in (1, 3, 5))
-    px = bytearray(rgb(t["paper"]) * (W * H))
-
-    def fill(x0, y0, w, h, c):
-        c = bytes(rgb(c))
-        for y in range(max(0, y0), min(H, y0 + h)):
-            a, b = 3 * (y * W + max(0, x0)), 3 * (y * W + min(W, x0 + w))
-            px[a:b] = c * ((b - a) // 3)
-
-    def write(x, y, s, c, scale):
-        for ch in s:
-            g = GLYPHS["X'" if ch == "×" else ch].split()
-            for j, row in enumerate(g):
-                for i, bit in enumerate(row):
-                    if bit == "1":
-                        fill(x + i * scale, y + j * scale, scale, scale, c)
-            x += 6 * scale
-
-    fill(0, 0, 16, H, t["ultra"])
-    write(80, 80, "FAH-CORE-METAL", t["fg"], 10)
-    write(80, 200, "FOLDING@HOME ON APPLE SILICON GPUS", t["muted"], 5)
-    write(80, 250, "THROUGH OPENMM METAL", t["muted"], 5)
-    # Hours per P18264 unit, the same numbers as the speed figure.
-    r = rows("speed.csv")
-    for k, x in enumerate(r):
+    W, H = 1280, 640
+    face = "".join(f"@font-face {{ font-family: InterCard; font-weight: {w}; src: url('fonts/Inter-{n}.woff2'); }} "
+                   for w, n in ((400, "Regular"), (600, "SemiBold")))
+    body = [f'<style>{face}text {{ font-family: InterCard; }}</style>\n', rect(0, 0, W, H, t["paper"], 0),
+            rect(0, 0, 16, H, t["ultra"], 0),
+            text(80, 170, "fah-core-metal", t["fg"], 96, "start", "600"),
+            text(80, 240, "Folding@home on Apple Silicon GPUs", t["muted"], 40),
+            text(80, 290, "through OpenMM Metal", t["muted"], 40)]
+    # Hours per P18264 unit, the same numbers as Figure 2.
+    for k, x in enumerate(rows("speed.csv")):
         y = 360 + k * 90
         c = t["ultra"] if x["machine"] == "M3 Ultra" else t["ref"]
-        write(80, y + 4, x["machine"].upper(), t["fg"], 4)
-        write(80, y + 40, f'{x["core"].split(" (")[0]}, {x["api"]}'.upper(), t["muted"], 2)
-        fill(420, y, int(110 * float(x["unit_h"])), 50, c)
-        write(440 + int(110 * float(x["unit_h"])), y + 12, f'{float(x["unit_h"]):.2f} H', t["fg"], 4)
-    write(80, 560, "P18264, 919,221 ATOMS, HOURS PER UNIT", t["muted"], 3)
+        w = 110 * float(x["unit_h"])
+        body.append(text(80, y + 28, x["machine"], t["fg"], 30, "start", "600"))
+        body.append(text(80, y + 54, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 18))
+        body.append(rect(420, y, w, 50, c, 4))
+        body.append(text(440 + w, y + 36, f'{float(x["unit_h"]):.2f} h', t["fg"], 30, "start", "600"))
+    body.append(text(80, 590, "P18264, 919,221 atoms, hours per unit", t["muted"], 22))
+    return svg(W, H, body, "fah-core-metal: Folding@home on Apple Silicon GPUs through OpenMM Metal")
 
-    import struct
-    import zlib
-    raw = b"".join(b"\x00" + bytes(px[3 * W * y:3 * W * (y + 1)]) for y in range(H))
-    chunk = lambda kind, d: struct.pack(">I", len(d)) + kind + d + struct.pack(">I", zlib.crc32(kind + d))
-    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", W, H, 8, 2, 0, 0, 0))
-            + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
+
+def social_png(svg_path, png_path):
+    import shutil
+    import subprocess
+    exe = next((c for c in CHROME if Path(c).exists() or shutil.which(c)), None)
+    if exe is None:
+        print("make.py: no Chrome found, docs/social.png left as it is")
+        return
+    version = subprocess.run([exe, "--version"], capture_output=True, text=True).stdout.strip()
+    out = png_path.with_suffix(".tmp.png")
+    subprocess.run([exe, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
+                    "--allow-file-access-from-files", "--window-size=1280,640", f"--screenshot={out}",
+                    svg_path.as_uri()], check=True, capture_output=True)
+    out.replace(png_path)
+    (here / "social-renderer.txt").write_text(f"{version}\n")
 
 
 for theme, t in THEMES.items():
@@ -411,4 +386,5 @@ for theme, t in THEMES.items():
                        ("distance", distance), ("volume", volume), ("accuracy", accuracy), ("drift", drift),
                        ("parity", parity)):
         (here / f"{name}-{theme}.svg").write_text(make(t))
-(here.parent / "social.png").write_bytes(social())
+(here / "social.svg").write_text(social_svg())
+social_png(here / "social.svg", here.parent / "social.png")
