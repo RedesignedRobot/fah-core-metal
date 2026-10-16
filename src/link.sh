@@ -33,7 +33,7 @@ xcrun clang++ -std=c++17 -O2 -arch arm64 -mmacosx-version-min=15.0 -Wall -Wno-re
     "$src/minicore.cpp" "$src/wufiles.cpp" \
     "$xtc/src/xtc.cpp" "$xtc/src/xdrfile.cpp" "$xtc/src/xdrfile_xtc.cpp" \
     "$prefix/lib/plugins/libOpenMMMetal_static.a" "$@" -Wl,-force_load,"$prefix/lib/libOpenMM_static.a" \
-    -lbz2 -lobjc -framework Metal -framework Foundation -framework QuartzCore -framework IOKit -framework CoreFoundation \
+    -lbz2 -lz -lobjc -framework Metal -framework Foundation -framework QuartzCore -framework IOKit -framework CoreFoundation \
     -o "$core/minicore"
 codesign --force --sign - --options runtime "$core/minicore"
 

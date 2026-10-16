@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <zlib.h>
 
 using namespace std;
 
@@ -81,6 +82,31 @@ string bzip2(const string& data) {
         throw runtime_error("bzip2 compression failed");
     out.resize(size);
     return out;
+}
+
+string gunzip(const string& packed, const string& name) {
+    if (packed.size() > UINT_MAX)
+        throw runtime_error(name+" is over 4 GiB, more than zlib takes in one call");
+    z_stream stream = {};
+    if (inflateInit2(&stream, 16+MAX_WBITS) != Z_OK)  // +16: gzip framing only
+        throw runtime_error("zlib init failed");
+    stream.next_in = (Bytef*) packed.data();
+    stream.avail_in = (uInt) packed.size();
+    string result;
+    vector<char> buffer(1 << 20);
+    int status;
+    do {
+        stream.next_out = (Bytef*) buffer.data();
+        stream.avail_out = (uInt) buffer.size();
+        status = inflate(&stream, Z_NO_FLUSH);
+        result.append(buffer.data(), buffer.size()-stream.avail_out);
+    } while (status == Z_OK);
+    inflateEnd(&stream);
+    if (status == Z_BUF_ERROR)
+        throw runtime_error("truncated gzip data in "+name);
+    if (status != Z_STREAM_END)
+        throw runtime_error("corrupt gzip data in "+name);
+    return result;
 }
 
 static long long octal(const char* field, int width) {
@@ -236,7 +262,7 @@ map<string, string> parseCoreXml(const string& xml) {
     return values;
 }
 
-static uint64_t fnv1a(const void* data, size_t size) {
+uint64_t fnv1a(const void* data, size_t size) {
     uint64_t hash = 1469598103934665603ULL;
     const unsigned char* bytes = (const unsigned char*) data;
     for (size_t i = 0; i < size; i++) {
@@ -276,12 +302,10 @@ static void writeSynced(const string& tmp, const string& data, const void* foote
     close(fd);
 }
 
-void writeAtomically(const string& path, const string& data, const string& previous) {
+void writeAtomically(const string& path, const string& data) {
     string tmp = path+".tmp";
     uint64_t footer[2] = {data.size(), fnv1a(data.data(), data.size())};
     writeSynced(tmp, data, footer, sizeof(footer));
-    if (!previous.empty() && fileExists(path) && rename(path.c_str(), previous.c_str()) != 0)
-        throw FileError("cannot rename "+path+" to "+previous+": "+strerror(errno));
     if (rename(tmp.c_str(), path.c_str()) != 0)
         throw FileError("cannot rename "+tmp+" to "+path+": "+strerror(errno));
 }
