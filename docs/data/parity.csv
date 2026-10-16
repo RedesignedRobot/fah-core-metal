@@ -1,0 +1,26 @@
+item,verdict,detail
+Unit header fields,match,"Project, run, clone, gen and payload size read from the 512-byte header"
+core.xml keys,match,All seven of P18264's keys read
+Output intervals,match,"Checkpoint 5%, viewer 1%, XTC 0.4%"
+State test limits,match,"Force 1e7, energy 1e9, from core.xml"
+State test platform,match,CPU
+State tests,match,"21 tests: step 0, then every 5%"
+Interrupt at start-up,match,"Same four lines, exit 102"
+wuinfo_01.dat,match,"512 B, same layout and values"
+viewerTop.json,match,Byte-identical
+viewerFrameN.json,match,"101 frames, same format"
+positions.xtc,match,"250 frames, same format"
+xtcAtoms.csv.bz2,match,Byte-identical
+Result members and order,match,"Six files, same order"
+Result tar format,match,Plain ustar
+Exit code,match,100 FINISHED_UNIT
+Volume and energies,match,"Same mean volume and spread as the real run"
+Log sections and order,match,Same sections in the same order
+Log wording,by-design,"18 of 87 logfile line shapes word for word"
+OpenMM version strings,by-design,8.6 against 8.2
+checkpointIntegrator.xml,by-design,OpenMM 8.6 adds integrationForceGroups
+Final step count,by-design,The real core takes one step past numSteps
+Checkpoint format,by-design,The client never reads it
+Work dir layout,by-design,The real core works in 01/
+Result header signature,fah-only,Signed with FAH's private key
+Unit signature check,fah-only,Needs FAH's public key and scheme

@@ -1,0 +1,2 @@
+# git format-patch output: blank context lines are a single space.
+patches/*.patch -whitespace

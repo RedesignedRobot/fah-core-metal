@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="316" viewBox="0 0 660 316" role="img" aria-label="Distance from the real trajectory against the distance between two CUDA seeds" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<text x="58.0" y="18.0" font-size="13" fill="#e6edf3" text-anchor="start" font-weight="600">Solute distance between trajectories (nm), first 60,000 steps</text>
+<line x1="58.0" y1="270.0" x2="640.0" y2="270.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="274.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">0.0</text>
+<line x1="58.0" y1="230.7" x2="640.0" y2="230.7" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="234.7" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">0.3</text>
+<line x1="58.0" y1="191.3" x2="640.0" y2="191.3" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="195.3" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">0.6</text>
+<line x1="58.0" y1="152.0" x2="640.0" y2="152.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="156.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">0.9</text>
+<line x1="58.0" y1="112.7" x2="640.0" y2="112.7" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="116.7" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">1.2</text>
+<line x1="58.0" y1="73.3" x2="640.0" y2="73.3" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="77.3" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">1.5</text>
+<line x1="58.0" y1="34.0" x2="640.0" y2="34.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="38.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">1.8</text>
+<line x1="58.0" y1="270.0" x2="58.0" y2="274.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="58.0" y="288.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">0</text>
+<line x1="155.0" y1="270.0" x2="155.0" y2="274.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="155.0" y="288.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">10k</text>
+<line x1="252.0" y1="270.0" x2="252.0" y2="274.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="252.0" y="288.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">20k</text>
+<line x1="349.0" y1="270.0" x2="349.0" y2="274.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="349.0" y="288.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">30k</text>
+<line x1="446.0" y1="270.0" x2="446.0" y2="274.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="446.0" y="288.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">40k</text>
+<line x1="543.0" y1="270.0" x2="543.0" y2="274.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="543.0" y="288.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">50k</text>
+<line x1="640.0" y1="270.0" x2="640.0" y2="274.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="640.0" y="288.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">60k</text>
+<line x1="58.0" y1="270.0" x2="640.0" y2="270.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="349.0" y="306.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">MD step (4 fs each; 60,000 steps = 0.24 ns)</text>
+<polyline points="58.0,270.0 106.5,207.0 155.0,179.7 203.5,159.7 252.0,143.6 300.5,129.0 349.0,116.4 397.5,104.6 446.0,95.6 494.5,84.0 543.0,75.2 591.5,63.2 640.0,54.3" fill="none" stroke="#d29922" stroke-width="2.0" stroke-dasharray="6 4" stroke-linejoin="round"/>
+<polyline points="58.0,270.0 106.5,207.2 155.0,182.2 203.5,159.6 252.0,143.2 300.5,131.4 349.0,116.9 397.5,108.2 446.0,96.6 494.5,86.4 543.0,76.6 591.5,66.5 640.0,58.7" fill="none" stroke="#3fb950" stroke-width="2.0" stroke-linejoin="round"/>
+<polyline points="58.0,270.0 106.5,207.7 155.0,181.0 203.5,158.7 252.0,143.2 300.5,128.7 349.0,114.3 397.5,104.4 446.0,94.5 494.5,84.5 543.0,73.2 591.5,64.7 640.0,56.8" fill="none" stroke="#4493f8" stroke-width="2.0" stroke-linejoin="round"/>
+<polyline points="58.0,270.0 106.5,207.1 155.0,179.8 203.5,158.5 252.0,141.2 300.5,128.2 349.0,114.8 397.5,101.6 446.0,89.8 494.5,78.2 543.0,69.1 591.5,60.1 640.0,51.8" fill="none" stroke="#ab7df8" stroke-width="2.0" stroke-linejoin="round"/>
+<line x1="388.0" y1="186.0" x2="412.0" y2="186.0" stroke="#d29922" stroke-width="2.5" stroke-dasharray="6 4"/>
+<text x="420.0" y="190.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">CUDA seed 1 vs CUDA seed 3</text>
+<line x1="388.0" y1="204.0" x2="412.0" y2="204.0" stroke="#3fb950" stroke-width="2.5"/>
+<text x="420.0" y="208.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">CUDA seed 1 vs real</text>
+<line x1="388.0" y1="222.0" x2="412.0" y2="222.0" stroke="#4493f8" stroke-width="2.5"/>
+<text x="420.0" y="226.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">M3 Ultra (Metal) vs real</text>
+<line x1="388.0" y1="240.0" x2="412.0" y2="240.0" stroke="#ab7df8" stroke-width="2.5"/>
+<text x="420.0" y="244.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">M2 (Metal) vs real</text>
+</svg>

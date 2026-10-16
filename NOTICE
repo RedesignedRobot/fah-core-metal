@@ -1,0 +1,23 @@
+LICENSE covers the files I wrote: build.sh, src/, test/, docs/.
+
+Everything else this repo uses is OpenMM's code under OpenMM's licenses. build.sh fetches it at build
+time and the repo holds none of it, except the patches.
+
+patches/*.patch
+    Edits to OpenMM's CMake files. They are OpenMM code and carry OpenMM's license for the files they
+    change (MIT for the API and build files; LGPL 3 for platforms/metal).
+
+OpenMM, fetched by build.sh from https://github.com/RedesignedRobot/openmm at 90fa9544c
+    Portions copyright (c) 2008-2026 Stanford University and the Authors. The API, the Reference
+    platform and the CPU platform are under the MIT License. The Metal platform (openmm#5488, by Peter
+    Eastman) is under the GNU Lesser General Public License 3 or later. The full terms, including
+    those of SFMT, irrXML, pocketfft and the other libraries inside OpenMM, are in the fetched tree at
+    docs-source/licenses/Licenses.txt, LGPL.txt and GPL.txt.
+
+xdrfile, from OpenMM's wrappers/python/openmm/app/internal/xtc_utils, compiled into the core by src/link.sh
+    Copyright (c) Erik Lindahl, David van der Spoel 2003, 2004. Coordinate compression (c) Frans van
+    Hoesel. GNU Lesser General Public License 3 or later.
+
+The repo distributes source only. A minicore binary links the Metal platform and xdrfile statically, so
+anyone who hands one to someone else takes on the LGPL's terms for those parts: ship their source, or
+the object files and link script that let the recipient relink against a changed copy.

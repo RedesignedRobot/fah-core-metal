@@ -1,0 +1,4 @@
+machine,os,core,api,s_per_1pct,unit_h,condition
+RTX 5060 Ti,Linux,core 0x27 8.2.1 (OpenMM 8.2.0),CUDA mixed,192.0,5.37,real FAH run
+M3 Ultra,macOS 27,minicore,Metal mixed,167.0,4.66,night slot; load 7.14 at start
+M2,macOS 27,minicore,Metal mixed,1280,35.6,day; load under 2

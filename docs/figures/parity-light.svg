@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="696" height="324" viewBox="0 0 696 324" role="img" aria-label="Parity with core 0x27, item by item" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<rect x="10" y="10" width="14" height="14" rx="3" fill="#1a7f37"/>
+<text x="30.0" y="22.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">match (17)</text>
+<rect x="180" y="10" width="14" height="14" rx="3" fill="#9a6700"/>
+<text x="200.0" y="22.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">differs by design (6)</text>
+<rect x="350" y="10" width="14" height="14" rx="3" fill="#59636e"/>
+<text x="370.0" y="22.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">FAH only (2)</text>
+<rect x="10" y="54" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="10" y="54" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="24.0" y="70.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Unit header fields</text>
+<rect x="238" y="54" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="238" y="54" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="252.0" y="70.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">core.xml keys</text>
+<rect x="466" y="54" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="466" y="54" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="480.0" y="70.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Output intervals</text>
+<rect x="10" y="84" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="10" y="84" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="24.0" y="100.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">State test limits</text>
+<rect x="238" y="84" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="238" y="84" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="252.0" y="100.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">State test platform</text>
+<rect x="466" y="84" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="466" y="84" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="480.0" y="100.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">State tests</text>
+<rect x="10" y="114" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="10" y="114" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="24.0" y="130.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Interrupt at start-up</text>
+<rect x="238" y="114" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="238" y="114" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="252.0" y="130.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">wuinfo_01.dat</text>
+<rect x="466" y="114" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="466" y="114" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="480.0" y="130.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">viewerTop.json</text>
+<rect x="10" y="144" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="10" y="144" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="24.0" y="160.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">viewerFrameN.json</text>
+<rect x="238" y="144" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="238" y="144" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="252.0" y="160.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">positions.xtc</text>
+<rect x="466" y="144" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="466" y="144" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="480.0" y="160.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">xtcAtoms.csv.bz2</text>
+<rect x="10" y="174" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="10" y="174" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="24.0" y="190.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Result members and order</text>
+<rect x="238" y="174" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="238" y="174" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="252.0" y="190.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Result tar format</text>
+<rect x="466" y="174" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="466" y="174" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="480.0" y="190.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Exit code</text>
+<rect x="10" y="204" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="10" y="204" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="24.0" y="220.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Volume and energies</text>
+<rect x="238" y="204" width="220" height="24" rx="4" fill="none" stroke="#1a7f37" stroke-width="1.2"/>
+<rect x="238" y="204" width="6" height="24" rx="2" fill="#1a7f37"/>
+<text x="252.0" y="220.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Log sections and order</text>
+<rect x="466" y="204" width="220" height="24" rx="4" fill="none" stroke="#9a6700" stroke-width="1.2"/>
+<rect x="466" y="204" width="6" height="24" rx="2" fill="#9a6700"/>
+<text x="480.0" y="220.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Log wording</text>
+<rect x="10" y="234" width="220" height="24" rx="4" fill="none" stroke="#9a6700" stroke-width="1.2"/>
+<rect x="10" y="234" width="6" height="24" rx="2" fill="#9a6700"/>
+<text x="24.0" y="250.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">OpenMM version strings</text>
+<rect x="238" y="234" width="220" height="24" rx="4" fill="none" stroke="#9a6700" stroke-width="1.2"/>
+<rect x="238" y="234" width="6" height="24" rx="2" fill="#9a6700"/>
+<text x="252.0" y="250.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">checkpointIntegrator.xml</text>
+<rect x="466" y="234" width="220" height="24" rx="4" fill="none" stroke="#9a6700" stroke-width="1.2"/>
+<rect x="466" y="234" width="6" height="24" rx="2" fill="#9a6700"/>
+<text x="480.0" y="250.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Final step count</text>
+<rect x="10" y="264" width="220" height="24" rx="4" fill="none" stroke="#9a6700" stroke-width="1.2"/>
+<rect x="10" y="264" width="6" height="24" rx="2" fill="#9a6700"/>
+<text x="24.0" y="280.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Checkpoint format</text>
+<rect x="238" y="264" width="220" height="24" rx="4" fill="none" stroke="#9a6700" stroke-width="1.2"/>
+<rect x="238" y="264" width="6" height="24" rx="2" fill="#9a6700"/>
+<text x="252.0" y="280.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Work dir layout</text>
+<rect x="466" y="264" width="220" height="24" rx="4" fill="none" stroke="#59636e" stroke-width="1.2"/>
+<rect x="466" y="264" width="6" height="24" rx="2" fill="#59636e"/>
+<text x="480.0" y="280.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Result header signature</text>
+<rect x="10" y="294" width="220" height="24" rx="4" fill="none" stroke="#59636e" stroke-width="1.2"/>
+<rect x="10" y="294" width="6" height="24" rx="2" fill="#59636e"/>
+<text x="24.0" y="310.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Unit signature check</text>
+</svg>
