@@ -159,6 +159,36 @@ def speed(t):
     return svg(right + 150, bottom + 42, body, "Hours per P18264 unit, M3 Ultra against the real core")
 
 
+def nvidia(t):
+    # Every bar is the median 1% over the unit's first 11%, the span the minicore runs cover; core 0x27's
+    # whole-unit median is the tick beyond its bar.
+    r = rows("nvidia.csv")
+    left, right, top, bar, step = 210, 560, 12, 28, 46
+    xmax = 200
+    sx = lambda s: left + (right - left) * s / xmax
+    body = []
+    bottom = top + step * len(r) - 10
+    for v in range(0, xmax + 1, 50):
+        body.append(line(sx(v), top - 4, sx(v), bottom, t["grid"]))
+        body.append(text(sx(v), bottom + 16, f"{v} s", t["muted"], 11, "middle"))
+    body.append(text((left + right) / 2, bottom + 34, "Seconds per 1%, first 11% of the unit", t["muted"], 11,
+                     "middle"))
+    for i, x in enumerate(r):
+        y = top + i * step
+        real = x["core"].startswith("core 0x27")
+        s = float(x["s_per_1pct_first_11"])
+        body.append(text(left - 10, y + 12, x["core"], t["fg"], 13, "end", "600"))
+        body.append(text(left - 10, y + 27, f'OpenMM {x["openmm"]}, CUDA {x["cuda"].split(" (")[0]}', t["muted"],
+                         11, "end"))
+        body.append(rect(left, y, sx(s) - left, bar, t["ref"] if real else t["cuda"]))
+        label = f'{s:.0f} s, {float(x["unit_h"]):.2f} h per unit'
+        if real:
+            body.append(line(sx(float(x["s_per_1pct"])), y - 2, sx(float(x["s_per_1pct"])), y + bar + 2, t["fg"], 2))
+            label = f'{s:.0f} s ({float(x["s_per_1pct"]):.0f} s over the unit), {float(x["unit_h"]):.2f} h per unit'
+        body.append(text(sx(float(x["s_per_1pct"])) + 10, y + 18, label, t["fg"], 12))
+    return svg(right + 290, bottom + 42, body, "Seconds per 1% of P18264 on one RTX 5060 Ti, core 0x27 against minicore")
+
+
 def progress(t):
     r = rows("progress.csv")
     left, right, top, bottom = 58, 640, 14, 230
@@ -367,7 +397,7 @@ def social_png(svg_path, png_path):
 
 
 for theme, t in THEMES.items():
-    for name, make in (("hero", hero), ("speed", speed), ("progress", progress),
+    for name, make in (("hero", hero), ("speed", speed), ("nvidia", nvidia), ("progress", progress),
                        ("distance", distance), ("volume", volume), ("accuracy", accuracy), ("drift", drift),
                        ("parity", parity)):
         (here / f"{name}-{theme}.svg").write_text(make(t))

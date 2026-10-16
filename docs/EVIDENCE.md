@@ -23,6 +23,7 @@ statistics taken from them.
 | Accuracy on four test systems (Figure 5) | Metal: minicore at lab commit 7a92bbba. CUDA: `cuda-ref/scripts/pycore.py`, a Python port of minicore's straight run and FAHBench's state test, on conda-forge OpenMM 8.6.1 |
 | Energy drift (Figure 6) | OpenMM's own VerletIntegrator through `drift/scripts/run1ns.py`, no core |
 | Core-gap checks, the holdout stop and resume, the second P18264 cut (gpuq 2235, 2236) | this repo's source as in ceb9707, linked by `src/link.sh` against the OpenMM prefix of the fresh clone of 3fc8475 (minicore sha256 5e7cc197761cb69f) |
+| P18264 on the RTX 5060 Ti: the 5,000-step cut to the end and the first 11% (gpud 347, 349, 350) | this repo at ba4ae8e, built on chimaera by `build-linux.sh` against conda-forge OpenMM 8.2.0 (minicore sha256 70588a33) and 8.6.1 (sha256 ae3c4331) |
 
 This repo's minicore is the lab's 416b78c7 reworked after two code reviews (`docs/design-notes.md`).
 On a clean run it writes the same files, members and log lines.
@@ -46,6 +47,49 @@ Source: `core-realwu/REPORT.md`, the paragraph headed "Unit", and `core-realwu/r
 | M3 Ultra against the real core | 0.87 | 167 / 192 |
 
 `docs/data/speed.csv` holds the real core and M3 Ultra rows, and Figure 2 is drawn from it.
+
+### One RTX 5060 Ti, core 0x27 against minicore
+
+minicore at fah-core-metal ba4ae8e, built on chimaera by `build-linux.sh` in each gpud job's scratch,
+ran WU2 (the delivered `wudata_01.dat` of the real run above) on card 0, the card core 0x27 used. The
+jobs ran on 2026-10-16 in a window in which Sara lent card 0. Raw records are in
+`core-cuda/results/chimaera/`, one directory per gpud job, and the lab's `core-cuda/REPORT.md` gives
+the commands.
+
+| Figure | Value | Source |
+| --- | --- | --- |
+| Builds | OpenMM 8.2.0 (git 53770948) with cuda-version 11.8 (cudatoolkit 11.8.0), and OpenMM 8.6.1 (git b399af47) with cuda-version 13.4 (cuda-nvrtc 13.4.92, libcufft 12.4.0.43), both from conda-forge, g++ 16.2.0 | `BUILD-INFO-8.2.0`, `BUILD-INFO-8.6.1` and `env-packages-*.txt` in `347-cut/` |
+| 5,000-step cut, both builds | The copy of WU2 with numSteps 5,000 and checkpointFreq 2,500, run to the end: exit 100 (FINISHED_UNIT) in 133 s (8.2.0) and 137 s (8.6.1), 3 state tests each, all pass, viewerTop.json sha256 9431b3ab and the results' xtcAtoms.csv.bz2 sha256 616d8e69, byte-identical to core 0x27's, the six result members in core 0x27's order. The nine "GPU info" lines match core 0x27's word for word | gpud job 347; `347-cut/cut-*-sha256.txt`, `cut-*-logfile.txt`, `cut-*-science.log` |
+| minicore 8.2.0, seconds per 1% | 11 intervals between viewer frames 0 and 11: 186, 184, 184, 184, 185, 183, 184, 184, 184, 186, 184 s, median 184 s; 3 state tests pass; SIGINT at 11%, exit 102 | gpud job 349; `349-time-8.2.0/time-8.2.0.frames` |
+| minicore 8.6.1, seconds per 1% | 186, 181, 178, 180, 182, 179, 180, 180, 179, 183, 181 s, median 180 s; 3 state tests pass; exit 102 | gpud job 350; `350-time-8.6.1/time-8.6.1.frames` |
+| minicore, hours per unit | 5.12 h (8.2.0) and 5.01 h (8.6.1): 30 s and 29 s of start-up to viewerFrame0 plus 100 x the median. The same sum for core 0x27, 82 s from gpud job #280's start to viewerFrame0 plus 100 x 192 s, gives 5.36 h against its measured 5.37 h. The intervals that end on a checkpoint (frames 5 and 10, steps 62,500 and 125,000) are 1 to 3 s above the median | the same files and `time-*.progress` |
+| Core 0x27 over the same 11% | Viewer frames 0 to 11 of the real run: 190, 186, 188, 187, 189, 186, 187, 187, 187, 191, 187 s, median 187 s. The whole unit's median is 192 s | `stat` of the real run's viewer frames on the bench, as for Figure S1; `core-cuda/results/chimaera/real-frames-0-11.txt` |
+| minicore against core 0x27 | Over the first 11%: 0.98 (8.2.0) and 0.96 (8.6.1). Against the whole unit's 192 s: 0.96 and 0.94 | 184 / 187, 180 / 187, 184 / 192, 180 / 192 |
+
+Conditions. Core 0x27 ran under fah-client 8.5.6 at nice 19 and SCHED_IDLE, with persistence mode on
+and a 180 W power limit. Card 0 drew a median 150 W at a median SM clock of 2,670 MHz. Card 1 sat idle
+until 22:03Z, then folded WU3 (`fah-observe-gpu/REPORT.md`). minicore ran with the client's arguments
+at nice 19 and SCHED_IDLE (`core-cuda/scripts/run.py`), with persistence mode on. The power limit had
+been lowered to 150 W since the real run, and this lane could not raise it. Card 0 drew a median 150 W
+(8.2.0) and 150 W (8.6.1) at a median SM clock of 2,647 and 2,632 MHz, with the power-cap throttle
+flag set. nvidia-smi listed no process on card 0 but minicore in any 15 s sample. Card 1 rendered
+Sara's Blender job throughout, at a median 100% utilization and 101 W. The host's 1-minute load had a
+median of 2.3 on 12 CPUs (`samples.log`, `conditions-*.txt` and `nvidia-smi-q-*.txt` in each job's
+directory).
+
+The logs do not say why minicore runs faster on the same OpenMM version. Core 0x27 ships CUDA 11's NVRTC
+and cuFFT 10 and was built with GCC 7.5. The 8.2.0 build uses conda-forge's cudatoolkit 11.8 and
+g++ 16.2. Neither NVRTC 11.2 nor 11.8 knows the card's compute capability 12.0, which CUDA 12.8 added.
+8.6.1 adds OpenMM's own changes since 8.2 and CUDA 13.4, which does know it. No run here separates
+these causes.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/nvidia-dark.svg">
+  <img alt="Seconds per 1% of P18264 on one RTX 5060 Ti, core 0x27 against minicore" src="figures/nvidia-light.svg">
+</picture>
+
+*Figure S2. Seconds per 1% of P18264 on the RTX 5060 Ti over the unit's first 11%, with core 0x27's
+whole-unit median as the tick (`docs/data/nvidia.csv`).*
 
 The README gives no M2 speed. Its numbers stay here: 1,280 s per 1% and 35.6 h per unit (74% of the 48 h
 timeout) in the lab's run above, and 1,298 s for the first 1% with this repo's build (frames 0 and 1 of a
