@@ -4,7 +4,7 @@ core.xml keys,match,All seven of P18264's keys read
 Output intervals,match,"Checkpoint 5%, viewer 1%, XTC 0.4%"
 State test limits,match,"Force 1e7, energy 1e9, from core.xml"
 State test platform,match,CPU
-State tests,match,"21 tests: step 0, then every 5%"
+State tests,match,"Step 0, then every 5%, against CPU"
 Interrupt at start-up,match,"Same four lines, exit 102"
 wuinfo_01.dat,match,"512 B, same layout and values"
 viewerTop.json,match,Byte-identical
@@ -14,9 +14,9 @@ xtcAtoms.csv.bz2,match,Byte-identical
 Result members and order,match,"Six files, same order"
 Result tar format,match,Plain ustar
 Exit code,match,100 FINISHED_UNIT
-Volume and energies,match,"Same mean volume and spread as the real run"
+Box volume,match,"9,299 to 9,317 nm³ in every run over the first 62,500 steps"
 Log sections and order,match,Same sections in the same order
-Log wording,by-design,"18 of 87 logfile line shapes word for word"
+Log wording,by-design,18 of 87 logfile line shapes word for word
 OpenMM version strings,by-design,8.6 against 8.2
 checkpointIntegrator.xml,by-design,OpenMM 8.6 adds integrationForceGroups
 Final step count,by-design,The real core takes one step past numSteps
