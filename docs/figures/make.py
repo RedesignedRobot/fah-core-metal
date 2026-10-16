@@ -10,6 +10,7 @@ CUDA on NVIDIA, grey for the real core 0x27 run and other references.
 import csv
 import math
 import random
+from statistics import mean, median, stdev
 from pathlib import Path
 
 here = Path(__file__).resolve().parent
@@ -69,7 +70,7 @@ def polyline(points, stroke, width=2.0, dash=None):
     return f'<polyline points="{p}" fill="none" stroke="{stroke}" stroke-width="{width}"{d} stroke-linejoin="round"/>\n'
 
 
-def axes(body, t, left, right, top, bottom, xticks, yticks, sx, sy, xfmt, yfmt):
+def axes(body, t, left, right, bottom, xticks, yticks, sx, sy, xfmt, yfmt):
     for v in yticks:
         body.append(line(left, sy(v), right, sy(v), t["grid"]))
         body.append(text(left - 8, sy(v) + 4, yfmt(v), t["muted"], 11, "end"))
@@ -167,7 +168,7 @@ def progress(t):
     sx = lambda p: left + (right - left) * p / 100
     sy = lambda s: bottom - (bottom - top) * (s - lo) / (hi - lo)
     body = []
-    axes(body, t, left, right, top, bottom, range(0, 101, 10), range(lo, hi + 1, 10), sx, sy,
+    axes(body, t, left, right, bottom, range(0, 101, 10), range(lo, hi + 1, 10), sx, sy,
          lambda p: f"{p}%", lambda s: f"{s} s")
     body.append(text((left + right) / 2, bottom + 36, "Progress through the unit (each point is one 1% interval, 12,500 steps)",
                      t["muted"], 11, "middle"))
@@ -177,8 +178,7 @@ def progress(t):
     body.append(polyline([(sx(p), sy(s)) for p, s in ultra], t["ultra"], 2.0))
     for p, s in ultra:
         body.append(circle(sx(p), sy(s), 3, t["ultra"]))
-    med = lambda v: sorted(v)[len(v) // 2] if len(v) % 2 else sum(sorted(v)[len(v) // 2 - 1:len(v) // 2 + 1]) / 2
-    rm, um = med([s for _, s in real]), med([s for _, s in ultra])
+    rm, um = median([s for _, s in real]), median([s for _, s in ultra])
     legend(body, t, left + 300, top + 16, [(f"real core 0x27, RTX 5060 Ti: median {rm:.0f} s", t["ref"], None),
                                           (f"minicore, M3 Ultra: median {um:.0f} s", t["ultra"], None)])
     return svg(right + 20, bottom + 46, body, "Seconds per 1% across the unit, real core against the M3 Ultra")
@@ -190,7 +190,7 @@ def distance(t):
     sx = lambda s: left + (right - left) * s / 60000
     sy = lambda d: bottom - (bottom - top) * d / 1.8
     body = []
-    axes(body, t, left, right, top, bottom, range(0, 60001, 10000), [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8], sx, sy,
+    axes(body, t, left, right, bottom, range(0, 60001, 10000), [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8], sx, sy,
          lambda s: f"{s // 1000}k" if s else "0", lambda d: f"{d:.1f}")
     body.append(text((left + right) / 2, bottom + 36, "MD step (4 fs each; 60,000 steps = 0.24 ns)", t["muted"], 11, "middle"))
     body.append(text(left - 8, top - 16, "nm", t["muted"], 11, "end"))
@@ -211,15 +211,14 @@ def volume(t):
     sx = lambda s: left + (right - left) * s / 1250000
     sy = lambda v: bottom - (bottom - top) * (v - lo) / (hi - lo)
     body = []
-    axes(body, t, left, right, top, bottom, range(0, 1250001, 250000), range(lo, hi + 1, 10), sx, sy,
+    axes(body, t, left, right, bottom, range(0, 1250001, 250000), range(lo, hi + 1, 10), sx, sy,
          lambda s: f"{s / 250000:.0f} ns", lambda v: f"{v:,}")
     body.append(text(left - 8, top - 16, "nm³", t["muted"], 11, "end"))
     for key, color in (("real_nm3", t["ref"]), ("cuda_seed3_nm3", t["cuda"])):
         body.append(polyline([(sx(int(x["step"])), sy(float(x[key]))) for x in r], color, 1.0))
     def stats(key):
         v = [float(x[key]) for x in r]
-        m = sum(v) / len(v)
-        return m, (sum((a - m) ** 2 for a in v) / (len(v) - 1)) ** 0.5
+        return mean(v), stdev(v)
     (rm, rs), (cm, cs) = stats("real_nm3"), stats("cuda_seed3_nm3")
     legend(body, t, left, bottom + 40, [(f"real core 0x27: mean {rm:,.1f}, sd {rs:.1f}", t["ref"], None),
                                          (f"CUDA replay, seed 3: mean {cm:,.1f}, sd {cs:.1f}", t["cuda"], None)])

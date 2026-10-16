@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // wufiles: the file formats around a work unit that minicore reads and writes. bzip2 and gzip in memory, a
 // ustar reader and writer, core.xml as a flat key/value map, and atomic writes with a length and hash
-// footer. File IO errors throw FileError, bad data throws std::runtime_error.
+// footer. File IO errors throw FileError, bad data throws DataError.
 #ifndef MINICORE_WUFILES_H
 #define MINICORE_WUFILES_H
 #include <cstdint>
@@ -13,6 +13,9 @@
 #include <vector>
 
 struct FileError : std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
+struct DataError : std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
@@ -31,7 +34,7 @@ std::string gunzip(const std::string& packed, const std::string& name);
 struct WuHeader {
     uint32_t version = 0, coreType = 0, project = 0, run = 0, clone = 0, gen = 0, payloadBytes = 0;
 };
-// The header, if the first block is one: not a valid tar header, and a valid one 512 bytes on.
+// The header, if the first block is one: no tar or bzip2 data at 0, and a tar or bzip2 stream 512 bytes on.
 std::optional<WuHeader> readWuHeader(const std::string& data);
 
 // Regular members of a ustar or GNU tar archive, in order. Other member types (directories, pax

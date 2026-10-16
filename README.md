@@ -87,6 +87,8 @@ The differences in Figure 7 come from FAH's keys and file formats, the OpenMM ve
 minicore doesn't print.
 
 - **Signed result header.** It needs FAH's private key, so minicore returns the tar alone and signs nothing.
+- **Unit signature check.** It needs FAH's key and signature scheme, so minicore checks neither the unit's
+  digests nor its signature and logs "Digital signatures not checked" (PARITY.md row I2).
 - **Checkpoint format.** Core 0x27 checks `01/checkpoint` against checkpt.crc, a FAH file format. minicore
   writes the same file name with a length and hash footer instead, and the client reads neither.
 - **OpenMM version strings.** minicore builds OpenMM 8.6 with the Metal platform, and core 0x27 uses 8.2.
@@ -97,28 +99,30 @@ minicore doesn't print.
 ## Try it
 
 On an Apple Silicon Mac with macOS 15 or later (tested on macOS 27.2), Xcode or the Command Line Tools,
-git and CMake, this builds the core and folds a small test unit:
+git and CMake 3.24 or later, this builds the core and folds a small test unit:
 
-```
+```sh
 git clone https://github.com/RedesignedRobot/fah-core-metal.git
 cd fah-core-metal
 ./build.sh
 cp -R test/alanine-dipeptide unit
-./build/core/minicore -dir unit -gpu-vendor apple -gpu 0
+./build/core/minicore -dir unit -gpu-vendor apple -gpu 0; echo "exit $?"
 ```
 
-The core prints nothing to the terminal and exits 100 when the unit is done. Its log is
-`unit/logfile_01.txt`, and the result is the tar `unit/wuresults_01.dat`, whose science.log holds the
-state tests.
+The build takes about 15 minutes on an M3 Ultra. Like any FAH core, the fold prints nothing to the
+terminal: it logs to `unit/logfile_01.txt`, which you can watch with `tail -f` from a second terminal.
+Exit 100 is FAH's FINISHED_UNIT, and the result is the tar `unit/wuresults_01.dat`, whose science.log
+holds the state tests.
 
 ## Build it
 
-`build.sh` fetches OpenMM with the Metal platform at a pinned commit, builds it as static libraries and
-links one self-contained executable.
+`./build.sh [-j JOBS] [OUT]` fetches OpenMM with the Metal platform at a pinned commit, builds it as
+static libraries and links one self-contained executable, `OUT/core/minicore`, then prints its
+`--info`. JOBS defaults to 6 and OUT to `./build`. OUT must not exist, so remove it to build again:
 
-```
-./build.sh -j 6 build
-./build/core/minicore --info
+```sh
+rm -rf build
+./build.sh
 ```
 
 ## FAQ

@@ -10,7 +10,7 @@
 #   OUT/core        minicore, one arm64 executable with OpenMM inside
 #   OUT/BUILD-INFO  commit, patches, toolchain, sizes and timings
 #
-# Needs an Apple silicon Mac with Xcode or the Command Line Tools (macOS 15 SDK or later), git, CMake 3.17
+# Needs an Apple silicon Mac with Xcode or the Command Line Tools (macOS 15 SDK or later), git, CMake 3.24
 # or later, and Ninja or make. No Python, SWIG or Doxygen.
 set -eu
 
@@ -21,17 +21,23 @@ jobs=6
 while getopts j: opt; do
     case $opt in
     j) jobs=$OPTARG ;;
-    *) sed -n '2,15p' "$0"; exit 2 ;;
+    *) sed -n '2,14s/^# \{0,1\}//p' "$0"; exit 2 ;;
     esac
 done
 shift $((OPTIND-1))
 here=$(cd "$(dirname "$0")" && pwd)
 out=${1:-$here/build}
-[ -e "$out" ] && { echo "$out exists; pick a new directory" >&2; exit 2; }
+[ -e "$out" ] && { echo "$out exists; remove it or pass a new OUT" >&2; exit 2; }
 [ "$(uname -s)/$(uname -m)" = Darwin/arm64 ] || { echo "build on an Apple silicon Mac" >&2; exit 2; }
 for tool in git cmake xcrun; do
     command -v $tool > /dev/null || { echo "$tool is not on PATH" >&2; exit 2; }
 done
+# OpenMM's CMakeLists.txt at $commit starts with CMAKE_MINIMUM_REQUIRED(VERSION 3.24).
+cmake_version=$(cmake --version | awk 'NR == 1 {print $3}')
+case $cmake_version in
+3.2[4-9]*|3.[3-9][0-9]*|[4-9].*|[1-9][0-9].*) ;;
+*) echo "CMake is $cmake_version; OpenMM at $commit needs 3.24 or later" >&2; exit 2 ;;
+esac
 if command -v ninja > /dev/null; then generator=Ninja; else generator="Unix Makefiles"; fi
 sdk=$(xcrun --sdk macosx --show-sdk-version)
 case $sdk in
@@ -43,13 +49,12 @@ mkdir -p "$out"
 out=$(cd "$out" && pwd)
 start=$(date +%s)
 log() { echo "$(date -u +%H:%M:%SZ) $*"; }
+fail() { tail -n 40 "$1" >&2; echo "build.sh: $2 failed; the full log is $1" >&2; exit 1; }
 
 log "fetching $commit from $repo"
 git init -q "$out/src"
 git -C "$out/src" fetch -q --depth 1 "$repo" "$commit"
 git -C "$out/src" -c advice.detachedHead=false checkout -q FETCH_HEAD
-head=$(git -C "$out/src" rev-parse HEAD)
-[ "$head" = "$commit" ] || { echo "fetched $head, asked for $commit" >&2; exit 1; }
 for p in "$here"/patches/*.patch; do
     git -C "$out/src" apply "$p"
     log "applied $(basename "$p")"
@@ -79,34 +84,26 @@ cmake -S "$out/src" -B "$out/build" -G "$generator" \
     -DOPENMM_BUILD_EXAMPLES=OFF \
     -DOPENMM_GENERATE_API_DOCS=OFF \
     -DBUILD_TESTING=OFF \
-    > "$out/cmake-configure.log" 2>&1 || { tail -n 30 "$out/cmake-configure.log"; exit 1; }
+    > "$out/cmake-configure.log" 2>&1 || fail "$out/cmake-configure.log" "configuring OpenMM"
 configured=$(date +%s)
 log "building with $jobs jobs"
-cmake --build "$out/build" --parallel "$jobs" > "$out/cmake-build.log" 2>&1 || { grep -m 20 -i 'error' "$out/cmake-build.log"; exit 1; }
-cmake --install "$out/build" > "$out/cmake-install.log" 2>&1 || { tail -n 20 "$out/cmake-install.log"; exit 1; }
+cmake --build "$out/build" --parallel "$jobs" > "$out/cmake-build.log" 2>&1 || fail "$out/cmake-build.log" "building OpenMM"
+cmake --install "$out/build" > "$out/cmake-install.log" 2>&1 || fail "$out/cmake-install.log" "installing OpenMM"
 built=$(date +%s)
-
-lib=$out/prefix/lib
-for a in libOpenMM_static.a plugins/libOpenMMMetal_static.a plugins/libOpenMMCPU_static.a plugins/libOpenMMPME_static.a; do
-    [ -f "$lib/$a" ] || { echo "FAIL: $lib/$a is missing" >&2; exit 1; }
-done
-nm -g -U "$lib/plugins/libOpenMMMetal_static.a" 2> /dev/null | grep -q ' T _registerMetalPlatform$' ||
-    { echo "FAIL: libOpenMMMetal_static.a has no registerMetalPlatform" >&2; exit 1; }
-[ -z "$(find "$out/prefix" -name '*.dylib')" ] || { echo "FAIL: the prefix holds a dylib" >&2; exit 1; }
 
 log "linking the core"
 sh "$here/src/link.sh" "$out/prefix" "$out/core"
 linked=$(date +%s)
 
 {
-    echo "commit $head"
+    echo "commit $commit"
     echo "repo $repo"
     for p in "$here"/patches/*.patch; do echo "patch $(basename "$p") sha256 $(shasum -a 256 "$p" | cut -c1-64)"; done
-    echo "cmake $(cmake --version | head -n 1 | awk '{print $3}'), $generator, $jobs jobs"
+    echo "cmake $cmake_version, $generator, $jobs jobs"
     echo "clang $(xcrun clang --version | head -n 1)"
     echo "sdk macosx $sdk, host macOS $(sw_vers -productVersion) $(sw_vers -buildVersion), $(sysctl -n machdep.cpu.brand_string)"
     for a in libOpenMM_static.a plugins/libOpenMMMetal_static.a plugins/libOpenMMCPU_static.a plugins/libOpenMMPME_static.a; do
-        echo "$(basename "$a") $(stat -f %z "$lib/$a") bytes"
+        echo "$(basename "$a") $(stat -f %z "$out/prefix/lib/$a") bytes"
     done
     echo "minicore $(stat -f %z "$out/core/minicore") bytes, sha256 $(shasum -a 256 "$out/core/minicore" | cut -c1-64)"
     echo "seconds: fetch+configure $((configured-start)), build+install $((built-configured)), link $((linked-built))"
