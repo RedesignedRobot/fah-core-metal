@@ -157,7 +157,8 @@ this repo's source.
   - R3: rw `real-files.txt`. At 0d2d901, gpuq 2237's tar has mode 0666, uid and gid 0, one mtime and the
     ustar magic.
 - **Other match rows.** The remaining match rows rest on the four audits named in their last column.
-- **Unpack row.** The interrupted-unpack row is left to the core-unpack-fix lane.
+- **Unpack row.** Row I12 came from the core-unpack-fix lane after 0d2d901. This lane changed only its
+  capture citation, which named the build host.
 
 ## Other files
 
@@ -179,7 +180,11 @@ this repo's source.
   `checkpoint.prev.bin`, which ceb9707 removed. They now describe `01/checkpoint`, `01/numRetries`, 98
   and 114 (`src/minicore.cpp:1774-1790`).
 - **NOTICE.** Adds metal-cpp and xtc.cpp.
-- **History.** One `git log --all -p | grep -nE` over every commit printed nothing. It searched for:
+- **History.** Two commits on main, 3fea7b5 and 14ddc0f, name the build host in a citation in PARITY row
+  I12. This commit cites that capture as "obs strace-1.txt", so the tree is clean, and the rewrite of
+  history is held for the owner. The name is left out here, since this file would match the grep. Apart
+  from those two commits, one `git log --all -p | grep -nE` over every commit printed nothing. It searched
+  for:
   - home and temp paths
   - the bench and lab directory names
   - host names
