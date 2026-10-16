@@ -10,6 +10,7 @@ CUDA on NVIDIA, grey for the real core 0x27 run and other references.
 import csv
 import math
 import random
+from statistics import mean, median, stdev
 from pathlib import Path
 
 here = Path(__file__).resolve().parent
@@ -69,7 +70,7 @@ def polyline(points, stroke, width=2.0, dash=None):
     return f'<polyline points="{p}" fill="none" stroke="{stroke}" stroke-width="{width}"{d} stroke-linejoin="round"/>\n'
 
 
-def axes(body, t, left, right, top, bottom, xticks, yticks, sx, sy, xfmt, yfmt):
+def axes(body, t, left, right, bottom, xticks, yticks, sx, sy, xfmt, yfmt):
     for v in yticks:
         body.append(line(left, sy(v), right, sy(v), t["grid"]))
         body.append(text(left - 8, sy(v) + 4, yfmt(v), t["muted"], 11, "end"))
@@ -154,8 +155,9 @@ def speed(t):
         body.append(text(left - 10, y + 12, x["machine"], t["fg"], 13, "end", "600"))
         body.append(text(left - 10, y + 27, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 11, "end"))
         body.append(rect(left, y, sx(float(x["unit_h"])) - left, bar, color[x["machine"]]))
+        est = "" if x["unit_h_from"] == "full run" else " est."
         body.append(text(sx(float(x["unit_h"])) + 8, y + 18,
-                         f'{float(x["unit_h"]):.2f} h, {float(x["s_per_1pct"]):,.0f} s per 1%', t["fg"], 12))
+                         f'{float(x["unit_h"]):.2f} h{est}, {float(x["s_per_1pct"]):,.0f} s per 1%', t["fg"], 12))
     return svg(right + 150, bottom + 42, body, "Hours per P18264 unit, M3 Ultra against the real core")
 
 
@@ -196,7 +198,7 @@ def progress(t):
     sx = lambda p: left + (right - left) * p / 100
     sy = lambda s: bottom - (bottom - top) * (s - lo) / (hi - lo)
     body = []
-    axes(body, t, left, right, top, bottom, range(0, 101, 10), range(lo, hi + 1, 10), sx, sy,
+    axes(body, t, left, right, bottom, range(0, 101, 10), range(lo, hi + 1, 10), sx, sy,
          lambda p: f"{p}%", lambda s: f"{s} s")
     body.append(text((left + right) / 2, bottom + 36, "Progress through the unit (each point is one 1% interval, 12,500 steps)",
                      t["muted"], 11, "middle"))
@@ -206,8 +208,7 @@ def progress(t):
     body.append(polyline([(sx(p), sy(s)) for p, s in ultra], t["ultra"], 2.0))
     for p, s in ultra:
         body.append(circle(sx(p), sy(s), 3, t["ultra"]))
-    med = lambda v: sorted(v)[len(v) // 2] if len(v) % 2 else sum(sorted(v)[len(v) // 2 - 1:len(v) // 2 + 1]) / 2
-    rm, um = med([s for _, s in real]), med([s for _, s in ultra])
+    rm, um = median([s for _, s in real]), median([s for _, s in ultra])
     legend(body, t, left + 300, top + 16, [(f"real core 0x27, RTX 5060 Ti: median {rm:.0f} s", t["ref"], None),
                                           (f"minicore, M3 Ultra: median {um:.0f} s", t["ultra"], None)])
     return svg(right + 20, bottom + 46, body, "Seconds per 1% across the unit, real core against the M3 Ultra")
@@ -219,7 +220,7 @@ def distance(t):
     sx = lambda s: left + (right - left) * s / 60000
     sy = lambda d: bottom - (bottom - top) * d / 1.8
     body = []
-    axes(body, t, left, right, top, bottom, range(0, 60001, 10000), [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8], sx, sy,
+    axes(body, t, left, right, bottom, range(0, 60001, 10000), [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8], sx, sy,
          lambda s: f"{s // 1000}k" if s else "0", lambda d: f"{d:.1f}")
     body.append(text((left + right) / 2, bottom + 36, "MD step (4 fs each; 60,000 steps = 0.24 ns)", t["muted"], 11, "middle"))
     body.append(text(left - 8, top - 16, "nm", t["muted"], 11, "end"))
@@ -240,15 +241,14 @@ def volume(t):
     sx = lambda s: left + (right - left) * s / 1250000
     sy = lambda v: bottom - (bottom - top) * (v - lo) / (hi - lo)
     body = []
-    axes(body, t, left, right, top, bottom, range(0, 1250001, 250000), range(lo, hi + 1, 10), sx, sy,
+    axes(body, t, left, right, bottom, range(0, 1250001, 250000), range(lo, hi + 1, 10), sx, sy,
          lambda s: f"{s / 250000:.0f} ns", lambda v: f"{v:,}")
     body.append(text(left - 8, top - 16, "nm³", t["muted"], 11, "end"))
     for key, color in (("real_nm3", t["ref"]), ("cuda_seed3_nm3", t["cuda"])):
         body.append(polyline([(sx(int(x["step"])), sy(float(x[key]))) for x in r], color, 1.0))
     def stats(key):
         v = [float(x[key]) for x in r]
-        m = sum(v) / len(v)
-        return m, (sum((a - m) ** 2 for a in v) / (len(v) - 1)) ** 0.5
+        return mean(v), stdev(v)
     (rm, rs), (cm, cs) = stats("real_nm3"), stats("cuda_seed3_nm3")
     legend(body, t, left, bottom + 40, [(f"real core 0x27: mean {rm:,.1f}, sd {rs:.1f}", t["ref"], None),
                                          (f"CUDA replay, seed 3: mean {cm:,.1f}, sd {cs:.1f}", t["cuda"], None)])
@@ -321,29 +321,33 @@ def drift(t):
 
 def parity(t):
     r = rows("parity.csv")
-    mark = {"match": ("match", t["ultra"], "✓"), "by-design": ("differs by FAH's design", t["tile"], "≠"),
-            "fah-only": ("needs FAH's keys", t["ref"], "FAH")}
+    # Label, fill, glyph, glyph colour and outline of each verdict. The legend counts the M3 Ultra column,
+    # and "not-rerun" the M2 column: rows ceb9707 changed that the M2 never ran at ceb9707.
+    mark = {"match": ("match", t["ultra"], "✓", t["paper"], None),
+            "by-design": ("differs by FAH's design", t["tile"], "≠", t["ultra"], t["ultra"]),
+            "fah-only": ("needs FAH's keys", t["ref"], "FAH", t["paper"], None),
+            "not-rerun": ("M2 not rerun", t["paper"], "–", t["muted"], t["muted"])}
     item_w, cw, rh, top = 196, 76, 22, 52
     body = []
     x = 0
-    for key in ("match", "by-design", "fah-only"):
-        n = sum(1 for e in r if e["ultra"] == key)
-        label, fill, glyph = mark[key]
-        body.append(rect(x, 6, 34, 18, fill, 3, t["ultra"] if key == "by-design" else None))
-        body.append(text(x + 17, 19, glyph, t["paper"] if key != "by-design" else t["ultra"], 12, "middle", "600"))
+    for key, (label, fill, glyph, ink, edge) in mark.items():
+        n = sum(1 for e in r if e["m2" if key == "not-rerun" else "ultra"] == key)
+        if not n:
+            continue
+        body.append(rect(x, 6, 34, 18, fill, 3, edge))
+        body.append(text(x + 17, 19, glyph, ink, 12, "middle", "600"))
         body.append(text(x + 42, 20, f"{label} ({n})", t["fg"], 12))
-        x += 200
+        x += 42 + round(6.6 * len(f"{label} ({n})")) + 22
     body.append(text(item_w + cw / 2, top - 8, "M3 Ultra", t["fg"], 12, "middle", "600"))
     body.append(text(item_w + cw * 1.5, top - 8, "M2", t["fg"], 12, "middle", "600"))
     for i, e in enumerate(r):
         y = top + i * rh
         body.append(text(item_w - 10, y + 15, e["item"], t["fg"], 12, "end"))
         for j, key in enumerate(("ultra", "m2")):
-            label, fill, glyph = mark[e[key]]
+            label, fill, glyph, ink, edge = mark[e[key]]
             cx = item_w + j * cw
-            body.append(rect(cx + 2, y + 2, cw - 4, rh - 4, fill, 3, t["ultra"] if e[key] == "by-design" else None))
-            body.append(text(cx + cw / 2, y + 15, glyph, t["paper"] if e[key] != "by-design" else t["ultra"],
-                             12, "middle", "600"))
+            body.append(rect(cx + 2, y + 2, cw - 4, rh - 4, fill, 3, edge))
+            body.append(text(cx + cw / 2, y + 15, glyph, ink, 12, "middle", "600"))
         body.append(text(item_w + 2 * cw + 12, y + 15, e["detail"], t["muted"], 11.5))
     return svg(item_w + 2 * cw + 400, top + len(r) * rh + 4, body,
                "Parity with core 0x27 item by item on the M3 Ultra and the M2")
@@ -375,8 +379,9 @@ def social_svg():
         body.append(text(80, y + 28, x["machine"], t["fg"], 30, "start", "600"))
         body.append(text(80, y + 54, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 18))
         body.append(rect(420, y, w, 50, c, 4))
-        body.append(text(440 + w, y + 36, f'{float(x["unit_h"]):.2f} h', t["fg"], 30, "start", "600"))
-    body.append(text(80, 590, "P18264, 919,221 atoms, hours per unit", t["muted"], 22))
+        est = "" if x["unit_h_from"] == "full run" else " est."
+        body.append(text(440 + w, y + 36, f'{float(x["unit_h"]):.2f} h{est}', t["fg"], 30, "start", "600"))
+    body.append(text(80, 590, "P18264, 919,221 atoms, hours per unit; the M3 Ultra's from its first 5%", t["muted"], 22))
     return svg(W, H, body, "fah-core-metal: Folding@home on Apple Silicon GPUs through OpenMM Metal")
 
 

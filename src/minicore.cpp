@@ -7,9 +7,9 @@
 // It takes the arguments fah-client passes a core (Unit.cpp:627-672 at fah-client-bastet 0ea081e, the same
 // in master 706d6a0), picks the OpenMM platform from them, and passes the platform only the properties it
 // declares. The work unit is <dir>/wudata_01.dat (a tar, or a bzip2 tar, behind FAH's 512-byte header or
-// not), unpacked into <dir>/01 on the first start, or the same files loose in <dir>. Each of system,
-// integrator and state is found as core 0x27 finds it (.xml, .xml.gz or .xml.bz2; the .enc forms need FAH's
-// key). core.xml sets the run with core 0x27's 26 options (S:19427-19472, alchemiscale-fah
+// not), unpacked into <dir>/01 until a start writes every member, or the same files loose in <dir>. Each of
+// system, integrator and state is found as core 0x27 finds it (.xml, .xml.gz or .xml.bz2; the .enc forms need
+// FAH's key). core.xml sets the run with core 0x27's 26 options (S:19427-19472, alchemiscale-fah
 // FahOpenMMCoreSettings): numSteps, checkpointFreq, xtcFreq, viewerFreq, globalVarFreq, trrFreq (a negative
 // interval is a percentage), precision, xtcAtoms, xtcMinAtom, xtcMaxAtom, trrAtoms, trrMinAtom, trrMaxAtom,
 // saveForcesInTrr, forceTolerance, energyTolerance, maxRetriesFromLastCheckpoint, disableCheckpointStateTests,
@@ -18,9 +18,8 @@
 //
 // The run, in core 0x27's order:
 //   - PME alpha and grid pinned from the default box with CUDA's grid sizes, minimization if asked, then the
-//     sanity checks against CPU (Reference if the build has no CPU platform): the unit's state.xml forces and
-//     energies, then the GPU state. A unit that fails them, or whose state the Context refuses, goes back
-//     with BAD_WORK_UNIT at once;
+//     sanity checks against CPU: the unit's state.xml forces and energies, then the GPU state. A unit that
+//     fails them, or whose state the Context refuses, goes back with BAD_WORK_UNIT at once;
 //   - state tests are FAHBench's StateTests (NaN in positions, velocities or forces; |v| > 17.47 nm/ps; more
 //     than half the velocity components exactly 0; |F| > 50000 kJ/mol/nm; RMS of the force magnitude
 //     difference > forceTolerance; |dPE| or |dKE| > energyTolerance), run at step 0 and before every
@@ -192,8 +191,7 @@ static void writeAll(const char* text) {
 }
 
 // cbang's ExitSignalHandler as core 0x27 runs it: the first signal asks the core to stop, the second warns
-// and restores the default action so a third kills it (S:20423-20424, 20468; second-signal bytes from
-// fah-observe-gpu capture 6).
+// and restores the default action so a third kills it (S:20423-20424, 20468; docs/PARITY.md S4).
 static void onSignal(int number) {
     interrupted = true;
     writeAll(number == SIGINT ? "Caught signal SIGINT(2)\n" : "Caught signal SIGTERM(15)\n");
@@ -307,7 +305,7 @@ static void openLogs(const Options& opt, const string& workDir) {
     logFds[0] = fileno(logFile);
     logFds[1] = fileno(scienceLog);
     // Core 0x27 points stdout and stderr at science.log, so OpenMM's and the Metal compiler's own messages
-    // reach the returned log (fah-observe-gpu capture 2; the client nulls both).
+    // reach the returned log (docs/PARITY.md A11; the client nulls both).
     if (dup2(logFds[1], STDOUT_FILENO) < 0 || dup2(logFds[1], STDERR_FILENO) < 0)
         throw FileError(string("cannot point stdout and stderr at science.log: ")+strerror(errno));
 }
@@ -493,13 +491,6 @@ static void logGpuInfo(const PlatformChoice& choice) {
 static const char* const InputSuffixes[] = {".xml.enc", ".xml.gz.enc", ".xml.bz2.enc", ".xml", ".xml.gz", ".xml.bz2"};
 static const char* const Inputs[] = {"integrator", "state", "system"};
 
-static bool hasInput(const string& dir, const string& base) {
-    for (const char* suffix : InputSuffixes)
-        if (fileExists(dir+"/"+base+suffix))
-            return true;
-    return false;
-}
-
 static string findInput(const string& dir, const string& base) {
     for (const char* suffix : InputSuffixes) {
         string name = base+suffix;
@@ -527,13 +518,18 @@ static string unpackInput(const string& path) {
             return bunzip2(data, path);
         return data;
     }
-    catch (const runtime_error& e) {
+    catch (const DataError& e) {
         throw Failure(BAD_WORK_UNIT, e.what());
     }
 }
 
-// The unit: <dir>/wudata_01.dat, unpacked into <dir>/01 on the first start as core 0x27 does, or its files
-// loose in <dir>. A unit from a FAH work server has a 512-byte header before the tar, and core 0x27 logs
+// Core 0x27 extracts the tar while 01/checkpt.crc is missing and creates checkpt.crc after the last member,
+// so a start stopped partway through extracts again (docs/PARITY.md I12). minicore has no checkpt.crc
+// (PARITY K3), and this empty file takes its place.
+static const char* const UnpackedFile = "unpacked";
+
+// The unit: <dir>/wudata_01.dat, unpacked into <dir>/01 as core 0x27 does, or its files loose in <dir>. A
+// unit from a FAH work server has a 512-byte header before the tar, and core 0x27 logs
 // "Project: P (Run R, Clone C, Gen G)" from it on every start, then "Digital signatures verified". This core
 // reads the plain fields only: checking the digests and signature needs FAH's key.
 static void readWorkUnit(const Options& opt, WorkUnit& unit) {
@@ -550,30 +546,31 @@ static void readWorkUnit(const Options& opt, WorkUnit& unit) {
             const WuHeader& h = *unit.header;
             tell("Project: %u (Run %u, Clone %u, Gen %u)", h.project, h.run, h.clone, h.gen);
             if (h.payloadBytes != archive.size()-512)
-                throw runtime_error("wudata header says "+to_string(h.payloadBytes)+" payload bytes, the file has "+
-                                    to_string(archive.size()-512));
+                throw Failure(BAD_WORK_UNIT, "wudata header says "+to_string(h.payloadBytes)+" payload bytes, the file has "+
+                              to_string(archive.size()-512));
             archive.erase(0, 512);
         }
-        bool unpacked = all_of(begin(Inputs), end(Inputs), [&](const char* base) { return hasInput(unit.workDir, base); });
-        if (!unpacked) {
+        string unpacked = unit.workDir+"/"+UnpackedFile;
+        if (!fileExists(unpacked)) {
             if (isBzip2(archive))
                 archive = bunzip2(archive, wudata);
-            for (auto& member : readTar(archive)) {
+            vector<pair<string, string>> members = readTar(archive);
+            if (members.empty())
+                throw Failure(BAD_WORK_UNIT, wudata+" holds no files");
+            for (auto& member : members) {
                 string name = member.first.substr(member.first.rfind('/')+1);
                 if (name.empty() || name[0] == '.')
                     continue;  // directories, and the AppleDouble files macOS tar adds
                 tell("Reading tar file %s", name.c_str());
                 replaceFile(unit.workDir+"/"+name, member.second);
             }
+            replaceFile(unpacked, "");
         }
         if (unit.header)
             tell("Digital signatures not checked: version %u header for core 0x%02x, signature scheme private to FAH",
                  unit.header->version, unit.header->coreType);
     }
-    catch (const FileError&) {
-        throw;
-    }
-    catch (const runtime_error& e) {
+    catch (const DataError& e) {
         throw Failure(BAD_WORK_UNIT, e.what());
     }
 }
@@ -626,7 +623,7 @@ static AtomSelection configSelection(const map<string, string>& config, const st
 static bool isCoreFileName(const string& name) {
     static const char* const prefixes[] = {"wudata_", "wuresults_", "wuinfo_", "logfile_", "checkpoint",
         "viewerFrame", "viewerTop", "core.xml", "system.xml", "integrator.xml", "state.xml", "positions.xtc",
-        "records.trr", "science.log", "xtcAtoms.csv", "stepsDone", "numRetries"};
+        "records.trr", "science.log", "xtcAtoms.csv", "stepsDone", "numRetries", UnpackedFile};
     for (const char* prefix : prefixes)
         if (name.compare(0, strlen(prefix), prefix) == 0)
             return true;
@@ -634,18 +631,15 @@ static bool isCoreFileName(const string& name) {
 }
 
 static Settings readSettings(const WorkUnit& unit) {
-    map<string, string> config;
     string path = unit.inputDir+"/core.xml";
-    if (fileExists(path)) {
-        try {
-            config = parseCoreXml(readFile(path));
-        }
-        catch (const FileError&) {
-            throw;
-        }
-        catch (const runtime_error& e) {
-            throw Failure(BAD_WORK_UNIT, e.what());
-        }
+    if (!fileExists(path))
+        throw Failure(MISSING_WORK_FILES, "Cannot find core.xml");
+    map<string, string> config;
+    try {
+        config = parseCoreXml(readFile(path));
+    }
+    catch (const DataError& e) {
+        throw Failure(BAD_WORK_UNIT, e.what());
     }
     static const set<string> known = {"numSteps", "checkpointFreq", "xtcFreq", "viewerFreq", "globalVarFreq",
         "globalVarFilename", "precision", "xtcAtoms", "xtcMinAtom", "xtcMaxAtom", "forceTolerance", "energyTolerance",
@@ -907,8 +901,8 @@ static StateTestResult& fail(StateTestResult& r, const char* format, ...) {
     return r;
 }
 
-// FAHBench's StateTests (fahbench/StateTests.cpp), run against a CPU (or Reference) Context of the same
-// pinned System, with its own integrator.
+// FAHBench's StateTests (fahbench/StateTests.cpp), run against a CPU Context of the same pinned System,
+// with its own integrator.
 class StateTester {
 public:
     StateTester(unique_ptr<System> system, unique_ptr<Integrator> integrator, const Settings& settings,
@@ -919,22 +913,17 @@ public:
     // The unit's state.xml carries the forces and energies its last core computed (every unit seen so far);
     // core 0x27 compares both against CPU. Empty if state.xml has no energies.
     optional<StateTestResult> compareInitial(const State& given) {
-        StateTestResult r;
-        try {
-            r.givenPE = given.getPotentialEnergy();
-            r.givenKE = given.getKineticEnergy();
-        }
-        catch (const OpenMMException&) {
+        if (!(given.getDataTypes() & State::Energy))
             return nullopt;
-        }
+        StateTestResult r;
+        r.givenPE = given.getPotentialEnergy();
+        r.givenKE = given.getKineticEnergy();
         refContext->setState(given);
         State expected = refContext->getState(State::Forces | State::Energy);
         r.referencePE = expected.getPotentialEnergy();
         r.referenceKE = expected.getKineticEnergy();
-        try {
+        if (given.getDataTypes() & State::Forces)  // without forces, the energies alone
             compareForces(given.getForces(), expected.getForces(), r);
-        }
-        catch (const OpenMMException&) {}  // no forces in state.xml: the energies alone
         checkEnergies(r);
         return r;
     }
@@ -1258,23 +1247,21 @@ static bool due(long long step, long long interval) {
     return interval > 0 && step%interval == 0;
 }
 
-#ifdef MINICORE_STATIC
-// link.sh links OpenMM and the Metal platform in, the way a shipped core does; there are no plugins.
-extern "C" void registerMetalPlatform();
-#ifdef MINICORE_CPU
+#ifdef __APPLE__
+// link.sh links OpenMM and its CPU and Metal platforms in, the way a shipped core does; there are no plugins.
 extern "C" void registerCpuPlatform();
 extern "C" void registerCpuPmeKernelFactories();
-#endif
+extern "C" void registerMetalPlatform();
 #endif
 
+// The CPU platform runs the state tests, as core 0x27 does ("Using CPU platform for reference calculations.").
+static const char TestPlatform[] = "CPU";
+
 static void registerPlatforms() {
-#ifdef MINICORE_STATIC
-#ifdef MINICORE_CPU
-    // The CPU platform runs the state tests, as core 0x27 does ("Using CPU platform for reference
-    // calculations."). The CPU PME kernels register before Metal exists, so only Reference and CPU get them.
+#ifdef __APPLE__
+    // The CPU PME kernels register before Metal exists, so only Reference and CPU get them.
     registerCpuPlatform();
     registerCpuPmeKernelFactories();
-#endif
     registerMetalPlatform();
 #else
     // A shared OpenMM, as build-linux.sh links it, has its plugins in lib/plugins beside libOpenMM. OpenMM itself
@@ -1338,7 +1325,7 @@ private:
     const Options& opt;
     WorkUnit& unit;
     const string checkpointPath, stepsDonePath, retriesPath, xtcPath, trrPath;
-    string globalsPath, testPlatform, integratorXml;
+    string globalsPath, integratorXml;
     PlatformChoice choice;
     Settings settings;
     long long progressInterval = 1, lastCheckpointStep = 0;
@@ -1357,8 +1344,6 @@ private:
 int CoreRun::run() {
     tell("%s", starRow("Log Started "+isoTime(launchTime)).c_str());
     writeBanner(opt);
-    for (const string& failure : Platform::getPluginLoadFailures())
-        note("plugin load failure: %s", failure.c_str());
     readWorkUnit(opt, unit);
     optional<uint32_t> named = namedCoreType(opt.exec);
     if (named && unit.header && *named != unit.header->coreType)
@@ -1501,13 +1486,9 @@ void CoreRun::createContexts() {
     catch (const OpenMMException& e) {
         throw Failure(GPU_INITIALIZATION_ERROR, string("creating the Context: ")+e.what());
     }
-    testPlatform = "Reference";
-    for (int i = 0; i < Platform::getNumPlatforms(); i++)
-        if (Platform::getPlatform(i).getName() == "CPU")
-            testPlatform = "CPU";
     note("  Configuring CPU/Reference platform for sanity checks...");
-    note("    Using %s platform for reference calculations.", testPlatform.c_str());
-    tester.reset(new StateTester(std::move(refSystem), std::move(refIntegrator), settings, testPlatform));
+    note("    Using %s platform for reference calculations.", TestPlatform);
+    tester = make_unique<StateTester>(std::move(refSystem), std::move(refIntegrator), settings, TestPlatform);
 }
 
 // The unit's state on the GPU, minimized if core.xml asks, then core 0x27's sanity checks. A unit that fails
@@ -1533,7 +1514,7 @@ int CoreRun::checkStartState() {
     // The reference platform refuses a NaN coordinate outright, so its exception rejects the unit too.
     try {
         note("  Performing initial sanity checks before starting work...");
-        note("  Comparing forces and energies between initial State and %s...", testPlatform.c_str());
+        note("  Comparing forces and energies between initial State and %s...", TestPlatform);
         optional<StateTestResult> initial = tester->compareInitial(*initialState);
         if (initial) {
             detail("    initial State: force RMSE %.4g kJ/mol/nm, |dPE| %.4g, |dKE| %.4g kJ/mol", initial->magnitudeRmse,
@@ -1544,7 +1525,7 @@ int CoreRun::checkStartState() {
         else
             detail("    state.xml has no energies");
         note("  Initial sanity checks complete.");
-        note("  Comparing forces and energies between GPU and %s...", testPlatform.c_str());
+        note("  Comparing forces and energies between GPU and %s...", TestPlatform);
         StateTestResult r = tester->test(*context, *integrator, false);
         detail("    GPU: force RMSE %.4g kJ/mol/nm, |dPE| %.4g, |dKE| %.4g kJ/mol", r.magnitudeRmse, r.dPE, r.dKE);
         if (!r.ok())
@@ -1666,8 +1647,8 @@ void CoreRun::startOutputs() {
 }
 
 int CoreRun::stepToEnd() {
-    // From here a stop exits between chunks, through main, with the shutdown line alone (fah-observe-gpu
-    // capture 7: no checkpoint, no progress, 102 within a second).
+    // From here a stop exits between chunks, through main, with the shutdown line alone (docs/PARITY.md S3:
+    // no checkpoint, no progress, 102 within a second).
     deferSignals = true;
     long long chunk = 50;
     while (context->getStepCount() < settings.steps) {
@@ -1799,7 +1780,7 @@ int CoreRun::badState(long long step, const string& error, const string& detail)
     return BAD_WORK_UNIT;
 }
 
-// 01/checkpoint, then core 0x27's stepsDone and numRetries beside it (fah-observe-gpu capture 4).
+// 01/checkpoint, then core 0x27's stepsDone and numRetries beside it (docs/PARITY.md K2).
 void CoreRun::saveCheckpoint(long long step) {
     meta.step = step;
     meta.xtcBytes = max(0LL, fileSize(xtcPath));
@@ -1955,7 +1936,7 @@ static void removeWorkDir(const string& workDir) {
 }
 
 int main(int argc, char** argv) {
-    // First, as core 0x27 has them 6 ms after exec (fah-observe-gpu capture 2).
+    // First, as core 0x27 has them 6 ms after exec (docs/PARITY.md S1).
     struct sigaction action = {};
     action.sa_handler = onSignal;
     sigaction(SIGINT, &action, NULL);

@@ -43,7 +43,7 @@ bool isBzip2(const string& data) {
 // Every stream of packed: pbzip2 and lbzip2 write one per block, and bzip2 -d reads them all.
 string bunzip2(const string& packed, const string& name) {
     if (packed.size() > UINT_MAX)
-        throw runtime_error(name+" is over 4 GiB, more than libbz2 takes in one call");
+        throw DataError(name+" is over 4 GiB, more than libbz2 takes in one call");
     string result;
     vector<char> buffer(1 << 20);
     for (size_t offset = 0; offset < packed.size(); ) {
@@ -65,9 +65,9 @@ string bunzip2(const string& packed, const string& name) {
         if (status == BZ_DATA_ERROR_MAGIC && offset > 0)
             break;  // bytes after the last stream, which bzip2 -d ignores too
         if (status == BZ_OK)
-            throw runtime_error("truncated bzip2 data in "+name);
+            throw DataError("truncated bzip2 data in "+name);
         if (status != BZ_STREAM_END)
-            throw runtime_error("corrupt bzip2 data in "+name);
+            throw DataError("corrupt bzip2 data in "+name);
         offset = packed.size()-remaining;
     }
     return result;
@@ -86,7 +86,7 @@ string bzip2(const string& data) {
 
 string gunzip(const string& packed, const string& name) {
     if (packed.size() > UINT_MAX)
-        throw runtime_error(name+" is over 4 GiB, more than zlib takes in one call");
+        throw DataError(name+" is over 4 GiB, more than zlib takes in one call");
     z_stream stream = {};
     if (inflateInit2(&stream, 16+MAX_WBITS) != Z_OK)  // +16: gzip framing only
         throw runtime_error("zlib init failed");
@@ -103,9 +103,9 @@ string gunzip(const string& packed, const string& name) {
     } while (status == Z_OK);
     inflateEnd(&stream);
     if (status == Z_BUF_ERROR)
-        throw runtime_error("truncated gzip data in "+name);
+        throw DataError("truncated gzip data in "+name);
     if (status != Z_STREAM_END)
-        throw runtime_error("corrupt gzip data in "+name);
+        throw DataError("corrupt gzip data in "+name);
     return result;
 }
 
@@ -130,8 +130,13 @@ static uint32_t bigEndian32(const char* p) {
     return (uint32_t) b[0] << 24 | (uint32_t) b[1] << 16 | (uint32_t) b[2] << 8 | (uint32_t) b[3];
 }
 
+// A tar header or the start of a bzip2 stream at offset.
+static bool archiveAt(const string& data, size_t offset) {
+    return (data.size() >= offset+512 && tarChecksumOk(data.data()+offset)) || isBzip2(data.substr(offset, 4));
+}
+
 optional<WuHeader> readWuHeader(const string& data) {
-    if (data.size() < 1024 || tarChecksumOk(data.data()) || !tarChecksumOk(data.data()+512))
+    if (data.size() < 512 || archiveAt(data, 0) || !archiveAt(data, 512))
         return nullopt;
     const char* p = data.data();
     WuHeader h;
@@ -157,7 +162,7 @@ vector<pair<string, string>> readTar(const string& archive) {
         if (zero)
             break;
         if (!tarChecksumOk(header))
-            throw runtime_error("tar header checksum wrong at offset "+to_string(pos));
+            throw DataError("tar header checksum wrong at offset "+to_string(pos));
         string name(header, strnlen(header, 100));
         if (memcmp(header+257, "ustar", 5) == 0 && header[345] != 0)
             name = string(header+345, strnlen(header+345, 155))+"/"+name;
@@ -165,7 +170,7 @@ vector<pair<string, string>> readTar(const string& archive) {
         char type = header[156];
         pos += 512;
         if (pos+size > archive.size())
-            throw runtime_error("tar member "+name+" is truncated");
+            throw DataError("tar member "+name+" is truncated");
         string body = archive.substr(pos, size);
         pos += (size+511)/512*512;
         if (type == 'L') {
@@ -231,7 +236,7 @@ map<string, string> parseCoreXml(const string& xml) {
         }
         size_t close = xml.find('>', pos);
         if (close == string::npos)
-            throw runtime_error("core.xml: unterminated tag");
+            throw DataError("core.xml: unterminated tag");
         string tag = xml.substr(pos+1, close-pos-1);
         pos = close+1;
         if (tag.empty() || tag[0] == '?' || tag[0] == '/' || tag[0] == '!')
@@ -247,7 +252,7 @@ map<string, string> parseCoreXml(const string& xml) {
             char quote = v+3 < tag.size() ? tag[v+3] : 0;
             size_t end = tag.find(quote, v+4);
             if ((quote != '"' && quote != '\'') || end == string::npos)
-                throw runtime_error("core.xml: unquoted v= value for "+name);
+                throw DataError("core.xml: unquoted v= value for "+name);
             values[name] = trim(tag.substr(v+4, end-v-4));
         }
         else if (selfClosing)
@@ -256,7 +261,7 @@ map<string, string> parseCoreXml(const string& xml) {
             string closing = "</"+name+">";
             size_t end = xml.find(closing, pos);
             if (end == string::npos)
-                throw runtime_error("core.xml: no closing tag for "+name);
+                throw DataError("core.xml: no closing tag for "+name);
             if (v == string::npos)
                 values[name] = trim(xml.substr(pos, end-pos));
             pos = end+closing.size();

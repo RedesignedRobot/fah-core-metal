@@ -1,8 +1,8 @@
 # fah-core-metal
 
-> A Folding@home core that runs real FAH work units on Apple Silicon GPUs through OpenMM's Metal platform. Runs on Apple Silicon Macs (M-series GPUs) through Metal. Tested on the M3 Ultra and the M2.
+> A Folding@home core that runs FAH's OpenMM work units on Apple Silicon GPUs through OpenMM's Metal platform. Tested on the M3 Ultra and the M2, on the first 5% of a real FAH unit.
 
-minicore is a Folding@home core that runs FAH's OpenMM work units on the GPU of Apple Silicon Macs through Metal. Tested on the M3 Ultra and the M2, it folds a real FAH unit, project 18264 with 919,221 atoms, and matches FAH's core 0x27 on every check FAH doesn't control. On P18264 the M3 Ultra takes 0.87 times the time core 0x27 takes on an RTX 5060 Ti, measured on one unit, one Mac and one card.
+minicore is a Folding@home core that runs FAH's OpenMM work units on the GPU of Apple Silicon Macs through Metal. On the M3 Ultra and the M2 it ran the first 5% of a real FAH unit, project 18264 with 919,221 atoms, and ran shortened copies of that unit to a finished result. On the M3 Ultra it matches FAH's core 0x27 on 20 of the 25 items in the README's parity figure; the other 5 need FAH's keys or differ by design. On P18264 the M3 Ultra takes 0.87 times the time per 1% that core 0x27 takes on an RTX 5060 Ti; the Mac's figure is the first 5% of the unit with the lab's build of minicore, and the card's is the whole unit.
 
 fah-core-metal is not affiliated with or endorsed by Folding@home. It never connects to FAH servers. Its results carry no FAH signature.
 

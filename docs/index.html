@@ -4,26 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>fah-core-metal: a Folding@home core for Apple Silicon GPUs through OpenMM Metal</title>
-<meta name="description" content="A Folding@home core that runs real FAH work units on Apple Silicon GPUs through OpenMM's Metal platform. On project 18264 the M3 Ultra takes 0.87 times core 0x27's time per 1% on an RTX 5060 Ti.">
+<meta name="description" content="A Folding@home core that runs FAH's OpenMM work units on Apple Silicon GPUs through OpenMM's Metal platform, tested on the first 5% of a real FAH unit. Over that 5% of project 18264 the M3 Ultra takes 0.87 times core 0x27's time per 1% on an RTX 5060 Ti.">
 <link rel="canonical" href="https://redesignedrobot.github.io/fah-core-metal/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="fah-core-metal: Folding@home on Apple Silicon GPUs through OpenMM Metal">
-<meta property="og:description" content="A Folding@home core that runs real FAH work units on Apple Silicon GPUs through OpenMM's Metal platform.">
+<meta property="og:description" content="A Folding@home core that runs FAH's OpenMM work units on Apple Silicon GPUs through OpenMM's Metal platform, tested on the first 5% of a real FAH unit.">
 <meta property="og:url" content="https://redesignedrobot.github.io/fah-core-metal/">
 <meta property="og:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
-<meta property="og:image:alt" content="fah-core-metal: hours per P18264 unit, RTX 5060 Ti 5.37 h, M3 Ultra 4.66 h">
+<meta property="og:image:alt" content="fah-core-metal: hours per P18264 unit, RTX 5060 Ti 5.37 h, M3 Ultra 4.66 h estimated from its first 5%">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="fah-core-metal: Folding@home on Apple Silicon GPUs through OpenMM Metal">
-<meta name="twitter:description" content="A Folding@home core that runs real FAH work units on Apple Silicon GPUs through OpenMM's Metal platform.">
+<meta name="twitter:description" content="A Folding@home core that runs FAH's OpenMM work units on Apple Silicon GPUs through OpenMM's Metal platform, tested on the first 5% of a real FAH unit.">
 <meta name="twitter:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareSourceCode",
   "name": "fah-core-metal",
-  "description": "A Folding@home core that runs real FAH work units on Apple Silicon GPUs through OpenMM's Metal platform.",
+  "description": "A Folding@home core that runs FAH's OpenMM work units on Apple Silicon GPUs through OpenMM's Metal platform, tested on the first 5% of a real FAH unit.",
   "codeRepository": "https://github.com/RedesignedRobot/fah-core-metal",
   "url": "https://redesignedrobot.github.io/fah-core-metal/",
   "programmingLanguage": "C++",
@@ -67,30 +67,35 @@ footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
 </figure>
 
 <p>minicore is a Folding@home core that runs FAH's OpenMM work units on the GPU of Apple Silicon Macs
-through Metal. Tested on the M3 Ultra and the M2, it folds a real FAH unit, project 18264 with 919,221
-atoms, and matches FAH's core 0x27 on every check FAH doesn't control.</p>
+through Metal. On the M3 Ultra and the M2 it ran the first 5% of a real FAH unit, project 18264 with
+919,221 atoms, and ran shortened copies of that unit to a finished result. On the M3 Ultra it matches FAH's
+core 0x27 on 20 of the 25 items in Figure 7; the other 5 are listed in the README under "Where it
+differs".</p>
 
 <h2>Speed</h2>
 <table>
 <tr><th>Machine</th><th>Core</th><th>Per 1%</th><th>Per unit</th></tr>
 <tr><td>RTX 5060 Ti, Linux</td><td>core 0x27 8.2.1, CUDA</td><td>192 s</td><td>5.37 h</td></tr>
-<tr><td>M3 Ultra, macOS 27</td><td>minicore, Metal</td><td>167 s</td><td>4.66 h</td></tr>
+<tr><td>M3 Ultra, macOS 27</td><td>minicore, Metal</td><td>167 s</td><td>4.66 h, estimated</td></tr>
 </table>
+<p>The RTX 5060 Ti row is one whole unit FAH's client ran, timed from its first start. The M3 Ultra row is
+the first 5% of the same unit, run by the lab's build of minicore before this repo, in a night slot with a
+load average of 7.14 at the start; 4.66 h is 100 times that 167 s plus start-up and checkpoints.</p>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
   <img alt="Hours per P18264 unit, M3 Ultra against the real core" src="figures/speed-light.svg">
 </picture>
-<figcaption>Figure 2. Hours per P18264 unit, 5 ns of a 919,221-atom system.</figcaption>
+<figcaption>Figure 2. Hours per P18264 unit, 5 ns of a 919,221-atom system. The M3 Ultra bar is estimated from its first 5%.</figcaption>
 </figure>
 
-<h2>Same science</h2>
+<h2>Trajectories and box volume</h2>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/distance-dark.svg">
   <img alt="Distance from the real trajectory against the distance between two CUDA seeds" src="figures/distance-light.svg">
 </picture>
-<figcaption>Figure 3. Metal's trajectory parts from the real run's as fast as two CUDA runs part from each other.</figcaption>
+<figcaption>Figure 3. Over the first 60,000 steps, Metal's trajectory parts from the real run's as fast as two CUDA runs part from each other.</figcaption>
 </figure>
 <figure>
 <picture>
@@ -113,7 +118,7 @@ atoms, and matches FAH's core 0x27 on every check FAH doesn't control.</p>
   <source media="(prefers-color-scheme: dark)" srcset="figures/drift-dark.svg">
   <img alt="Energy drift of DHFR in NVE, Metal before and after #5492, CUDA mixed and CPU" src="figures/drift-light.svg">
 </picture>
-<figcaption>Figure 6. Energy drift in NVE: Metal at the OpenMM commit this repo builds can't be told apart from CUDA.</figcaption>
+<figcaption>Figure 6. Energy drift in NVE, 10 runs each: Metal at the OpenMM commit this repo builds can't be told apart from CUDA (Welch t -0.7).</figcaption>
 </figure>
 
 <h2>Parity with core 0x27</h2>
@@ -122,10 +127,11 @@ atoms, and matches FAH's core 0x27 on every check FAH doesn't control.</p>
   <source media="(prefers-color-scheme: dark)" srcset="figures/parity-dark.svg">
   <img alt="Parity with core 0x27 item by item on the M3 Ultra and the M2" src="figures/parity-light.svg">
 </picture>
-<figcaption>Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on each Mac.</figcaption>
+<figcaption>Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on each Mac. The M2 last ran 3fc8475, before ceb9707 changed four of the rows.</figcaption>
 </figure>
 
-<p>Each Mac also passed all 101 core-parity checks and every state test it ran on the real unit.</p>
+<p>Each Mac also passed all 101 core-parity checks, run with the lab's build of minicore before this repo,
+and every state test it ran on the real unit: 12 on the M3 Ultra and 5 on the M2.</p>
 
 <p>The source, the build, how to run it, the FAQ and the evidence for each number are in the
 <a href="https://github.com/RedesignedRobot/fah-core-metal">repository</a>: the
