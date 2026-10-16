@@ -63,6 +63,7 @@ Sources:
 | I9 | A member that doesn't deserialize | Not public | 114 with the logs (run `unit-bad-system`) | not observable | fa U5 |
 | I10 | A unit for another core type | "Core, unit mismatch.  Core type is X unit wants Y" (S:19690-19691) | Took the type from the header and ran any type. Now takes it from its own name (FahCore_27), logs that line, exits 121 (run `unit-type-mismatch`) | fixed, ceb9707 (the line); not observable (the exit) | cl 4.3, fa U7 |
 | I11 | Unit lock | `wudata_01.lock` holds the core's pid for the whole run; a second core logs "Trying to acquire exclusive lock on unit", then "Failed to lock WU" (obs line 207; S:19692-19694) | Had no lock. Now `flock`s the same file with its pid; a second core logs both lines and exits 98 (run `lock-held`) | fixed, ceb9707 (the lock); not observable (the exit) | ca F1, cl 3.3, fa S8 |
+| I12 | A start stopped partway through unpacking | Extracts the tar while `01/checkpt.crc` is missing and creates checkpt.crc after the last member; a restart that finds it extracts nothing (obs strace, `chimaera/run/strace-1.txt` lines 7274-7305 and 7752; restart 690-733) | Took integrator, state and system in `01/` as proof of an unpacked tar, so a stop after them and before core.xml left a unit the next start dumped with 114. Now writes an empty `01/unpacked` after the last member and extracts while it is missing (unpack-fix cases `unpack-cut-int`, `unpack-cut-kill` and `sigterm-packed`, gpuq 2238 and 2241) | fixed, ef7fd14 | core-gap review P2 |
 
 ## core.xml options
 
