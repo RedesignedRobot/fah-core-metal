@@ -5,9 +5,17 @@
 # on OpenMM's CPU platform. That covers loading the unit, checkpoints and the result file. The state tests
 # run too, but on CPU they compare CPU with itself, so they check the plumbing and not accuracy.
 # Accuracy and speed on the GPU still come from runs on real Macs.
+#
+# The opencl-x86 job builds the opt-in x86_64 OpenCL core (MINICORE_ARCH=x86_64 MINICORE_OPENCL=1) on GitHub's Intel runners,
+# logs each OpenCL device, and folds the test unit through OpenMM's OpenCL platform with the arguments an Intel
+# Mac with an AMD GPU would get. The runners have no GPU that OpenCL lists, so the core falls back to Apple's
+# OpenCL CPU device. That covers the x86_64 build and the whole OpenCL path except the AMD GPU driver.
 name: build
 
 on:
+  push:
+    branches:
+      - "test/**"
   pull_request:
     paths-ignore:
       - "docs/**"
@@ -90,3 +98,92 @@ jobs:
       - name: Log tail
         if: failure()
         run: tail -n 60 unit/logfile_01.txt || true
+
+  opencl-x86:
+    name: opencl x86_64 (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # GitHub's Intel macOS runners: 4 cores and 14 GB each.
+        runner: [macos-15-intel, macos-26-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Toolchain
+        run: |
+          sw_vers
+          uname -m
+          sysctl -n machdep.cpu.brand_string
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
+          cmake --version | head -n 1
+          if command -v ninja > /dev/null; then echo "ninja $(ninja --version)"; fi
+
+      - name: Build
+        run: MINICORE_ARCH=x86_64 MINICORE_OPENCL=1 ./build.sh -j 4
+
+      - name: Binary and OpenCL devices
+        run: |
+          lipo -info build/core/minicore
+          otool -L build/core/minicore
+          ./build/core/minicore --info | tee info.txt
+          grep -w OpenCL info.txt > /dev/null
+
+      # Each fold records its exit code and state tests; the verdict step decides. A fold that fails still
+      # shows its log here.
+      - name: Fold the test unit through OpenCL, mixed precision as shipped
+        run: |
+          cp -R test/alanine-dipeptide mixed
+          code=0
+          ./build/core/minicore -dir mixed -gpu-platform opencl -gpu-vendor amd -opencl-platform 0 -opencl-device 0 -gpu 0 || code=$?
+          echo "exit $code"
+          echo "MIXED_EXIT=$code" >> "$GITHUB_ENV"
+          grep -e 'OpenCL' -e WARNING -e ERROR -e 'Using ' -e 'GPU info' -e 'Shutdown' mixed/logfile_01.txt || true
+          if [ "$code" -eq 100 ]; then
+            tar -xOf mixed/wuresults_01.dat science.log > mixed-science.log || true
+            grep -e 'Running tests' -e 'tests passed' -e 'test failed' -e 'Performance' mixed-science.log || true
+            echo "MIXED_TESTS=$(grep -c 'Running tests' mixed-science.log || true)/$(grep -c 'All tests passed.' mixed-science.log || true)" >> "$GITHUB_ENV"
+          else
+            tail -n 40 mixed/logfile_01.txt || true
+          fi
+
+      - name: Fold the test unit through OpenCL, single precision
+        run: |
+          cp -R test/alanine-dipeptide single
+          sed -i '' "s|<precision v='mixed'/>|<precision v='single'/>|" single/core.xml
+          grep precision single/core.xml
+          code=0
+          ./build/core/minicore -dir single -gpu-platform opencl -gpu-vendor amd -opencl-platform 0 -opencl-device 0 -gpu 0 || code=$?
+          echo "exit $code"
+          echo "SINGLE_EXIT=$code" >> "$GITHUB_ENV"
+          grep -e 'OpenCL' -e WARNING -e ERROR -e 'Using ' -e 'Shutdown' single/logfile_01.txt || true
+          if [ "$code" -eq 100 ]; then
+            tar -xOf single/wuresults_01.dat science.log > single-science.log || true
+            grep -e 'Running tests' -e 'tests passed' -e 'test failed' -e 'Performance' single-science.log || true
+            echo "SINGLE_TESTS=$(grep -c 'Running tests' single-science.log || true)/$(grep -c 'All tests passed.' single-science.log || true)" >> "$GITHUB_ENV"
+          else
+            tail -n 40 single/logfile_01.txt || true
+          fi
+
+      # Pass: mixed precision exits 100 with every state test passed, or no OpenCL device reports fp64 and
+      # single precision exits 100 with every state test passed.
+      - name: Verdict
+        run: |
+          echo "mixed: exit $MIXED_EXIT, state tests run/passed ${MIXED_TESTS:-none}"
+          echo "single: exit $SINGLE_EXIT, state tests run/passed ${SINGLE_TESTS:-none}"
+          all_passed() { [ -n "$1" ] && [ "${1%/*}" -gt 0 ] && [ "${1%/*}" = "${1#*/}" ]; }
+          if [ "$MIXED_EXIT" -eq 100 ] && all_passed "${MIXED_TESTS:-}"; then
+            echo "mixed precision folds through OpenCL"
+          elif ! grep -q 'fp64 yes' info.txt && [ "$SINGLE_EXIT" -eq 100 ] && all_passed "${SINGLE_TESTS:-}"; then
+            echo "no OpenCL device reports fp64; single precision folds through OpenCL"
+          else
+            echo "::error::the OpenCL folds did not pass (see the two fold steps)"
+            exit 1
+          fi

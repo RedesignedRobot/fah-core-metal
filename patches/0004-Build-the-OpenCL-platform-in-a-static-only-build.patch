@@ -1,0 +1,52 @@
+From 898681911bd205ca077be7344b842a990eb52ce9 Mon Sep 17 00:00:00 2001
+From: Amir Ayub <dev.amirayub@gmail.com>
+Date: Sat, 17 Oct 2026 16:27:00 +0300
+Subject: [PATCH 4/5] Build the OpenCL platform in a static-only build
+
+With OPENMM_BUILD_SHARED_LIB=OFF and the OpenCL platform on,
+platforms/opencl always added sharedTarget next to staticTarget, and
+Ninja refused the build: "multiple rules generate
+platforms/opencl/src/OpenCLKernelSources.cpp". The Metal and CPU
+platforms guard their shared targets the same way.
+
+Without sharedTarget, nothing ordered the static target's compiles after
+CommonKernels writes CommonKernelSources.h, the race patch 0003 closes
+for Metal, so the static target now depends on CommonKernels too.
+---
+ platforms/opencl/CMakeLists.txt              | 4 +++-
+ platforms/opencl/staticTarget/CMakeLists.txt | 3 ++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/platforms/opencl/CMakeLists.txt b/platforms/opencl/CMakeLists.txt
+index 7a8af6a3e..679810660 100644
+--- a/platforms/opencl/CMakeLists.txt
++++ b/platforms/opencl/CMakeLists.txt
+@@ -96,7 +96,9 @@ INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/../common/src)
+ FILE(GLOB CORE_HEADERS include/*.h src/opencl.hpp ${KERNELS_H})
+ INSTALL_FILES(/include/openmm/opencl FILES ${CORE_HEADERS})
+ 
+-SUBDIRS (sharedTarget)
++IF(OPENMM_BUILD_SHARED_LIB)
++    SUBDIRS (sharedTarget)
++ENDIF(OPENMM_BUILD_SHARED_LIB)
+ IF(OPENMM_BUILD_STATIC_LIB)
+     SUBDIRS (staticTarget)
+ ENDIF(OPENMM_BUILD_STATIC_LIB)
+diff --git a/platforms/opencl/staticTarget/CMakeLists.txt b/platforms/opencl/staticTarget/CMakeLists.txt
+index 38dca0590..2182f5b06 100644
+--- a/platforms/opencl/staticTarget/CMakeLists.txt
++++ b/platforms/opencl/staticTarget/CMakeLists.txt
+@@ -10,8 +10,9 @@ ADD_CUSTOM_COMMAND(OUTPUT ${KERNELS_CPP} ${KERNELS_H}
+     ARGS -D KERNEL_SOURCE_DIR=${KERNEL_SOURCE_DIR} -D KERNELS_CPP=${KERNELS_CPP} -D KERNELS_H=${KERNELS_H} -D KERNEL_SOURCE_CLASS=${KERNEL_SOURCE_CLASS} -D KERNEL_FILE_EXTENSION=cl -P ${CMAKE_SOURCE_DIR}/cmake_modules/EncodeKernelFiles.cmake
+     DEPENDS ${OPENCL_KERNELS}
+ )
+-SET_SOURCE_FILES_PROPERTIES(${KERNELS_CPP} ${KERNELS_H} PROPERTIES GENERATED TRUE)
++SET_SOURCE_FILES_PROPERTIES(${KERNELS_CPP} ${KERNELS_H} ${COMMON_KERNELS_CPP} PROPERTIES GENERATED TRUE)
+ ADD_LIBRARY(${STATIC_TARGET} STATIC ${SOURCE_FILES} ${SOURCE_INCLUDE_FILES} ${API_ABS_INCLUDE_FILES})
++ADD_DEPENDENCIES(${STATIC_TARGET} CommonKernels)
+ 
+ TARGET_LINK_LIBRARIES(${STATIC_TARGET} ${OPENMM_LIBRARY_NAME} ${OPENCL_LIBRARIES})
+ SET_TARGET_PROPERTIES(${STATIC_TARGET} PROPERTIES LINK_FLAGS "${EXTRA_LINK_FLAGS}" COMPILE_FLAGS "${EXTRA_COMPILE_FLAGS} -DOPENMM_COMMON_BUILDING_STATIC_LIBRARY")
+-- 
+2.54.0 (Apple Git-157)
+

@@ -49,7 +49,70 @@ double memoryMB() {
     return info.phys_footprint/1048576.0;
 }
 
+#ifdef MINICORE_OPENCL
+#define CL_SILENCE_DEPRECATION
+#include <OpenCL/opencl.h>
+
+// Apple's driver pads some values with a trailing space.
+static string deviceText(cl_device_id device, cl_device_info what) {
+    size_t size = 0;
+    if (clGetDeviceInfo(device, what, 0, NULL, &size) != CL_SUCCESS || size == 0)
+        return "unknown";
+    vector<char> value(size);
+    if (clGetDeviceInfo(device, what, size, value.data(), NULL) != CL_SUCCESS)
+        return "unknown";
+    string text(value.data());
+    text.erase(text.find_last_not_of(' ')+1);
+    return text;
+}
+
+vector<OpenCLDevice> openclDevices() {
+    vector<OpenCLDevice> devices;
+    cl_platform_id platform;
+    cl_uint count = 0;
+    if (clGetPlatformIDs(1, &platform, NULL) != CL_SUCCESS ||
+        clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU, 0, NULL, &count) != CL_SUCCESS)
+        return devices;
+    vector<cl_device_id> ids(count);
+    clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU, count, ids.data(), NULL);
+    for (cl_device_id id : ids) {
+        OpenCLDevice d;
+        d.name = deviceText(id, CL_DEVICE_NAME);
+        d.vendor = deviceText(id, CL_DEVICE_VENDOR);
+        d.version = deviceText(id, CL_DEVICE_VERSION);
+        d.driver = deviceText(id, CL_DRIVER_VERSION);
+        d.fp64 = deviceText(id, CL_DEVICE_EXTENSIONS).find("cl_khr_fp64") != string::npos;
+        cl_device_type type = 0;
+        cl_uint units = 0;
+        size_t group = 0;
+        clGetDeviceInfo(id, CL_DEVICE_TYPE, sizeof(type), &type, NULL);
+        clGetDeviceInfo(id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(units), &units, NULL);
+        clGetDeviceInfo(id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(group), &group, NULL);
+        size_t itemsSize = 0;
+        if (clGetDeviceInfo(id, CL_DEVICE_MAX_WORK_ITEM_SIZES, 0, NULL, &itemsSize) == CL_SUCCESS &&
+            itemsSize >= sizeof(size_t)) {
+            vector<size_t> items(itemsSize/sizeof(size_t));
+            if (clGetDeviceInfo(id, CL_DEVICE_MAX_WORK_ITEM_SIZES, itemsSize, items.data(), NULL) == CL_SUCCESS)
+                d.maxWorkItem = items[0];
+        }
+        d.gpu = (type & CL_DEVICE_TYPE_GPU) != 0;
+        d.computeUnits = units;
+        d.maxWorkGroup = group;
+        devices.push_back(d);
+    }
+    return devices;
+}
+
+// On the OpenCL platform, the OpenCL device's own name, vendor, OpenCL version and driver.
+GpuInfo gpuInfo(const string& platform, int device) {
+    vector<OpenCLDevice> devices = platform == "OpenCL" ? openclDevices() : vector<OpenCLDevice>();
+    if (device >= 0 && device < (int) devices.size()) {
+        const OpenCLDevice& d = devices[device];
+        return {d.name, d.vendor, "none", d.version, d.driver};
+    }
+#else
 GpuInfo gpuInfo(const string&, int) {
+#endif
     return {sysctlText("machdep.cpu.brand_string"), "0x106b", "none", "unknown",
             "macOS "+sysctlText("kern.osproductversion")};
 }

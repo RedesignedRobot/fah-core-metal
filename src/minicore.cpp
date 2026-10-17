@@ -50,7 +50,9 @@
 //   -gpu-vendor apple                  Metal, device -opencl-device or -gpu (what client master sends)
 //   -gpu-platform cuda|opencl|hip      that platform, device -<api>-device or -gpu, if this build has it;
 //                                      else BAD_ARGUMENTS (fah-client 8.5 sends cuda to core 0x27 on NVIDIA)
+//   -gpu-vendor amd                    OpenCL, device -opencl-device or -gpu, in a build with MINICORE_OPENCL=1
 //   -gpu-vendor nvidia                 CUDA, device -cuda-device or -gpu
+// On OpenCL, chooseOpenCLDevice() checks the device and may fall back to another.
 //
 // Exit codes are the client's (ExitCode.h). Where the public record shows the real core's choice (98, 102,
 // 114, 127) this follows it. The real wudata/wuresults containers carry FAH's signatures, which this core
@@ -461,6 +463,13 @@ static PlatformChoice choosePlatform(const Options& opt) {
         deviceFrom(opt.gpuPlatform);
         c.reason = "client passed -gpu-platform "+opt.gpuPlatform+" -gpu-vendor "+opt.gpuVendor;
     }
+#ifdef MINICORE_OPENCL
+    else if (opt.gpuVendor == "amd") {
+        c.platform = "OpenCL";
+        deviceFrom("opencl");
+        c.reason = "client passed -gpu-vendor amd";
+    }
+#endif
     else if (opt.gpuVendor == "nvidia") {
         c.platform = "CUDA";
         deviceFrom("cuda");
@@ -485,6 +494,59 @@ static void logGpuInfo(const PlatformChoice& choice) {
     say("  GPU info: Driver: %s", gpu.driver.c_str());
     say("  GPU info: GPU: %s", choice.platform != "Reference" && choice.platform != "CPU" ? "true" : "false");
 }
+
+#ifdef MINICORE_OPENCL
+static string openclDeviceLine(int index, const OpenCLDevice& d) {
+    return stringf("OpenCL device %d: %s, vendor %s, %s, fp64 %s, %d compute units, max work group %ld, max work item %ld, %s, "
+                   "driver %s", index, d.name.c_str(), d.vendor.c_str(), d.gpu ? "GPU" : "CPU", d.fp64 ? "yes" : "no",
+                   d.computeUnits, d.maxWorkGroup, d.maxWorkItem, d.version.c_str(), d.driver.c_str());
+}
+
+// fah-client numbers OpenCL devices over CL_DEVICE_TYPE_ALL (cbang's OpenCLLibrary.cpp) and sends that index as
+// -opencl-device. On a Mac, which has one platform and no accelerators, that is OpenMM's DeviceIndex, so it is
+// passed through. OpenMM's OpenCL platform skips a device without cl_khr_fp64 in mixed and double precision, or
+// one with work groups under 32 threads (OpenCLContext.cpp). If the client's device is a GPU that can't run the
+// unit, the core exits GPU_UNAVAILABLE_ERROR rather than take another GPU, which would be another slot's. Only
+// when the device is missing or not a GPU does the core fall back, with a WARNING line: to the first GPU that
+// can run the unit or, if OpenCL lists no GPU at all, to the first CPU device that can. OpenMM uses Apple's
+// CPU device only when DeviceIndex names it (patch 0005). GitHub's Intel runners, with no GPU, fold that way.
+static void chooseOpenCLDevice(PlatformChoice& choice, const string& precision) {
+    vector<OpenCLDevice> devices = openclDevices();
+    int count = devices.size();
+    bool anyGpu = false;
+    say("OpenCL platform 0, %d devices:", count);
+    for (int i = 0; i < count; i++) {
+        say("  %s", openclDeviceLine(i, devices[i]).c_str());
+        anyGpu = anyGpu || devices[i].gpu;
+    }
+    auto problem = [&](int i) -> string {
+        if (precision != "single" && !devices[i].fp64)
+            return "does not report cl_khr_fp64, which "+precision+" precision needs";
+        if (devices[i].maxWorkGroup < 32 || devices[i].maxWorkItem < 32)
+            return "takes work groups under 32 threads, which OpenMM needs";
+        return "";
+    };
+    int asked = choice.device;
+    if (asked >= 0 && asked < count && devices[asked].gpu) {
+        string why = problem(asked);
+        if (!why.empty())
+            throw Failure(GPU_UNAVAILABLE_ERROR, stringf("OpenCL device %d, %s, ", asked, devices[asked].name.c_str())+why);
+        say("  Using OpenCL device %d, as the client asked", asked);
+        return;
+    }
+    string why = asked >= 0 && asked < count ? stringf("OpenCL device %d is not a GPU", asked) :
+                                               stringf("there is no OpenCL device %d", asked);
+    for (int i = 0; i < count; i++)
+        if (devices[i].gpu == anyGpu && problem(i).empty()) {
+            choice.device = i;
+            say("WARNING: %s; falling back to OpenCL device %d, %s (%s)", why.c_str(), i, devices[i].name.c_str(),
+                devices[i].gpu ? "GPU" : "CPU");
+            return;
+        }
+    throw Failure(GPU_UNAVAILABLE_ERROR, why+", and no OpenCL "+(anyGpu ? "GPU" : "device")+" can run "+precision+
+                  " precision");
+}
+#endif
 
 // Core 0x27 looks for each input under these names in turn and takes the first ("Checking for state.xml.enc"
 // ... "Found state.xml.bz2", S:19325-19333).
@@ -1252,6 +1314,9 @@ static bool due(long long step, long long interval) {
 extern "C" void registerCpuPlatform();
 extern "C" void registerCpuPmeKernelFactories();
 extern "C" void registerMetalPlatform();
+#ifdef MINICORE_OPENCL
+extern "C" void registerOpenCLPlatform();
+#endif
 #endif
 
 // The CPU platform runs the state tests, as core 0x27 does ("Using CPU platform for reference calculations.").
@@ -1263,6 +1328,9 @@ static void registerPlatforms() {
     registerCpuPlatform();
     registerCpuPmeKernelFactories();
     registerMetalPlatform();
+#ifdef MINICORE_OPENCL
+    registerOpenCLPlatform();
+#endif
 #else
     // A shared OpenMM, as build-linux.sh links it, has its plugins in lib/plugins beside libOpenMM. OpenMM itself
     // looks in OPENMM_PLUGIN_DIR or /usr/local/openmm/lib/plugins; conda's Python sets the variable, a core can't.
@@ -1351,6 +1419,10 @@ int CoreRun::run() {
                                              unit.header->coreType));  // S:19698
     unit.coreType = named ? *named : unit.header ? unit.header->coreType : 0x24;
     choice = choosePlatform(opt);
+#ifdef MINICORE_OPENCL
+    if (choice.platform == "OpenCL")
+        chooseOpenCLDevice(choice, readSettings(unit).precision);
+#endif
     say("minicore (fah-core-metal), OpenMM %s", Platform::getOpenMMVersion().c_str());
     logGpuInfo(choice);
     settings = readSettings(unit);
@@ -1953,6 +2025,11 @@ int main(int argc, char** argv) {
         for (int i = 0; i < Platform::getNumPlatforms(); i++)
             printf(" %s", Platform::getPlatform(i).getName().c_str());
         printf("\n");
+#ifdef MINICORE_OPENCL
+        vector<OpenCLDevice> devices = openclDevices();
+        for (int i = 0; i < (int) devices.size(); i++)
+            printf("%s\n", openclDeviceLine(i, devices[i]).c_str());
+#endif
         return 0;
     }
     WorkUnit unit;

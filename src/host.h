@@ -27,4 +27,17 @@ GpuInfo gpuInfo(const std::string& platform, int device);
 // Why OpenMM's Metal platform can't use the device MTLCreateSystemDefaultDevice() gives, as it does for its
 // Context: nil, or a GPU outside the Apple7 family (M1 and later), such as a VM's paravirtual one; "" if usable.
 std::string metalDeviceProblem();
+
+#ifdef MINICORE_OPENCL
+#include <vector>
+// The GPU and CPU devices of the first OpenCL platform, in the order OpenMM's OpenCL platform numbers them
+// for DeviceIndex (OpenCLContext asks for CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU). macOS has one platform.
+struct OpenCLDevice {
+    std::string name, vendor, version, driver;
+    bool gpu = false, fp64 = false;
+    int computeUnits = 0;
+    long maxWorkGroup = 0, maxWorkItem = 0;  // CL_DEVICE_MAX_WORK_GROUP_SIZE, CL_DEVICE_MAX_WORK_ITEM_SIZES[0]
+};
+std::vector<OpenCLDevice> openclDevices();
+#endif
 #endif
