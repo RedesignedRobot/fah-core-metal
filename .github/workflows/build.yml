@@ -6,12 +6,11 @@
 # run too, but on CPU they compare CPU with itself, so they check the plumbing and not accuracy.
 # Accuracy and speed on the GPU still come from runs on real Macs.
 #
-# The opencl-x86 job builds the opt-in x86_64 OpenCL core (MINICORE_ARCH=x86_64 MINICORE_OPENCL=1) on GitHub's Intel runners,
-# logs each OpenCL device and uploads the core as an artifact for Intel Mac owners to run report.sh with. The
-# runners have no GPU that OpenCL lists, so the client's GPU arguments must exit 126. The job then folds the test
-# unit through OpenMM's OpenCL platform on Apple's OpenCL CPU device, named by its index in the device table.
-# That covers the x86_64 build and the OpenCL path on a device that is not a GPU; it proves nothing about an
-# Intel or AMD GPU driver.
+# The opencl-x86 job builds the opt-in x86_64 OpenCL core (MINICORE_ARCH=x86_64 MINICORE_OPENCL=1) on GitHub's Intel
+# runners, logs each OpenCL device and uploads the core as an artifact for Intel Mac owners to run report.sh
+# with. The runners' OpenCL lists only Apple's CPU device, which OpenMM skips and the core never folds on, so the
+# client's arguments for an OpenCL GPU must exit 126 there. Nothing folds through OpenCL here: that covers the
+# x86_64 build, the device table and the no-GPU exit, and nothing about an Intel or AMD GPU driver.
 name: build
 
 on:
@@ -137,9 +136,6 @@ jobs:
           otool -L build/core/minicore
           ./build/core/minicore --info | tee info.txt
           grep -w OpenCL info.txt > /dev/null
-          cpu=$(sed -n 's/^OpenCL device \([0-9][0-9]*\): .*, CPU, fp64 .*/\1/p' info.txt | head -n 1)
-          echo "CPU device: ${cpu:-none}"
-          echo "CPU_DEVICE=$cpu" >> "$GITHUB_ENV"
           tar -czf "minicore-x86_64-opencl-${{ matrix.runner }}.tar.gz" -C build core/minicore BUILD-INFO
           shasum -a 256 "minicore-x86_64-opencl-${{ matrix.runner }}.tar.gz" build/core/minicore
 
@@ -151,71 +147,25 @@ jobs:
           archive: false
           if-no-files-found: error
 
-      # The client's arguments for an OpenCL GPU, but with -gpu only: a Mac whose OpenCL lists no GPU must end
-      # the fold at once with 126 rather than run a GPU unit on the CPU.
+      # The client's arguments for an OpenCL GPU, once with -opencl-device 0 (the CPU device's index on these
+      # runners) and once with -gpu only: a Mac whose OpenCL lists no GPU must end the fold at once with 126
+      # rather than run a GPU unit on the CPU.
       - name: No OpenCL GPU exits 126
         run: |
           if grep -q '^OpenCL device [0-9]*: .*, GPU, fp64' info.txt; then
             echo "::error::this runner lists an OpenCL GPU, so the no-GPU case can't be checked here"
             exit 1
           fi
-          cp -R test/alanine-dipeptide no-gpu
-          code=0
-          ./build/core/minicore -dir no-gpu -gpu-platform opencl -gpu-vendor amd -opencl-platform 0 -gpu 0 || code=$?
-          echo "exit $code"
-          grep -e 'OpenCL' -e WARNING -e ERROR -e 'Shutdown' no-gpu/logfile_01.txt || true
-          if [ "$code" -ne 126 ]; then
-            echo "::error::minicore exited $code, not 126 (GPU_UNAVAILABLE_ERROR)"
-            exit 1
-          fi
-
-      # Each fold names the CPU device with -opencl-device, records its exit code and state tests, and leaves the
-      # verdict to the last step, so a fold that fails still shows its log here.
-      - name: Fold the test unit on the OpenCL CPU device, mixed precision as shipped
-        run: |
-          [ -n "$CPU_DEVICE" ] || { echo "::error::the device table lists no OpenCL CPU device"; exit 1; }
-          cp -R test/alanine-dipeptide mixed
-          code=0
-          ./build/core/minicore -dir mixed -gpu-platform opencl -gpu-vendor amd -opencl-platform 0 -opencl-device "$CPU_DEVICE" -gpu "$CPU_DEVICE" || code=$?
-          echo "exit $code"
-          echo "MIXED_EXIT=$code" >> "$GITHUB_ENV"
-          grep -e 'OpenCL' -e WARNING -e ERROR -e 'Using ' -e 'GPU info' -e 'Shutdown' mixed/logfile_01.txt || true
-          if [ "$code" -eq 100 ]; then
-            tar -xOf mixed/wuresults_01.dat science.log > mixed-science.log || true
-            grep -e 'Running tests' -e 'tests passed' -e 'test failed' -e 'Performance' mixed-science.log || true
-            echo "MIXED_TESTS=$(grep -c 'Running tests' mixed-science.log || true)/$(grep -c 'All tests passed.' mixed-science.log || true)" >> "$GITHUB_ENV"
-          else
-            tail -n 40 mixed/logfile_01.txt || true
-          fi
-
-      - name: Fold the test unit on the OpenCL CPU device, single precision
-        run: |
-          cp -R test/alanine-dipeptide single
-          sed -i '' "s|<precision v='mixed'/>|<precision v='single'/>|" single/core.xml
-          grep precision single/core.xml
-          code=0
-          ./build/core/minicore -dir single -gpu-platform opencl -gpu-vendor amd -opencl-platform 0 -opencl-device "$CPU_DEVICE" -gpu "$CPU_DEVICE" || code=$?
-          echo "exit $code"
-          echo "SINGLE_EXIT=$code" >> "$GITHUB_ENV"
-          grep -e 'OpenCL' -e WARNING -e ERROR -e 'Using ' -e 'Shutdown' single/logfile_01.txt || true
-          if [ "$code" -eq 100 ]; then
-            tar -xOf single/wuresults_01.dat science.log > single-science.log || true
-            grep -e 'Running tests' -e 'tests passed' -e 'test failed' -e 'Performance' single-science.log || true
-            echo "SINGLE_TESTS=$(grep -c 'Running tests' single-science.log || true)/$(grep -c 'All tests passed.' single-science.log || true)" >> "$GITHUB_ENV"
-          else
-            tail -n 40 single/logfile_01.txt || true
-          fi
-
-      # Pass: both folds on the CPU device exit 100 with every state test passed. The state tests compare
-      # OpenCL with OpenMM's CPU platform.
-      - name: Verdict
-        run: |
-          echo "mixed: exit $MIXED_EXIT, state tests run/passed ${MIXED_TESTS:-none}"
-          echo "single: exit $SINGLE_EXIT, state tests run/passed ${SINGLE_TESTS:-none}"
-          all_passed() { [ -n "$1" ] && [ "${1%/*}" -gt 0 ] && [ "${1%/*}" = "${1#*/}" ]; }
-          if [ "$MIXED_EXIT" -eq 100 ] && all_passed "${MIXED_TESTS:-}" && [ "$SINGLE_EXIT" -eq 100 ] && all_passed "${SINGLE_TESTS:-}"; then
-            echo "both precisions fold through OpenCL on the CPU device"
-          else
-            echo "::error::the OpenCL folds did not pass (see the two fold steps)"
-            exit 1
-          fi
+          for run in opencl-device gpu-only; do
+            cp -R test/alanine-dipeptide "no-gpu-$run"
+            device="-opencl-device 0"
+            [ "$run" = gpu-only ] && device=
+            code=0
+            ./build/core/minicore -dir "no-gpu-$run" -gpu-platform opencl -gpu-vendor amd -opencl-platform 0 $device -gpu 0 || code=$?
+            echo "$run: exit $code"
+            grep -e 'OpenCL' -e WARNING -e ERROR -e 'Shutdown' "no-gpu-$run/logfile_01.txt" || true
+            if [ "$code" -ne 126 ]; then
+              echo "::error::$run: minicore exited $code, not 126 (GPU_UNAVAILABLE_ERROR)"
+              exit 1
+            fi
+          done
