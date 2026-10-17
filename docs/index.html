@@ -4,26 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>fah-core-metal: a real, fully working Folding@home core for Apple Silicon GPUs</title>
-<meta name="description" content="A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's real OpenMM work units on the Mac's GPU through OpenMM's Metal platform. It folded a whole real FAH unit, P18264, in 5.06 h, against 5.37 h for FAH's core 0x27 on an NVIDIA RTX 5060 Ti, and passed 21 of 21 state tests.">
+<meta name="description" content="A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's own OpenMM work units end to end on the Mac's GPU and folds them to the standard of FAH's core 0x27: 21 of 21 state tests on a whole real FAH unit, and 101 of 101 core-parity checks.">
 <link rel="canonical" href="https://redesignedrobot.github.io/fah-core-metal/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="fah-core-metal: Folding@home on Apple Silicon GPUs">
-<meta property="og:description" content="A real, fully working Folding@home core that runs FAH's real OpenMM work units on Apple Silicon GPUs. It folded a whole real FAH unit in 5.06 h, against 5.37 h for FAH's core on an RTX 5060 Ti, and passed 21 of 21 state tests.">
+<meta property="og:title" content="fah-core-metal: a real Folding@home core for Apple Silicon GPUs">
+<meta property="og:description" content="A real, fully working Folding@home core for Apple Silicon GPUs. It runs FAH's own OpenMM work units on the Mac's GPU and passed 21 of 21 state tests on a whole real FAH unit, as FAH's core did, and 101 of 101 core-parity checks.">
 <meta property="og:url" content="https://redesignedrobot.github.io/fah-core-metal/">
 <meta property="og:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
-<meta property="og:image:alt" content="fah-core-metal: hours per whole P18264 unit, FAH's core on an NVIDIA RTX 5060 Ti 5.37 h, minicore on Apple Silicon 5.06 h">
+<meta property="og:image:alt" content="fah-core-metal: a real Folding@home core on Apple Silicon GPUs. 21 of 21 state tests on a whole FAH unit, as FAH's core 0x27 passed. 101 of 101 core-parity checks.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="fah-core-metal: Folding@home on Apple Silicon GPUs">
-<meta name="twitter:description" content="A real, fully working Folding@home core that runs FAH's real OpenMM work units on Apple Silicon GPUs. It folded a whole real FAH unit in 5.06 h, against 5.37 h for FAH's core on an RTX 5060 Ti, and passed 21 of 21 state tests.">
+<meta name="twitter:title" content="fah-core-metal: a real Folding@home core for Apple Silicon GPUs">
+<meta name="twitter:description" content="A real, fully working Folding@home core for Apple Silicon GPUs. It runs FAH's own OpenMM work units on the Mac's GPU and passed 21 of 21 state tests on a whole real FAH unit, as FAH's core did, and 101 of 101 core-parity checks.">
 <meta name="twitter:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareSourceCode",
   "name": "fah-core-metal",
-  "description": "A Folding@home core that runs FAH's real OpenMM work units on Apple Silicon GPUs. It folded a whole real FAH unit in 5.06 h, against 5.37 h for FAH's core on an RTX 5060 Ti, and passed 21 of 21 state tests.",
+  "description": "A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's own OpenMM work units end to end on the Mac's GPU and folds them to the standard of FAH's core 0x27: 21 of 21 state tests on a whole real FAH unit, and 101 of 101 core-parity checks.",
   "codeRepository": "https://github.com/RedesignedRobot/fah-core-metal",
   "url": "https://redesignedrobot.github.io/fah-core-metal/",
   "programmingLanguage": "C++",
@@ -59,39 +59,19 @@ footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
 <h1>fah-core-metal</h1>
 <p class="lede">A real, fully working Folding@home core for Apple Silicon GPUs.</p>
 
-<p>People have asked for it since 2019 (<a href="https://github.com/openmm/openmm/issues/2489">openmm#2489</a>) and
+<p>People have asked for Folding@home on Apple GPUs since 2019 (<a href="https://github.com/openmm/openmm/issues/2489">openmm#2489</a>) and
 2024 (<a href="https://github.com/FoldingAtHome/fah-client-bastet/issues/303">fah-client-bastet#303</a>). Here it
-is. minicore is a Folding@home core that runs FAH's real OpenMM work units on the Mac's GPU through
-OpenMM's Metal platform. It folded a whole real FAH unit faster than FAH's own core on an NVIDIA card.</p>
+is. minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
+platform, and folds them to the standard of FAH's own core.</p>
 
 <table>
-<tr><th></th><th>P18264, a whole real FAH unit: 919,221 atoms, 5 ns</th></tr>
-<tr><td class="n">5.06 h</td><td>on Apple Silicon, against 5.37 h for FAH's core 0x27 on an NVIDIA RTX 5060 Ti (182 s against 192 s per 1%)</td></tr>
-<tr><td class="n">21 of 21</td><td>state tests passed on that unit, as FAH's core passed 21</td></tr>
-<tr><td class="n">Six files</td><td>in the result, in FAH's order with FAH's frame counts; three output files byte-identical to FAH's core's; box volume 9,307.4 against 9,307.1 nm³</td></tr>
-<tr><td class="n">101 of 101</td><td>core-parity checks passed</td></tr>
-<tr><td class="n">65 of 65</td><td>failure and stop-resume cases passed</td></tr>
+<tr><th></th><th>Checked against FAH's core 0x27</th></tr>
+<tr><td class="n">21 of 21</td><td>state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21</td></tr>
+<tr><td class="n">Six files</td><td>in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's</td></tr>
+<tr><td class="n">101 of 101</td><td>core-parity checks passed, and 65 of 65 failure and stop-resume cases</td></tr>
+<tr><td class="n">0.054</td><td>worst state-test force RMSE in kJ/mol/nm, beside CUDA's 0.052, against FAHBench's limit of 5</td></tr>
+<tr><td class="n">16 s</td><td>to fold the bundled test unit on an M3 Ultra after <code>./build.sh</code>, so you can check it yourself (<a href="https://github.com/RedesignedRobot/fah-core-metal#try-it">Try it</a>)</td></tr>
 </table>
-
-<h2>Speed</h2>
-<table>
-<tr><th>Machine</th><th>Core</th><th>Per 1%</th><th>Per unit</th></tr>
-<tr><td>Apple Silicon, M3 Ultra</td><td>minicore, Metal</td><td>182 s</td><td>5.06 h</td></tr>
-<tr><td>NVIDIA RTX 5060 Ti</td><td>FAH's core 0x27, CUDA</td><td>192 s</td><td>5.37 h</td></tr>
-</table>
-<figure>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
-  <img alt="Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA" src="figures/speed-light.svg">
-</picture>
-<figcaption>Hours per whole P18264 unit.</figcaption>
-</figure>
-
-<h3>Also on NVIDIA</h3>
-<p>minicore built for CUDA (OpenMM 8.6.1) ran the unit's first 11% on the same card at 180 s per 1%,
-against FAH's core's 187 s. On a 5,000-step cut its viewerTop.json and xtcAtoms.csv.bz2 were
-byte-identical to FAH's core's. Run conditions are in
-<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#speed">EVIDENCE.md</a>.</p>
 
 <h2>Accuracy</h2>
 <figure>
@@ -127,14 +107,34 @@ byte-identical to FAH's core's. Run conditions are in
 format the client never reads.
 <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/PARITY.md">PARITY.md</a> lists every row.</p>
 
+<h2>Speed</h2>
+<table>
+<tr><th>Machine</th><th>Core</th><th>Per 1%</th><th>Per unit</th></tr>
+<tr><td>Apple Silicon, M3 Ultra</td><td>minicore, Metal</td><td>182 s</td><td>5.06 h</td></tr>
+<tr><td>NVIDIA RTX 5060 Ti</td><td>FAH's core 0x27, CUDA</td><td>192 s</td><td>5.37 h</td></tr>
+</table>
+<figure>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
+  <img alt="Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA" src="figures/speed-light.svg">
+</picture>
+<figcaption>Hours per whole P18264 unit.</figcaption>
+</figure>
+
+<h3>Also on NVIDIA</h3>
+<p>minicore built for CUDA (OpenMM 8.6.1) ran the unit's first 11% on the same card at 180 s per 1%,
+against FAH's core's 187 s. On a 5,000-step cut its viewerTop.json and xtcAtoms.csv.bz2 were
+byte-identical to FAH's core's. Run conditions are in
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#speed">EVIDENCE.md</a>.</p>
+
 <h2>FAQ</h2>
-<h3>Can Folding@home use the Apple Silicon GPU?</h3>
-<p>minicore does. It runs FAH's real OpenMM work units on the Mac's GPU.</p>
-<h3>How fast is it against NVIDIA?</h3>
-<p>Faster than FAH's core on an RTX 5060 Ti, 5.06 h against 5.37 h for the whole of P18264.</p>
 <h3>Is it as accurate as FAH's core?</h3>
 <p>Yes. It passed all 21 of the unit's state tests, as FAH's core did, and its errors and drift sit with
 CUDA's.</p>
+<h3>Can Folding@home use the Apple Silicon GPU?</h3>
+<p>Yes. minicore runs FAH's real work units on it.</p>
+<h3>How fast is it against NVIDIA?</h3>
+<p>On P18264 minicore took 5.06 h on an M3 Ultra, and FAH's core took 5.37 h on an RTX 5060 Ti.</p>
 <h3>Can I fold for Folding@home points with it today?</h3>
 <p>No. FAH signs its cores and their results with its own private key, so that step is FAH's.</p>
 

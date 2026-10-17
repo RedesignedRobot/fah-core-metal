@@ -6,36 +6,15 @@ People have asked for Folding@home on Apple GPUs since 2019
 ([openmm#2489](https://github.com/openmm/openmm/issues/2489)) and 2024
 ([fah-client-bastet#303](https://github.com/FoldingAtHome/fah-client-bastet/issues/303)). Here it is.
 minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
-platform, and writes FAH's result files. On a whole real FAH unit, my M3 Ultra took 5.06 h. FAH's own
-core took 5.37 h on an NVIDIA RTX 5060 Ti.
+platform, and folds them to the standard of FAH's own core.
 
-| | P18264, a whole real FAH unit: 919,221 atoms, 5 ns |
+| | Checked against FAH's core 0x27 |
 | ---: | --- |
-| **5.06 h** | on an M3 Ultra, against 5.37 h for FAH's core 0x27 on an NVIDIA RTX 5060 Ti (182 s against 192 s per 1%) |
-| **21 of 21** | of the unit's state tests passed against the CPU platform, as core 0x27's 21 did |
+| **21 of 21** | state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21 |
 | **Six files** | in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's |
 | **101 of 101** | core-parity checks passed, and 65 of 65 failure and stop-resume cases |
-| **16 s** | to fold the bundled test unit on the M3 Ultra after `./build.sh`, so you can check it yourself ([Try it](#try-it)) |
-
-## Speed
-
-| Machine | Core | Per 1% | Per unit |
-| --- | --- | ---: | ---: |
-| Apple Silicon, M3 Ultra | minicore, Metal | 182 s | 5.06 h |
-| NVIDIA RTX 5060 Ti | FAH's core 0x27, CUDA | 192 s | 5.37 h |
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/speed-dark.svg">
-  <img alt="Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA" src="docs/figures/speed-light.svg">
-</picture>
-
-*Hours per whole P18264 unit.*
-
-### Also on NVIDIA
-
-minicore built for CUDA (OpenMM 8.6.1) ran the unit's first 11% on the same card at 180 s per 1%,
-against FAH's core's 187 s. On a 5,000-step cut its viewerTop.json and xtcAtoms.csv.bz2 were
-byte-identical to FAH's core's. Run conditions are in [EVIDENCE.md](docs/EVIDENCE.md#speed).
+| **0.054** | worst state-test force RMSE in kJ/mol/nm, beside CUDA's 0.052, against FAHBench's limit of 5 |
+| **16 s** | to fold the bundled test unit on an M3 Ultra after `./build.sh`, so you can check it yourself ([Try it](#try-it)) |
 
 ## Accuracy
 
@@ -70,9 +49,29 @@ byte-identical to FAH's core's. Run conditions are in [EVIDENCE.md](docs/EVIDENC
 Every behaviour FAH's client acts on matches core 0x27. The rest needs FAH's own signing keys or is a
 format the client never reads. [docs/PARITY.md](docs/PARITY.md) lists every row.
 
+## Speed
+
+| Machine | Core | Per 1% | Per unit |
+| --- | --- | ---: | ---: |
+| Apple Silicon, M3 Ultra | minicore, Metal | 182 s | 5.06 h |
+| NVIDIA RTX 5060 Ti | FAH's core 0x27, CUDA | 192 s | 5.37 h |
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/speed-dark.svg">
+  <img alt="Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA" src="docs/figures/speed-light.svg">
+</picture>
+
+*Hours per whole P18264 unit.*
+
+### Also on NVIDIA
+
+minicore built for CUDA (OpenMM 8.6.1) ran the unit's first 11% on the same card at 180 s per 1%,
+against FAH's core's 187 s. On a 5,000-step cut its viewerTop.json and xtcAtoms.csv.bz2 were
+byte-identical to FAH's core's ([run conditions](docs/EVIDENCE.md#speed)).
+
 ## Try it
 
-On an Apple Silicon Mac with macOS 15 or later, Xcode or the Command Line Tools, git and CMake:
+On Apple Silicon with macOS 15 or later, Xcode or the Command Line Tools, git and CMake:
 
 ```sh
 git clone https://github.com/RedesignedRobot/fah-core-metal.git
@@ -82,8 +81,8 @@ cp -R test/alanine-dipeptide unit
 ./build/core/minicore -dir unit -gpu-vendor apple -gpu 0; echo "exit $?"
 ```
 
-Like any FAH core, the fold logs to `unit/logfile_01.txt`. Exit 100 is FINISHED_UNIT, and the result
-is `unit/wuresults_01.dat`.
+The fold logs to `unit/logfile_01.txt`, exits 100 (FINISHED_UNIT) and writes its result to
+`unit/wuresults_01.dat`.
 
 ## Build it
 
@@ -97,18 +96,18 @@ rm -rf build
 
 ## FAQ
 
-### Can Folding@home use the Apple Silicon GPU?
-
-minicore does. It runs FAH's real OpenMM work units on the Mac's GPU.
-
-### How fast is it against NVIDIA?
-
-Faster than FAH's core on an RTX 5060 Ti, 5.06 h against 5.37 h for the whole of P18264.
-
 ### Is it as accurate as FAH's core?
 
 Yes. It passed all 21 of the unit's state tests, as FAH's core did, and its errors and drift sit with
 CUDA's.
+
+### Can Folding@home use the Apple Silicon GPU?
+
+Yes. minicore runs FAH's real work units on it.
+
+### How fast is it against NVIDIA?
+
+On P18264 minicore took 5.06 h on an M3 Ultra, and FAH's core took 5.37 h on an RTX 5060 Ti.
 
 ### Can I fold for Folding@home points with it today?
 

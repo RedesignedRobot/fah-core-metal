@@ -366,20 +366,19 @@ def social_svg():
     body = [f'<style>{face}text {{ font-family: InterCard; }}</style>\n', rect(0, 0, W, H, t["paper"], 0),
             rect(0, 0, 16, H, t["ultra"], 0),
             text(80, 170, "fah-core-metal", t["fg"], 96, "start", "600"),
-            text(80, 240, "Folding@home on Apple Silicon GPUs", t["muted"], 40),
-            text(80, 290, "A real FAH core, faster than FAH's core on an RTX 5060 Ti", t["muted"], 30)]
-    # Hours per P18264 unit, the same numbers as Figure 2.
-    for k, x in enumerate(rows("speed.csv")):
-        y = 360 + k * 90
-        c = t["ultra"] if x["machine"] == "M3 Ultra" else t["ref"]
-        w = 110 * float(x["unit_h"])
-        body.append(text(80, y + 28, MACHINE[x["machine"]], t["fg"], 30, "start", "600"))
-        body.append(text(80, y + 54, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 18))
-        body.append(rect(440, y, w, 50, c, 4))
-        est = "" if x["unit_h_from"] == "full run" else " est."
-        body.append(text(460 + w, y + 36, f'{float(x["unit_h"]):.2f} h{est}', t["fg"], 30, "start", "600"))
-    body.append(text(80, 590, "A whole FAH unit, P18264, 919,221 atoms, 5 ns. 21 of 21 state tests passed.", t["muted"], 22))
-    return svg(W, H, body, "fah-core-metal: Folding@home on Apple Silicon GPUs through OpenMM Metal")
+            text(80, 240, "A real Folding@home core on Apple Silicon GPUs", t["muted"], 40)]
+    # Two tiles, the first two checks of the README's headline strip.
+    for k, (n, lines) in enumerate((("21 of 21", ("state tests passed on a whole FAH unit,", "as FAH's core 0x27 passed 21")),
+                                    ("101 of 101", ("core-parity checks passed, on each path", "a FAH core has to survive")))):
+        x = 80 + k * 570
+        body.append(rect(x, 300, 550, 220, t["tile"], 8, t["grid"]))
+        body.append(text(x + 36, 400, n, t["ultra"], 80, "start", "600"))
+        for i, ln in enumerate(lines):
+            body.append(text(x + 36, 450 + i * 32, ln, t["fg"], 24))
+    body.append(text(80, 590, "Force errors beside CUDA's. Three result files byte-identical to FAH's core's.",
+                     t["muted"], 24))
+    return svg(W, H, body, "fah-core-metal: a real Folding@home core on Apple Silicon GPUs. "
+               "21 of 21 state tests on a whole FAH unit, as FAH's core 0x27 passed. 101 of 101 core-parity checks.")
 
 
 def social_png(svg_path, png_path):
