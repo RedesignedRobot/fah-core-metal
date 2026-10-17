@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="258" viewBox="0 0 1050 258" role="img" aria-label="Checked against FAH's core 0x27. 21 of 21 state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21. Six files in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's. 101 of 101 core-parity checks passed, and 65 of 65 failure and stop-resume cases. 0.054 kJ/mol/nm worst state-test force RMSE, beside CUDA's 0.052, against FAHBench's limit of 5. 16 s to fold the bundled test unit on an M3 Ultra after ./build.sh" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title>Checked against FAH's core 0x27. 21 of 21 state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21. Six files in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's. 101 of 101 core-parity checks passed, and 65 of 65 failure and stop-resume cases. 0.054 kJ/mol/nm worst state-test force RMSE, beside CUDA's 0.052, against FAHBench's limit of 5. 16 s to fold the bundled test unit on an M3 Ultra after ./build.sh</title>
+<text x="12.0" y="20.0" font-size="13" fill="#59636e" text-anchor="start" font-weight="600">Checked against FAH's core 0x27</text>
+<rect x="12.0" y="34.0" width="194.0" height="222.0" rx="10" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.2"/>
+<rect x="28.0" y="34.0" width="162.0" height="4.0" rx="2" fill="#0969da"/>
+<text x="28.0" y="84.0" font-size="34" fill="#0969da" text-anchor="start" font-weight="600">21 of 21</text>
+<rect x="28.0" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="35.7" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="43.4" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="51.1" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="58.8" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="66.5" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="74.2" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="81.9" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="89.6" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="97.3" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="105.0" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="112.7" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="120.4" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="128.1" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="135.8" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="143.5" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="151.2" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="158.9" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="166.6" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="174.3" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<rect x="182.0" y="104.0" width="6.0" height="14.0" rx="1.5" fill="#0969da"/>
+<text x="28.0" y="158.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">state tests passed on a</text>
+<text x="28.0" y="174.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">whole real FAH unit</text>
+<text x="28.0" y="190.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">(P18264, 919,221 atoms,</text>
+<text x="28.0" y="206.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">5 ns), as FAH's core</text>
+<text x="28.0" y="222.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">0x27 passed 21</text>
+<rect x="220.0" y="34.0" width="194.0" height="222.0" rx="10" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.2"/>
+<rect x="236.0" y="34.0" width="162.0" height="4.0" rx="2" fill="#465cdc"/>
+<text x="236.0" y="84.0" font-size="34" fill="#465cdc" text-anchor="start" font-weight="600">Six files</text>
+<path d="M 236.0,104.0 L 248.0,104.0 L 254.0,110.0 L 254.0,126.0 L 236.0,126.0 Z" fill="#d3d9f4" stroke="#465cdc" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M 263.0,104.0 L 275.0,104.0 L 281.0,110.0 L 281.0,126.0 L 263.0,126.0 Z" fill="#d3d9f4" stroke="#465cdc" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M 290.0,104.0 L 302.0,104.0 L 308.0,110.0 L 308.0,126.0 L 290.0,126.0 Z" fill="#d3d9f4" stroke="#465cdc" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M 317.0,104.0 L 329.0,104.0 L 335.0,110.0 L 335.0,126.0 L 317.0,126.0 Z" fill="#d3d9f4" stroke="#465cdc" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M 344.0,104.0 L 356.0,104.0 L 362.0,110.0 L 362.0,126.0 L 344.0,126.0 Z" fill="#d3d9f4" stroke="#465cdc" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M 371.0,104.0 L 383.0,104.0 L 389.0,110.0 L 389.0,126.0 L 371.0,126.0 Z" fill="#d3d9f4" stroke="#465cdc" stroke-width="1.4" stroke-linejoin="round"/>
+<text x="236.0" y="158.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">in the result, in core</text>
+<text x="236.0" y="174.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">0x27's order;</text>
+<text x="236.0" y="190.0" font-size="11" fill="#1f2328" text-anchor="start" font-weight="normal" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">viewerTop.json</text>
+<text x="236.0" y="206.0" font-size="11" fill="#1f2328" text-anchor="start" font-weight="normal" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">xtcAtoms.csv.bz2</text>
+<text x="236.0" y="222.0" font-size="11" fill="#1f2328" text-anchor="start" font-weight="normal" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">checkpointIntegrator.xml</text>
+<text x="236.0" y="238.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">byte-identical to core 0x27's</text>
+<rect x="428.0" y="34.0" width="194.0" height="222.0" rx="10" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.2"/>
+<rect x="444.0" y="34.0" width="162.0" height="4.0" rx="2" fill="#8250df"/>
+<text x="444.0" y="84.0" font-size="34" fill="#8250df" text-anchor="start" font-weight="600">101 of 101</text>
+<rect x="444.0" y="104.0" width="122.0" height="8.0" rx="4" fill="#dfd6f5"/>
+<rect x="444.0" y="104.0" width="122.0" height="8.0" rx="4" fill="#8250df"/>
+<text x="574.0" y="112.0" font-size="11" fill="#59636e" text-anchor="start" font-weight="normal">101/101</text>
+<rect x="444.0" y="117.0" width="122.0" height="8.0" rx="4" fill="#dfd6f5"/>
+<rect x="444.0" y="117.0" width="122.0" height="8.0" rx="4" fill="#8250df"/>
+<text x="574.0" y="125.0" font-size="11" fill="#59636e" text-anchor="start" font-weight="normal">65/65</text>
+<text x="444.0" y="158.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">core-parity checks passed,</text>
+<text x="444.0" y="174.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">and 65 of 65 failure and</text>
+<text x="444.0" y="190.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">stop-resume cases</text>
+<rect x="636.0" y="34.0" width="194.0" height="222.0" rx="10" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.2"/>
+<rect x="652.0" y="34.0" width="162.0" height="4.0" rx="2" fill="#a044b4"/>
+<text x="652.0" y="84.0" font-size="34" fill="#a044b4" text-anchor="start" font-weight="600">0.054</text>
+<line x1="652.0" y1="116.0" x2="806.0" y2="116.0" stroke="#d1d9e0" stroke-width="2"/>
+<line x1="794.4" y1="106.0" x2="794.4" y2="126.0" stroke="#818b98" stroke-width="1.5" stroke-dasharray="3 2"/>
+<text x="790.4" y="110.0" font-size="10.5" fill="#59636e" text-anchor="end" font-weight="normal">limit 5</text>
+<path d="M 718.1,117.0 L 723.1,122.0 L 718.1,127.0 L 713.1,122.0 Z" fill="#1a7f37"/>
+<circle cx="718.7" cy="111.0" r="4.5" fill="#0969da"/>
+<text x="652.0" y="138.0" font-size="10" fill="#59636e" text-anchor="start" font-weight="normal">0.001</text>
+<text x="806.0" y="138.0" font-size="10" fill="#59636e" text-anchor="end" font-weight="normal">10</text>
+<text x="652.0" y="158.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">worst state-test force</text>
+<text x="652.0" y="174.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">RMSE in kJ/mol/nm, beside</text>
+<text x="652.0" y="190.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">CUDA's 0.052, against</text>
+<text x="652.0" y="206.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">FAHBench's limit of 5</text>
+<rect x="844.0" y="34.0" width="194.0" height="222.0" rx="10" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.2"/>
+<rect x="860.0" y="34.0" width="162.0" height="4.0" rx="2" fill="#bf3989"/>
+<text x="860.0" y="84.0" font-size="34" fill="#bf3989" text-anchor="start" font-weight="600">16 s</text>
+<rect x="860.0" y="104.0" width="162.0" height="24.0" rx="5" fill="#1f2328" stroke="#d1d9e0" stroke-width="1.2"/>
+<text x="869.0" y="120.0" font-size="12" fill="#d57eb2" text-anchor="start" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">exit 100</text>
+<text x="1013.0" y="120.0" font-size="10.5" fill="#9198a1" text-anchor="end" font-weight="normal" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">FINISHED_UNIT</text>
+<text x="860.0" y="158.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">to fold the bundled test</text>
+<text x="860.0" y="174.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">unit on an M3 Ultra after</text>
+<text x="860.0" y="190.0" font-size="11" fill="#1f2328" text-anchor="start" font-weight="normal" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">./build.sh</text>
+<text x="860.0" y="206.0" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="normal">so you can check it yourself</text>
+</svg>

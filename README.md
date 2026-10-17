@@ -1,12 +1,39 @@
-# fah-core-metal
+<h1 align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/banner-dark.svg">
+  <img alt="fah-core-metal. A real, fully working Folding@home core for Apple Silicon GPUs." src="docs/figures/banner-light.svg">
+</picture>
+</h1>
 
-A real, fully working Folding@home core for Apple Silicon GPUs.
+<p align="center">
+  <a href="docs/EVIDENCE.md#what-was-tested-and-where"><img alt="state tests: 21/21" src="https://img.shields.io/badge/state_tests-21%2F21-0969da"></a>
+  <a href="docs/EVIDENCE.md#what-was-tested-and-where"><img alt="parity checks: 101/101" src="https://img.shields.io/badge/parity_checks-101%2F101-395fdc"></a>
+  <a href="#try-it"><img alt="platform: Apple Silicon" src="https://img.shields.io/badge/platform-Apple_Silicon-6a55de?logo=apple&logoColor=white"></a>
+  <a href="https://github.com/openmm/openmm/pull/5488"><img alt="backend: OpenMM Metal" src="https://img.shields.io/badge/backend-OpenMM_Metal-8e4bce"></a>
+  <a href="LICENSE"><img alt="license: MIT" src="https://img.shields.io/badge/license-MIT-a742ab"></a>
+  <a href="https://redesignedrobot.github.io/fah-core-metal/"><img alt="docs: GitHub Pages" src="https://img.shields.io/badge/docs-GitHub_Pages-bf3989"></a>
+</p>
 
 People have asked for Folding@home on Apple GPUs since 2019
 ([openmm#2489](https://github.com/openmm/openmm/issues/2489)) and 2024
 ([fah-client-bastet#303](https://github.com/FoldingAtHome/fah-client-bastet/issues/303)). Here it is.
 minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
 platform, and folds them to the standard of FAH's own core.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/pipeline-dark.svg">
+  <img alt="A FAH work unit goes into minicore, which runs it through OpenMM Metal with df64 mixed precision on the Apple GPU and writes FAH's result files, with the state tests" src="docs/figures/pipeline-light.svg">
+</picture>
+
+*FAH's own work unit in, FAH's own result files out, all on the Mac.*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/cards-dark.svg">
+  <img alt="Checked against FAH's core 0x27. 21 of 21 state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21. Six files in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's. 101 of 101 core-parity checks passed, and 65 of 65 failure and stop-resume cases. 0.054 kJ/mol/nm worst state-test force RMSE, beside CUDA's 0.052, against FAHBench's limit of 5. 16 s to fold the bundled test unit on an M3 Ultra after ./build.sh" src="docs/figures/cards-light.svg">
+</picture>
+
+<details>
+<summary>The five checks as text</summary>
 
 | | Checked against FAH's core 0x27 |
 | ---: | --- |
@@ -15,6 +42,8 @@ platform, and folds them to the standard of FAH's own core.
 | **101 of 101** | core-parity checks passed, and 65 of 65 failure and stop-resume cases |
 | **0.054** | worst state-test force RMSE in kJ/mol/nm, beside CUDA's 0.052, against FAHBench's limit of 5 |
 | **16 s** | to fold the bundled test unit on an M3 Ultra after `./build.sh`, so you can check it yourself ([Try it](#try-it)) |
+
+</details>
 
 ## Accuracy
 

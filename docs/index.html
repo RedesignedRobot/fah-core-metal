@@ -41,7 +41,12 @@
 body { margin: 0; background: var(--bg); color: var(--fg);
   font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
 main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
-h1 { font-size: 32px; margin: 0 0 4px; }
+h1 { font-size: 32px; margin: 0 0 12px; }
+h1 img, figure.wide img { width: var(--w); }
+.badges { text-align: center; margin: 0 0 24px; }
+.badges img { height: 20px; width: auto; margin: 2px 1px; }
+details { margin: 8px 0 24px; }
+summary { cursor: pointer; color: var(--muted); }
 h2 { font-size: 21px; margin: 40px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 a { color: var(--link); }
 img { max-width: var(--w); height: auto; }
@@ -50,20 +55,47 @@ td.n { text-align: right; font-weight: 600; white-space: nowrap; }
 figcaption { font-style: italic; color: var(--muted); font-size: 14px; margin-top: 6px; }
 table { border-collapse: collapse; width: var(--w); font-size: 15px; }
 th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.lede { color: var(--muted); margin-top: 0; }
 footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
 </style>
 </head>
 <body>
 <main>
-<h1>fah-core-metal</h1>
-<p class="lede">A real, fully working Folding@home core for Apple Silicon GPUs.</p>
+<h1><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/banner-dark.svg">
+  <img alt="fah-core-metal. A real, fully working Folding@home core for Apple Silicon GPUs." src="figures/banner-light.svg" width="1280" height="320">
+</picture></h1>
+
+<p class="badges">
+  <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#what-was-tested-and-where"><img alt="state tests: 21/21" src="https://img.shields.io/badge/state_tests-21%2F21-0969da"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#what-was-tested-and-where"><img alt="parity checks: 101/101" src="https://img.shields.io/badge/parity_checks-101%2F101-395fdc"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal#try-it"><img alt="platform: Apple Silicon" src="https://img.shields.io/badge/platform-Apple_Silicon-6a55de?logo=apple&amp;logoColor=white"></a>
+  <a href="https://github.com/openmm/openmm/pull/5488"><img alt="backend: OpenMM Metal" src="https://img.shields.io/badge/backend-OpenMM_Metal-8e4bce"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/LICENSE"><img alt="license: MIT" src="https://img.shields.io/badge/license-MIT-a742ab"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal"><img alt="source: GitHub" src="https://img.shields.io/badge/source-GitHub-bf3989?logo=github&amp;logoColor=white"></a>
+</p>
 
 <p>People have asked for Folding@home on Apple GPUs since 2019 (<a href="https://github.com/openmm/openmm/issues/2489">openmm#2489</a>) and
 2024 (<a href="https://github.com/FoldingAtHome/fah-client-bastet/issues/303">fah-client-bastet#303</a>). Here it
 is. minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
 platform, and folds them to the standard of FAH's own core.</p>
 
+<figure class="wide">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/pipeline-dark.svg">
+  <img alt="A FAH work unit goes into minicore, which runs it through OpenMM Metal with df64 mixed precision on the Apple GPU and writes FAH's result files, with the state tests" src="figures/pipeline-light.svg" width="1044" height="156">
+</picture>
+<figcaption>FAH's own work unit in, FAH's own result files out, all on the Mac.</figcaption>
+</figure>
+
+<figure class="wide">
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/cards-dark.svg">
+  <img alt="Checked against FAH's core 0x27. 21 of 21 state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21. Six files in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's. 101 of 101 core-parity checks passed, and 65 of 65 failure and stop-resume cases. 0.054 kJ/mol/nm worst state-test force RMSE, beside CUDA's 0.052, against FAHBench's limit of 5. 16 s to fold the bundled test unit on an M3 Ultra after ./build.sh" src="figures/cards-light.svg" width="1050" height="258">
+</picture></a>
+</figure>
+
+<details>
+<summary>The five checks as text</summary>
 <table>
 <tr><th></th><th>Checked against FAH's core 0x27</th></tr>
 <tr><td class="n">21 of 21</td><td>state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21</td></tr>
@@ -72,6 +104,7 @@ platform, and folds them to the standard of FAH's own core.</p>
 <tr><td class="n">0.054</td><td>worst state-test force RMSE in kJ/mol/nm, beside CUDA's 0.052, against FAHBench's limit of 5</td></tr>
 <tr><td class="n">16 s</td><td>to fold the bundled test unit on an M3 Ultra after <code>./build.sh</code>, so you can check it yourself (<a href="https://github.com/RedesignedRobot/fah-core-metal#try-it">Try it</a>)</td></tr>
 </table>
+</details>
 
 <h2>Accuracy</h2>
 <figure>

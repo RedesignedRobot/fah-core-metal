@@ -40,6 +40,27 @@ stays short and pushes detail into `docs/`.
 Taken: the first person singular voice. I left out the table of contents, the badges and the
 sponsor banner. A README this short does not need them.
 
+## The second pass: colour and pictures
+
+For the banner, badges, pipeline and cards I read five more READMEs that announce hard things.
+
+- RPCS3: two badges with logos, then one plain sentence saying what it is. Taken: a short badge row
+  under the name, every badge a link.
+- ollama and ghostty: a centred mark at the top and the tagline under it, with nothing else above
+  the fold. Taken: the centred banner with the name and tagline, and the badges centred under it.
+- uv and ruff: one chart in light and dark through `<picture>`, centred, with an italic caption
+  naming the workload. Taken: every new picture comes in both themes, and the pipeline has a caption.
+- Tauri: a full-width splash image, then static shields.io badges in a few chosen colours. Taken:
+  the full-width banner, and badges coloured from the figures' palette, blue to violet to pink in
+  the order they appear.
+- Asahi Linux keeps its pictures on its website, and its repos' READMEs are plain text. Taken: the
+  Pages site carries the same pictures as the README.
+
+The banner draws a protein cartoon in code, a coil into an alpha helix and then a three-stranded
+beta sheet, coloured from one end of the chain to the other as molecular viewers colour a chain. The
+cards keep the headline numbers in the README's order, with their full text in the alt text and in a
+table under them, so the numbers stay searchable.
+
 ## The page and its figures
 
 The figures carry the README. Under the hero, two sentences say what minicore is and what it matches.
@@ -50,7 +71,9 @@ for Metal (the M2 a lighter blue than the M3 Ultra), green for CUDA on NVIDIA, g
 
 ## What I avoid
 
-- Badges with nothing behind them. There is no CI, no release and no package, so there are no badges.
+- Badges with nothing behind them. The badges under the banner are static: two carry a number from
+  `docs/EVIDENCE.md` and link to its row, the rest name the platform, the backend, the license and the
+  docs. There is no CI, no release and no package, so there is no build, version or download badge.
 - Adjectives in place of numbers. A claim about speed or agreement carries its number and its source
   in `docs/EVIDENCE.md`.
 - Screenshots of terminals. Transcripts are text so they can be searched and copied.

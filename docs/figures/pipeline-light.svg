@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1044" height="156" viewBox="0 0 1044 156" role="img" aria-label="A FAH work unit goes into minicore, which runs it through OpenMM Metal with df64 mixed precision on the Apple GPU and writes FAH's result files, with the state tests" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title>A FAH work unit goes into minicore, which runs it through OpenMM Metal with df64 mixed precision on the Apple GPU and writes FAH's result files, with the state tests</title>
+<rect x="12.0" y="16.0" width="172.0" height="96.0" rx="10" fill="#f2f3f5" stroke="#818b98" stroke-width="1.2"/>
+<path d="M 13.0,28.0 A 10 10 0 0 1 23.0,17.0 L 173.0,17.0 A 10 10 0 0 1 183.0,28.0 Z" fill="#818b98"/>
+<text x="98.0" y="58.0" font-size="16" fill="#1f2328" text-anchor="middle" font-weight="600">FAH work unit</text>
+<text x="98.0" y="80.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">wudata_01.dat</text>
+<text x="98.0" y="97.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">OpenMM System, State</text>
+<rect x="224.0" y="16.0" width="172.0" height="96.0" rx="10" fill="#e6f0fb" stroke="#0969da" stroke-width="1.2"/>
+<path d="M 225.0,28.0 A 10 10 0 0 1 235.0,17.0 L 385.0,17.0 A 10 10 0 0 1 395.0,28.0 Z" fill="#0969da"/>
+<text x="310.0" y="58.0" font-size="16" fill="#1f2328" text-anchor="middle" font-weight="600">minicore</text>
+<text x="310.0" y="80.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">this repo, one</text>
+<text x="310.0" y="97.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">self-contained executable</text>
+<line x1="191.0" y1="64.0" x2="215.0" y2="64.0" stroke="#59636e" stroke-width="2"/>
+<path d="M 209.0,58.0 L 217.0,64.0 L 209.0,70.0" fill="none" stroke="#59636e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="436.0" y="16.0" width="172.0" height="96.0" rx="10" fill="#f2eefc" stroke="#8250df" stroke-width="1.2"/>
+<path d="M 437.0,28.0 A 10 10 0 0 1 447.0,17.0 L 597.0,17.0 A 10 10 0 0 1 607.0,28.0 Z" fill="#8250df"/>
+<text x="522.0" y="58.0" font-size="16" fill="#1f2328" text-anchor="middle" font-weight="600">OpenMM Metal</text>
+<text x="522.0" y="80.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">df64 mixed</text>
+<text x="522.0" y="97.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">precision</text>
+<line x1="403.0" y1="64.0" x2="427.0" y2="64.0" stroke="#59636e" stroke-width="2"/>
+<path d="M 421.0,58.0 L 429.0,64.0 L 421.0,70.0" fill="none" stroke="#59636e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="648.0" y="16.0" width="172.0" height="96.0" rx="10" fill="#f9ebf3" stroke="#bf3989" stroke-width="1.2"/>
+<path d="M 649.0,28.0 A 10 10 0 0 1 659.0,17.0 L 809.0,17.0 A 10 10 0 0 1 819.0,28.0 Z" fill="#bf3989"/>
+<text x="734.0" y="58.0" font-size="16" fill="#1f2328" text-anchor="middle" font-weight="600">Apple GPU</text>
+<text x="734.0" y="80.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">Apple Silicon,</text>
+<text x="734.0" y="97.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">macOS 15 or later</text>
+<line x1="615.0" y1="64.0" x2="639.0" y2="64.0" stroke="#59636e" stroke-width="2"/>
+<path d="M 633.0,58.0 L 641.0,64.0 L 633.0,70.0" fill="none" stroke="#59636e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="860.0" y="16.0" width="172.0" height="96.0" rx="10" fill="#f2f3f5" stroke="#818b98" stroke-width="1.2"/>
+<path d="M 861.0,28.0 A 10 10 0 0 1 871.0,17.0 L 1021.0,17.0 A 10 10 0 0 1 1031.0,28.0 Z" fill="#818b98"/>
+<text x="946.0" y="58.0" font-size="16" fill="#1f2328" text-anchor="middle" font-weight="600">FAH result files</text>
+<text x="946.0" y="80.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">wuresults_01.dat,</text>
+<text x="946.0" y="97.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">with the state tests</text>
+<line x1="827.0" y1="64.0" x2="851.0" y2="64.0" stroke="#59636e" stroke-width="2"/>
+<path d="M 845.0,58.0 L 853.0,64.0 L 845.0,70.0" fill="none" stroke="#59636e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 224.0,120.0 L 224.0,126.0 L 820.0,126.0 L 820.0,120.0" fill="none" stroke="#d1d9e0" stroke-width="1.5"/>
+<text x="522.0" y="146.0" font-size="12.5" fill="#59636e" text-anchor="middle" font-weight="normal">on the Mac; it never connects to FAH servers</text>
+</svg>
