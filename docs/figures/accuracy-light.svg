@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="684" height="232" viewBox="0 0 684 232" role="img" aria-label="Worst state-test force and energy error per unit against the Reference platform, Metal and CUDA" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<text x="84.0" y="28.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">Force RMSE (kJ/mol/nm)</text>
+<line x1="84.0" y1="40.0" x2="84.0" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="84.0" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">0.001</text>
+<line x1="151.5" y1="40.0" x2="151.5" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="151.5" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">0.01</text>
+<line x1="219.0" y1="40.0" x2="219.0" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="219.0" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">0.1</text>
+<line x1="286.5" y1="40.0" x2="286.5" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="286.5" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">1</text>
+<line x1="354.0" y1="40.0" x2="354.0" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="354.0" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">10</text>
+<line x1="333.7" y1="36.0" x2="333.7" y2="176.0" stroke="#818b98" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="329.7" y="170.0" font-size="11" fill="#59636e" text-anchor="end" font-weight="normal">limit 5</text>
+<line x1="84.0" y1="176.0" x2="354.0" y2="176.0" stroke="#59636e" stroke-width="1.0"/>
+<text x="72.0" y="61.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">gbsa</text>
+<circle cx="154.4" cy="52.0" r="4" fill="#0969da"/>
+<path d="M 155.1,57.0 L 160.1,62.0 L 155.1,67.0 L 150.1,62.0 Z" fill="#1a7f37"/>
+<text x="72.0" y="95.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">neq</text>
+<circle cx="174.5" cy="86.0" r="4" fill="#0969da"/>
+<path d="M 170.9,91.0 L 175.9,96.0 L 170.9,101.0 L 165.9,96.0 Z" fill="#1a7f37"/>
+<text x="72.0" y="129.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">tip3p-hmr</text>
+<circle cx="189.0" cy="120.0" r="4" fill="#0969da"/>
+<path d="M 188.9,125.0 L 193.9,130.0 L 188.9,135.0 L 183.9,130.0 Z" fill="#1a7f37"/>
+<text x="72.0" y="163.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">tip4pew</text>
+<circle cx="201.1" cy="154.0" r="4" fill="#0969da"/>
+<path d="M 199.9,159.0 L 204.9,164.0 L 199.9,169.0 L 194.9,164.0 Z" fill="#1a7f37"/>
+<text x="394.0" y="28.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="600">|ΔPE| (kJ/mol)</text>
+<line x1="394.0" y1="40.0" x2="394.0" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="394.0" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">0.01</text>
+<line x1="461.5" y1="40.0" x2="461.5" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="461.5" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">0.1</text>
+<line x1="529.0" y1="40.0" x2="529.0" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="529.0" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">1</text>
+<line x1="596.5" y1="40.0" x2="596.5" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="596.5" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">10</text>
+<line x1="664.0" y1="40.0" x2="664.0" y2="176.0" stroke="#d1d9e0" stroke-width="1.0"/>
+<text x="664.0" y="192.0" font-size="11" fill="#59636e" text-anchor="middle" font-weight="normal">100</text>
+<line x1="596.5" y1="36.0" x2="596.5" y2="176.0" stroke="#818b98" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="592.5" y="170.0" font-size="11" fill="#59636e" text-anchor="end" font-weight="normal">limit 10</text>
+<line x1="394.0" y1="176.0" x2="664.0" y2="176.0" stroke="#59636e" stroke-width="1.0"/>
+<circle cx="437.5" cy="52.0" r="4" fill="#0969da"/>
+<path d="M 453.2,57.0 L 458.2,62.0 L 453.2,67.0 L 448.2,62.0 Z" fill="#1a7f37"/>
+<circle cx="448.0" cy="86.0" r="4" fill="#0969da"/>
+<path d="M 433.0,91.0 L 438.0,96.0 L 433.0,101.0 L 428.0,96.0 Z" fill="#1a7f37"/>
+<circle cx="511.2" cy="120.0" r="4" fill="#0969da"/>
+<path d="M 483.2,125.0 L 488.2,130.0 L 483.2,135.0 L 478.2,130.0 Z" fill="#1a7f37"/>
+<circle cx="505.5" cy="154.0" r="4" fill="#0969da"/>
+<path d="M 491.3,159.0 L 496.3,164.0 L 491.3,169.0 L 486.3,164.0 Z" fill="#1a7f37"/>
+<circle cx="89.0" cy="216.0" r="4" fill="#0969da"/>
+<text x="99.0" y="220.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">Apple M3 Ultra, Metal mixed</text>
+<path d="M 349.0,211.0 L 354.0,216.0 L 349.0,221.0 L 344.0,216.0 Z" fill="#1a7f37"/>
+<text x="359.0" y="220.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">NVIDIA RTX 5060 Ti, CUDA mixed</text>
+</svg>

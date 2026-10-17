@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://redesignedrobot.github.io/fah-core-metal/sitemap.xml

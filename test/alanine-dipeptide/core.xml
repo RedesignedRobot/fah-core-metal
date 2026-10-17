@@ -1,0 +1,9 @@
+<config>
+  <numSteps v='25000'/>
+  <checkpointFreq v='-10%'/>
+  <xtcFreq v='250'/>
+  <xtcAtoms v='solute'/>
+  <precision v='mixed'/>
+  <forceTolerance v='5'/>
+  <energyTolerance v='10'/>
+</config>
