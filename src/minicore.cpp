@@ -505,20 +505,18 @@ static string openclDeviceLine(int index, const OpenCLDevice& d) {
 // fah-client numbers OpenCL devices over CL_DEVICE_TYPE_ALL (cbang's OpenCLLibrary.cpp) and sends that index as
 // -opencl-device. On a Mac, which has one platform and no accelerators, that is OpenMM's DeviceIndex, so it is
 // passed through. OpenMM's OpenCL platform skips a device without cl_khr_fp64 in mixed and double precision, or
-// one with work groups under 32 threads (OpenCLContext.cpp). If the client's device is a GPU that can't run the
-// unit, the core exits GPU_UNAVAILABLE_ERROR rather than take another GPU, which would be another slot's. Only
-// when the device is missing or not a GPU does the core fall back, with a WARNING line: to the first GPU that
-// can run the unit or, if OpenCL lists no GPU at all, to the first CPU device that can. OpenMM uses Apple's
-// CPU device only when DeviceIndex names it (patch 0005). GitHub's Intel runners, with no GPU, fold that way.
+// one with work groups under 32 threads (OpenCLContext.cpp). The device the client names must be able to run the
+// unit, or the core exits GPU_UNAVAILABLE_ERROR rather than take another GPU, which would be another slot's.
+// A device that isn't a GPU runs only when -opencl-device names it: OpenMM uses Apple's CPU device only then
+// (patch 0005), since it skips that device on its own, and patch 0006 sizes its work groups. If the device is missing, or is not a GPU and only -gpu
+// named it, the core falls back to the first GPU that can run the unit, with a WARNING line, and otherwise exits
+// GPU_UNAVAILABLE_ERROR, as the Metal path does on a Mac with no usable GPU.
 static void chooseOpenCLDevice(PlatformChoice& choice, const string& precision) {
     vector<OpenCLDevice> devices = openclDevices();
     int count = devices.size();
-    bool anyGpu = false;
     say("OpenCL platform 0, %d devices:", count);
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
         say("  %s", openclDeviceLine(i, devices[i]).c_str());
-        anyGpu = anyGpu || devices[i].gpu;
-    }
     auto problem = [&](int i) -> string {
         if (precision != "single" && !devices[i].fp64)
             return "does not report cl_khr_fp64, which "+precision+" precision needs";
@@ -527,24 +525,28 @@ static void chooseOpenCLDevice(PlatformChoice& choice, const string& precision) 
         return "";
     };
     int asked = choice.device;
-    if (asked >= 0 && asked < count && devices[asked].gpu) {
+    bool named = choice.deviceArg == "opencl-device";
+    if (asked >= 0 && asked < count && (devices[asked].gpu || named)) {
+        const OpenCLDevice& d = devices[asked];
         string why = problem(asked);
         if (!why.empty())
-            throw Failure(GPU_UNAVAILABLE_ERROR, stringf("OpenCL device %d, %s, ", asked, devices[asked].name.c_str())+why);
-        say("  Using OpenCL device %d, as the client asked", asked);
+            throw Failure(GPU_UNAVAILABLE_ERROR, stringf("OpenCL device %d, %s, ", asked, d.name.c_str())+why);
+        if (d.gpu)
+            say("  Using OpenCL device %d, as the client asked", asked);
+        else
+            say("WARNING: OpenCL device %d, %s, is not a GPU; using it because -opencl-device names it", asked,
+                d.name.c_str());
         return;
     }
     string why = asked >= 0 && asked < count ? stringf("OpenCL device %d is not a GPU", asked) :
                                                stringf("there is no OpenCL device %d", asked);
     for (int i = 0; i < count; i++)
-        if (devices[i].gpu == anyGpu && problem(i).empty()) {
+        if (devices[i].gpu && problem(i).empty()) {
             choice.device = i;
-            say("WARNING: %s; falling back to OpenCL device %d, %s (%s)", why.c_str(), i, devices[i].name.c_str(),
-                devices[i].gpu ? "GPU" : "CPU");
+            say("WARNING: %s; falling back to OpenCL device %d, %s", why.c_str(), i, devices[i].name.c_str());
             return;
         }
-    throw Failure(GPU_UNAVAILABLE_ERROR, why+", and no OpenCL "+(anyGpu ? "GPU" : "device")+" can run "+precision+
-                  " precision");
+    throw Failure(GPU_UNAVAILABLE_ERROR, why+", and no OpenCL GPU can run "+precision+" precision");
 }
 #endif
 

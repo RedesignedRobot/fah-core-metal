@@ -6,6 +6,10 @@
 #
 # The fold runs in a fresh temp dir, removed on exit, so a unit/ you made by hand is left alone. Only the
 # report goes to stdout (./report.sh | pbcopy copies it); progress goes to stderr.
+#
+# On an Intel Mac, OUT is an x86_64 OpenCL build (MINICORE_ARCH=x86_64 MINICORE_OPENCL=1, or the opencl-x86
+# CI artifact unpacked into OUT). It folds on the first GPU that minicore --info lists, with the arguments the
+# client sends for an OpenCL GPU, and at single precision if that GPU reports no fp64.
 set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
@@ -24,13 +28,42 @@ trap 'exit 143' TERM
 chip=$(sysctl -n machdep.cpu.brand_string)
 gpu_cores=$(system_profiler SPDisplaysDataType 2> /dev/null | sed -n 's/^ *Total Number of Cores: *//p' | head -n 1)
 [ -n "$gpu_cores" ] || gpu_cores="not listed in System Information"
+title_gpu="$gpu_cores GPU cores"
 ram="$(( $(sysctl -n hw.memsize) / 1073741824 )) GB"
 macos="$(sw_vers -productVersion) ($(sw_vers -buildVersion))"
 build=$("$core" --info 2>&1)
 
 cp -R "$here/test/alanine-dipeptide" "$tmp/unit" || exit 2
-echo "Folding the bundled test unit with $core..." >&2
-"$core" -dir "$tmp/unit" -gpu-vendor apple -gpu 0 > "$tmp/console.txt" 2>&1
+notes="(yours: how long the build took, what went wrong, what you changed)"
+if [ "$(uname -m)" = x86_64 ]; then
+    grep -q '^OpenCL device' <<< "$build" || {
+        echo "$core lists no OpenCL device; on an Intel Mac use an OpenCL build (MINICORE_ARCH=x86_64 MINICORE_OPENCL=1)" >&2
+        exit 2
+    }
+    # "OpenCL device N: NAME, vendor V, GPU, fp64 yes|no, ...", from minicore --info.
+    gpus=$(grep '^OpenCL device [0-9]*: .*, GPU, fp64 ' <<< "$build")
+    line=$(grep ', GPU, fp64 yes' <<< "$gpus" | head -n 1)
+    [ -n "$line" ] || line=$(head -n 1 <<< "$gpus")
+    if [ -n "$line" ]; then
+        device=$(sed 's/^OpenCL device \([0-9]*\):.*/\1/' <<< "$line")
+        title_gpu=$(sed 's/^OpenCL device [0-9]*: \(.*\), vendor .*/\1/' <<< "$line")
+        vendor=intel
+        grep -q ', vendor AMD, ' <<< "$line" && vendor=amd
+        args=(-gpu-platform opencl -gpu-vendor "$vendor" -opencl-platform 0 -opencl-device "$device" -gpu "$device")
+        if grep -q ', fp64 no,' <<< "$line"; then
+            sed -i '' "s|<precision v='mixed'/>|<precision v='single'/>|" "$tmp/unit/core.xml"
+            notes="report.sh folded at single precision: OpenCL device $device reports no fp64. $notes"
+        fi
+    else
+        # No OpenCL GPU: the client's arguments with -gpu only, which must exit 126.
+        title_gpu="no OpenCL GPU"
+        args=(-gpu-platform opencl -gpu-vendor amd -opencl-platform 0 -gpu 0)
+    fi
+else
+    args=(-gpu-vendor apple -gpu 0)
+fi
+echo "Folding the bundled test unit with $core ${args[*]}..." >&2
+"$core" -dir "$tmp/unit" "${args[@]}" > "$tmp/console.txt" 2>&1
 code=$?
 echo "minicore exited $code" >&2
 
@@ -70,7 +103,7 @@ encode() {
 
 # GitHub fills an issue form's input and textarea fields from query parameters named by their ids
 # (docs.github.com: "Creating an issue from a URL query" and "Syntax for GitHub's form schema", key id).
-link="$form?template=run-report.yml&title=$(encode "Run report: $chip, $gpu_cores GPU cores, macOS $macos")"
+link="$form?template=run-report.yml&title=$(encode "Run report: $chip, $title_gpu, macOS $macos")"
 link="$link&chip=$(encode "$chip")&gpu-cores=$(encode "$gpu_cores")&ram=$(encode "$ram")"
 link="$link&macos=$(encode "$macos")&build=$(encode "$build")&exit-code=$code"
 long="$link&gpu-info=$(encode "$gpu_info")&state-tests=$(encode "$tests")"
@@ -89,7 +122,7 @@ field Build "$build"
 field "Exit code" "$code"
 field "GPU info lines" "$gpu_info"
 field "State tests" "$tests"
-field Notes "(yours: how long the build took, what went wrong, what you changed)"
+field Notes "$notes"
 field Check "Tick the box: everything above comes from the bundled test unit."
 echo "Open a run report with these fields filled in, read it over, tick the box and submit:"
 echo "$link"
