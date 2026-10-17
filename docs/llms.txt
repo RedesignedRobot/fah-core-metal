@@ -1,0 +1,24 @@
+# fah-core-metal
+
+> A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal platform, and folds them to the standard of FAH's own core, 0x27.
+
+People have asked for Folding@home on Apple GPUs since 2019 (openmm#2489) and 2024 (fah-client-bastet#303). On P18264, a whole real FAH unit of 919,221 atoms and 5 ns, minicore passed 21 of 21 state tests, as FAH's core 0x27 passed 21. Its result holds the six files in core 0x27's order, and viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml are byte-identical to core 0x27's. It passed 101 of 101 core-parity checks and 65 of 65 failure and stop-resume cases. Its worst state-test force RMSE is 0.054 kJ/mol/nm, beside CUDA's 0.052, against FAHBench's limit of 5. The bundled test unit folds in 16 s on an M3 Ultra after `./build.sh`, so anyone can check it.
+
+On speed, minicore on an M3 Ultra took 5.06 h for P18264, and FAH's core 0x27 took 5.37 h on an NVIDIA RTX 5060 Ti (182 s against 192 s per 1%). Built for CUDA on the same RTX 5060 Ti, minicore ran at 180 s per 1% against FAH's core's 187 s over the unit's first 11%.
+
+Every behaviour FAH's client acts on matches core 0x27. The rest needs FAH's own signing keys or is a format the client never reads. For points, FAH signs its cores and their results with its own private key, so that step is FAH's.
+
+fah-core-metal is not affiliated with or endorsed by Folding@home. It never connects to FAH servers.
+
+## Docs
+
+- [README](https://github.com/RedesignedRobot/fah-core-metal#readme): the headline numbers, accuracy, parity and speed figures, how to build and run it, FAQ
+- [Evidence](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md): the run, conditions and raw record behind every number
+- [Parity](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/PARITY.md): every behaviour of core 0x27 next to minicore's
+- [Design notes](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/design-notes.md): how the README and the core are laid out, and why
+
+## Source
+
+- [src/](https://github.com/RedesignedRobot/fah-core-metal/tree/main/src): minicore, the core
+- [build.sh](https://github.com/RedesignedRobot/fah-core-metal/blob/main/build.sh): fetches OpenMM with the Metal platform, builds it as static libraries and links the core
+- [docs/data/](https://github.com/RedesignedRobot/fah-core-metal/tree/main/docs/data): the CSVs behind every figure

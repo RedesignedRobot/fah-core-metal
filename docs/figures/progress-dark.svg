@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="276" viewBox="0 0 660 276" role="img" aria-label="Seconds per 1% across the unit, real core against the M3 Ultra" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<line x1="58.0" y1="230.0" x2="640.0" y2="230.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="234.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">150 s</text>
+<line x1="58.0" y1="194.0" x2="640.0" y2="194.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="198.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">160 s</text>
+<line x1="58.0" y1="158.0" x2="640.0" y2="158.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="162.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">170 s</text>
+<line x1="58.0" y1="122.0" x2="640.0" y2="122.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="126.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">180 s</text>
+<line x1="58.0" y1="86.0" x2="640.0" y2="86.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="90.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">190 s</text>
+<line x1="58.0" y1="50.0" x2="640.0" y2="50.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="54.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">200 s</text>
+<line x1="58.0" y1="14.0" x2="640.0" y2="14.0" stroke="#3d444d" stroke-width="1.0"/>
+<text x="50.0" y="18.0" font-size="11" fill="#9198a1" text-anchor="end" font-weight="normal">210 s</text>
+<line x1="58.0" y1="230.0" x2="58.0" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="58.0" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">0%</text>
+<line x1="116.2" y1="230.0" x2="116.2" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="116.2" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">10%</text>
+<line x1="174.4" y1="230.0" x2="174.4" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="174.4" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">20%</text>
+<line x1="232.6" y1="230.0" x2="232.6" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="232.6" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">30%</text>
+<line x1="290.8" y1="230.0" x2="290.8" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="290.8" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">40%</text>
+<line x1="349.0" y1="230.0" x2="349.0" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="349.0" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">50%</text>
+<line x1="407.2" y1="230.0" x2="407.2" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="407.2" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">60%</text>
+<line x1="465.4" y1="230.0" x2="465.4" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="465.4" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">70%</text>
+<line x1="523.6" y1="230.0" x2="523.6" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="523.6" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">80%</text>
+<line x1="581.8" y1="230.0" x2="581.8" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="581.8" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">90%</text>
+<line x1="640.0" y1="230.0" x2="640.0" y2="234.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="640.0" y="248.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">100%</text>
+<line x1="58.0" y1="230.0" x2="640.0" y2="230.0" stroke="#9198a1" stroke-width="1.0"/>
+<text x="349.0" y="266.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">Progress through the unit (each point is one 1% interval, 12,500 steps)</text>
+<polyline points="63.8,86.0 69.6,100.4 75.5,93.2 81.3,96.8 87.1,89.6 92.9,100.4 98.7,96.8 104.6,96.8 110.4,96.8 116.2,82.4 122.0,96.8 127.8,93.2 133.7,86.0 139.5,78.8 145.3,71.6 151.1,78.8 156.9,82.4 162.8,86.0 168.6,78.8 174.4,71.6 180.2,78.8 186.0,68.0 191.9,75.2 197.7,75.2 203.5,68.0 209.3,78.8 215.1,78.8 221.0,78.8 226.8,78.8 232.6,53.6 238.4,75.2 244.2,75.2 250.1,78.8 255.9,75.2 261.7,71.6 267.5,78.8 273.3,82.4 279.2,78.8 285.0,78.8 290.8,68.0 296.6,78.8 302.4,78.8 308.3,78.8 314.1,82.4 319.9,68.0 325.7,75.2 331.5,82.4 337.4,78.8 343.2,82.4 349.0,68.0 354.8,82.4 360.6,82.4 366.5,82.4 372.3,78.8 378.1,78.8 383.9,82.4 389.7,75.2 395.6,78.8 401.4,75.2 407.2,68.0 413.0,78.8 418.8,78.8 424.7,78.8 430.5,75.2 436.3,68.0 442.1,78.8 447.9,71.6 453.8,78.8 459.6,75.2 465.4,64.4 471.2,75.2 477.0,78.8 482.9,75.2 488.7,75.2 494.5,71.6 500.3,71.6 506.1,71.6 512.0,71.6 517.8,78.8 523.6,71.6 529.4,75.2 535.2,78.8 541.1,75.2 546.9,75.2 552.7,60.8 558.5,78.8 564.3,75.2 570.2,75.2 576.0,78.8 581.8,64.4 587.6,75.2 593.4,71.6 599.3,75.2 605.1,75.2 610.9,68.0 616.7,75.2 622.5,75.2 628.4,78.8 634.2,78.8" fill="none" stroke="#848d97" stroke-width="1.5" stroke-linejoin="round"/>
+<polyline points="63.8,107.6 69.6,114.8 75.5,118.4 81.3,114.8 87.1,118.4 92.9,111.2 98.7,118.4 104.6,111.2 110.4,122.0 116.2,114.8 122.0,114.8 127.8,114.8 133.7,118.4 139.5,114.8 145.3,118.4 151.1,107.6 156.9,118.4 162.8,114.8 168.6,118.4 174.4,114.8 180.2,107.6 186.0,122.0 191.9,118.4 197.7,114.8 203.5,118.4 209.3,111.2 215.1,118.4 221.0,118.4 226.8,118.4 232.6,114.8 238.4,107.6 244.2,114.8 250.1,114.8 255.9,114.8 261.7,118.4 267.5,107.6 273.3,118.4 279.2,114.8 285.0,114.8 290.8,111.2 296.6,111.2 302.4,118.4 308.3,111.2 314.1,118.4 319.9,114.8 325.7,107.6 331.5,118.4 337.4,114.8 343.2,118.4 349.0,114.8 354.8,114.8 360.6,114.8 366.5,114.8 372.3,114.8 378.1,118.4 383.9,107.6 389.7,118.4 395.6,114.8 401.4,118.4 407.2,118.4 413.0,114.8 418.8,114.8 424.7,118.4 430.5,114.8 436.3,114.8 442.1,111.2 447.9,114.8 453.8,118.4 459.6,118.4 465.4,118.4 471.2,107.6 477.0,114.8 482.9,122.0 488.7,114.8 494.5,118.4 500.3,111.2 506.1,114.8 512.0,122.0 517.8,114.8 523.6,118.4 529.4,107.6 535.2,118.4 541.1,114.8 546.9,122.0 552.7,118.4 558.5,111.2 564.3,114.8 570.2,118.4 576.0,118.4 581.8,118.4 587.6,111.2 593.4,122.0 599.3,111.2 605.1,118.4 610.9,118.4 616.7,111.2 622.5,118.4 628.4,118.4 634.2,114.8 640.0,118.4" fill="none" stroke="#4493f8" stroke-width="2.0" stroke-linejoin="round"/>
+<line x1="358.0" y1="30.0" x2="382.0" y2="30.0" stroke="#848d97" stroke-width="2.5"/>
+<text x="390.0" y="34.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">real core 0x27, RTX 5060 Ti: median 192 s</text>
+<line x1="358.0" y1="48.0" x2="382.0" y2="48.0" stroke="#4493f8" stroke-width="2.5"/>
+<text x="390.0" y="52.0" font-size="12" fill="#e6edf3" text-anchor="start" font-weight="normal">minicore, M3 Ultra: median 182 s</text>
+</svg>
