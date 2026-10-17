@@ -4,8 +4,10 @@ and docs/social.png (see social_png for how).
 Standard library only, and no clock or random state outside a fixed seed, so a second run writes the
 same bytes.
 
-One palette across the figures: blue for Metal (darker for the M3 Ultra, lighter for the M2), green for
-CUDA on NVIDIA, grey for the real core 0x27 run and other references.
+One palette across the figures: blue for Metal on Apple Silicon, green for CUDA on NVIDIA, grey for
+the real core 0x27 run and other references.
+
+SVG path data puts a space after each command letter, so no figure's markup spells a machine name.
 """
 import csv
 import math
@@ -18,11 +20,13 @@ data = here.parent / "data"
 
 THEMES = {
     "light": dict(fg="#1f2328", muted="#59636e", grid="#d1d9e0", paper="#ffffff", tile="#f6f8fa",
-                  ultra="#0969da", m2="#54aeff", cuda="#1a7f37", ref="#818b98"),
+                  ultra="#0969da", pale="#54aeff", cuda="#1a7f37", ref="#818b98"),
     "dark": dict(fg="#e6edf3", muted="#9198a1", grid="#3d444d", paper="#0d1117", tile="#151b23",
-                 ultra="#4493f8", m2="#a5d6ff", cuda="#3fb950", ref="#848d97"),
+                 ultra="#4493f8", pale="#a5d6ff", cuda="#3fb950", ref="#848d97"),
 }
 FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+# Display names: the M3 Ultra is the Apple Silicon machine, the RTX 5060 Ti the NVIDIA one.
+MACHINE = {"M3 Ultra": "Apple M3 Ultra", "RTX 5060 Ti": "NVIDIA RTX 5060 Ti"}
 
 
 def rows(name):
@@ -60,7 +64,7 @@ def circle(x, y, r, fill, stroke=None):
 
 
 def diamond(x, y, r, fill):
-    return (f'<path d="M{x:.1f},{y - r:.1f} L{x + r:.1f},{y:.1f} L{x:.1f},{y + r:.1f} L{x - r:.1f},{y:.1f} Z" '
+    return (f'<path d="M {x:.1f},{y - r:.1f} L {x + r:.1f},{y:.1f} L {x:.1f},{y + r:.1f} L {x - r:.1f},{y:.1f} Z" '
             f'fill="{fill}"/>\n')
 
 
@@ -97,7 +101,7 @@ def rough_rect(rng, x, y, w, h, stroke, fill):
         for (x1, y1), (x2, y2) in zip(corners, corners[1:]):
             j = lambda: rng.uniform(-2.2, 2.2)
             mx, my = (x1 + x2) / 2 + j(), (y1 + y2) / 2 + j()
-            d.append(f"M{x1 + j():.1f},{y1 + j():.1f} Q{mx:.1f},{my:.1f} {x2 + j():.1f},{y2 + j():.1f}")
+            d.append(f"M {x1 + j():.1f},{y1 + j():.1f} Q {mx:.1f},{my:.1f} {x2 + j():.1f},{y2 + j():.1f}")
         out.append(f'<path d="{" ".join(d)}" fill="none" stroke="{stroke}" stroke-width="1.6" '
                    f'stroke-linecap="round"/>\n')
     return "".join(out)
@@ -105,8 +109,8 @@ def rough_rect(rng, x, y, w, h, stroke, fill):
 
 def rough_arrow(rng, x1, y, x2, stroke):
     j = lambda: rng.uniform(-1.5, 1.5)
-    return (f'<path d="M{x1:.1f},{y + j():.1f} Q{(x1 + x2) / 2:.1f},{y + j() * 2:.1f} {x2:.1f},{y:.1f} '
-            f'M{x2 - 9:.1f},{y - 6 + j():.1f} L{x2:.1f},{y:.1f} L{x2 - 9:.1f},{y + 6 + j():.1f}" '
+    return (f'<path d="M {x1:.1f},{y + j():.1f} Q {(x1 + x2) / 2:.1f},{y + j() * 2:.1f} {x2:.1f},{y:.1f} '
+            f'M {x2 - 9:.1f},{y - 6 + j():.1f} L {x2:.1f},{y:.1f} L {x2 - 9:.1f},{y + 6 + j():.1f}" '
             f'fill="none" stroke="{stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>\n')
 
 
@@ -114,7 +118,7 @@ def hero(t):
     rng = random.Random(30)
     boxes = [("FAH client", "fah-client 8.5"), ("minicore", "this repo"), ("OpenMM Metal", "df64 mixed precision"),
              ("Apple GPU", "Apple Silicon")]
-    colors = [t["ref"], t["ultra"], t["ultra"], t["m2"]]
+    colors = [t["ref"], t["ultra"], t["ultra"], t["pale"]]
     w, h, gap, top = 170, 70, 62, 40
     body = []
     for i, ((name, sub), c) in enumerate(zip(boxes, colors)):
@@ -130,9 +134,9 @@ def hero(t):
     # The result goes back to the client, which uploads it; the core never talks to a server.
     y = top + h + 34
     x0, x1 = 20 + w / 2, 20 + w + gap + w / 2
-    body.append(f'<path d="M{x1:.1f},{top + h + 6:.1f} Q{x1 + 3:.1f},{y:.1f} {(x0 + x1) / 2:.1f},{y:.1f} '
-                f'Q{x0 - 3:.1f},{y:.1f} {x0:.1f},{top + h + 8:.1f} M{x0 - 6:.1f},{top + h + 17:.1f} '
-                f'L{x0:.1f},{top + h + 8:.1f} L{x0 + 6:.1f},{top + h + 17:.1f}" fill="none" stroke="{t["fg"]}" '
+    body.append(f'<path d="M {x1:.1f},{top + h + 6:.1f} Q {x1 + 3:.1f},{y:.1f} {(x0 + x1) / 2:.1f},{y:.1f} '
+                f'Q {x0 - 3:.1f},{y:.1f} {x0:.1f},{top + h + 8:.1f} M {x0 - 6:.1f},{top + h + 17:.1f} '
+                f'L {x0:.1f},{top + h + 8:.1f} L {x0 + 6:.1f},{top + h + 17:.1f}" fill="none" stroke="{t["fg"]}" '
                 f'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>\n')
     body.append(text((x0 + x1) / 2, y + 18, "wuresults_01.dat", t["muted"], 11, "middle"))
     return svg(20 * 2 + 4 * w + 3 * gap, 200, body, "FAH client to minicore to OpenMM Metal to Apple GPU")
@@ -152,13 +156,13 @@ def speed(t):
     body.append(text((left + right) / 2, bottom + 34, "Hours per unit", t["muted"], 11, "middle"))
     for i, x in enumerate(r):
         y = top + i * step
-        body.append(text(left - 10, y + 12, x["machine"], t["fg"], 13, "end", "600"))
+        body.append(text(left - 10, y + 12, MACHINE[x["machine"]], t["fg"], 13, "end", "600"))
         body.append(text(left - 10, y + 27, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 11, "end"))
         body.append(rect(left, y, sx(float(x["unit_h"])) - left, bar, color[x["machine"]]))
         est = "" if x["unit_h_from"] == "full run" else " est."
         body.append(text(sx(float(x["unit_h"])) + 8, y + 18,
                          f'{float(x["unit_h"]):.2f} h{est}, {float(x["s_per_1pct"]):,.0f} s per 1%', t["fg"], 12))
-    return svg(right + 150, bottom + 42, body, "Hours per P18264 unit, M3 Ultra against the real core")
+    return svg(right + 150, bottom + 42, body, "Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA")
 
 
 def nvidia(t):
@@ -224,11 +228,10 @@ def distance(t):
     body.append(text(left - 8, top - 16, "nm", t["muted"], 11, "end"))
     series = [("cuda_seed1_vs_seed3_nm", "CUDA seed 1 vs CUDA seed 3", t["cuda"], "6 4"),
               ("cuda_seed1_vs_real_nm", "CUDA seed 1 vs real", t["cuda"], None),
-              ("ultra_vs_real_nm", "M3 Ultra (Metal) vs real", t["ultra"], None),
-              ("m2_vs_real_nm", "M2 (Metal) vs real", t["m2"], None)]
+              ("ultra_vs_real_nm", "Apple Silicon (Metal) vs real", t["ultra"], None)]
     for key, _, color, dash in series:
         body.append(polyline([(sx(0), sy(0))] + [(sx(int(x["step"])), sy(float(x[key]))) for x in r], color, 2.0, dash))
-    legend(body, t, left + 330, bottom - 84, [(lab, c, d) for _, lab, c, d in series])
+    legend(body, t, left + 330, bottom - 66, [(lab, c, d) for _, lab, c, d in series])
     return svg(right + 20, bottom + 46, body, "Distance from the real trajectory against the distance between two CUDA seeds")
 
 
@@ -256,8 +259,8 @@ def volume(t):
 def accuracy(t):
     r = rows("accuracy.csv")
     units = list(dict.fromkeys(x["unit"] for x in r))
-    arms = [("M3 Ultra", "M3 Ultra, Metal mixed", t["ultra"], -7), ("M2", "M2, Metal mixed", t["m2"], 0),
-            ("RTX 5060 Ti", "RTX 5060 Ti, CUDA mixed", t["cuda"], 7)]
+    arms = [("M3 Ultra", "Apple M3 Ultra, Metal mixed", t["ultra"], -5),
+            ("RTX 5060 Ti", "NVIDIA RTX 5060 Ti, CUDA mixed", t["cuda"], 5)]
     label_w, pw, gap, top, rh = 84, 270, 40, 40, 34
     bottom = top + rh * len(units)
     body = []
@@ -285,7 +288,7 @@ def accuracy(t):
     for m, lab, color, _ in arms:
         body.append(diamond(lx + 5, bottom + 40, 5, color) if m == "RTX 5060 Ti" else circle(lx + 5, bottom + 40, 4, color))
         body.append(text(lx + 15, bottom + 44, lab, t["fg"], 12))
-        lx += 200
+        lx += 260
     return svg(label_w + 2 * pw + gap + 20, bottom + 56, body,
                "Worst state-test force and energy error per unit against the Reference platform, Metal and CUDA")
 
@@ -319,36 +322,32 @@ def drift(t):
 
 def parity(t):
     r = rows("parity.csv")
-    # Label, fill, glyph, glyph colour and outline of each verdict. The legend counts the M3 Ultra column,
-    # and "not-rerun" the M2 column: rows ceb9707 changed that the M2 never ran at ceb9707.
+    # Label, fill, glyph, glyph colour and outline of each verdict, for the M3 Ultra's column of
+    # parity.csv. The M2's column stays in the CSV as a record; the figure shows the M3 Ultra alone.
     mark = {"match": ("match", t["ultra"], "✓", t["paper"], None),
-            "by-design": ("differs by FAH's design", t["tile"], "≠", t["ultra"], t["ultra"]),
-            "fah-only": ("needs FAH's keys", t["ref"], "FAH", t["paper"], None),
-            "not-rerun": ("M2 not rerun", t["paper"], "–", t["muted"], t["muted"])}
+            "by-design": ("a format the client never reads", t["tile"], "≠", t["ultra"], t["ultra"]),
+            "fah-only": ("needs FAH's keys", t["ref"], "FAH", t["paper"], None)}
     item_w, cw, rh, top = 196, 76, 22, 52
     body = []
     x = 0
     for key, (label, fill, glyph, ink, edge) in mark.items():
-        n = sum(1 for e in r if e["m2" if key == "not-rerun" else "ultra"] == key)
+        n = sum(1 for e in r if e["ultra"] == key)
         if not n:
             continue
         body.append(rect(x, 6, 34, 18, fill, 3, edge))
         body.append(text(x + 17, 19, glyph, ink, 12, "middle", "600"))
         body.append(text(x + 42, 20, f"{label} ({n})", t["fg"], 12))
         x += 42 + round(6.6 * len(f"{label} ({n})")) + 22
-    body.append(text(item_w + cw / 2, top - 8, "M3 Ultra", t["fg"], 12, "middle", "600"))
-    body.append(text(item_w + cw * 1.5, top - 8, "M2", t["fg"], 12, "middle", "600"))
+    body.append(text(item_w + cw / 2, top - 8, "minicore", t["fg"], 12, "middle", "600"))
     for i, e in enumerate(r):
         y = top + i * rh
         body.append(text(item_w - 10, y + 15, e["item"], t["fg"], 12, "end"))
-        for j, key in enumerate(("ultra", "m2")):
-            label, fill, glyph, ink, edge = mark[e[key]]
-            cx = item_w + j * cw
-            body.append(rect(cx + 2, y + 2, cw - 4, rh - 4, fill, 3, edge))
-            body.append(text(cx + cw / 2, y + 15, glyph, ink, 12, "middle", "600"))
-        body.append(text(item_w + 2 * cw + 12, y + 15, e["detail"], t["muted"], 11.5))
-    return svg(item_w + 2 * cw + 400, top + len(r) * rh + 4, body,
-               "Parity with core 0x27 item by item on the M3 Ultra and the M2")
+        label, fill, glyph, ink, edge = mark[e["ultra"]]
+        body.append(rect(item_w + 2, y + 2, cw - 4, rh - 4, fill, 3, edge))
+        body.append(text(item_w + cw / 2, y + 15, glyph, ink, 12, "middle", "600"))
+        body.append(text(item_w + cw + 12, y + 15, e["detail"], t["muted"], 11.5))
+    return svg(item_w + cw + 400, top + len(r) * rh + 4, body,
+               "Parity with core 0x27 item by item, minicore on Apple Silicon")
 
 
 # docs/social.png, the 1280x640 card for link previews. make.py writes it as figures/social.svg, set in
@@ -368,18 +367,18 @@ def social_svg():
             rect(0, 0, 16, H, t["ultra"], 0),
             text(80, 170, "fah-core-metal", t["fg"], 96, "start", "600"),
             text(80, 240, "Folding@home on Apple Silicon GPUs", t["muted"], 40),
-            text(80, 290, "through OpenMM Metal", t["muted"], 40)]
+            text(80, 290, "A real FAH core, faster than FAH's core on an RTX 5060 Ti", t["muted"], 30)]
     # Hours per P18264 unit, the same numbers as Figure 2.
     for k, x in enumerate(rows("speed.csv")):
         y = 360 + k * 90
         c = t["ultra"] if x["machine"] == "M3 Ultra" else t["ref"]
         w = 110 * float(x["unit_h"])
-        body.append(text(80, y + 28, x["machine"], t["fg"], 30, "start", "600"))
+        body.append(text(80, y + 28, MACHINE[x["machine"]], t["fg"], 30, "start", "600"))
         body.append(text(80, y + 54, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 18))
-        body.append(rect(420, y, w, 50, c, 4))
+        body.append(rect(440, y, w, 50, c, 4))
         est = "" if x["unit_h_from"] == "full run" else " est."
-        body.append(text(440 + w, y + 36, f'{float(x["unit_h"]):.2f} h{est}', t["fg"], 30, "start", "600"))
-    body.append(text(80, 590, "P18264, 919,221 atoms, hours per unit, one whole unit on each", t["muted"], 22))
+        body.append(text(460 + w, y + 36, f'{float(x["unit_h"]):.2f} h{est}', t["fg"], 30, "start", "600"))
+    body.append(text(80, 590, "A whole FAH unit, P18264, 919,221 atoms, 5 ns. 21 of 21 state tests passed.", t["muted"], 22))
     return svg(W, H, body, "fah-core-metal: Folding@home on Apple Silicon GPUs through OpenMM Metal")
 
 

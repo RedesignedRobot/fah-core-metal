@@ -4,14 +4,14 @@
 <rect x="0.0" y="0.0" width="16.0" height="640.0" rx="0" fill="#4493f8"/>
 <text x="80.0" y="170.0" font-size="96" fill="#e6edf3" text-anchor="start" font-weight="600">fah-core-metal</text>
 <text x="80.0" y="240.0" font-size="40" fill="#9198a1" text-anchor="start" font-weight="normal">Folding@home on Apple Silicon GPUs</text>
-<text x="80.0" y="290.0" font-size="40" fill="#9198a1" text-anchor="start" font-weight="normal">through OpenMM Metal</text>
-<text x="80.0" y="388.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">RTX 5060 Ti</text>
+<text x="80.0" y="290.0" font-size="30" fill="#9198a1" text-anchor="start" font-weight="normal">A real FAH core, faster than FAH's core on an RTX 5060 Ti</text>
+<text x="80.0" y="388.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">NVIDIA RTX 5060 Ti</text>
 <text x="80.0" y="414.0" font-size="18" fill="#9198a1" text-anchor="start" font-weight="normal">core 0x27 8.2.1, CUDA mixed</text>
-<rect x="420.0" y="360.0" width="590.7" height="50.0" rx="4" fill="#848d97"/>
-<text x="1030.7" y="396.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">5.37 h</text>
-<text x="80.0" y="478.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">M3 Ultra</text>
+<rect x="440.0" y="360.0" width="590.7" height="50.0" rx="4" fill="#848d97"/>
+<text x="1050.7" y="396.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">5.37 h</text>
+<text x="80.0" y="478.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">Apple M3 Ultra</text>
 <text x="80.0" y="504.0" font-size="18" fill="#9198a1" text-anchor="start" font-weight="normal">minicore, Metal mixed</text>
-<rect x="420.0" y="450.0" width="556.6" height="50.0" rx="4" fill="#4493f8"/>
-<text x="996.6" y="486.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">5.06 h</text>
-<text x="80.0" y="590.0" font-size="22" fill="#9198a1" text-anchor="start" font-weight="normal">P18264, 919,221 atoms, hours per unit, one whole unit on each</text>
+<rect x="440.0" y="450.0" width="556.6" height="50.0" rx="4" fill="#4493f8"/>
+<text x="1016.6" y="486.0" font-size="30" fill="#e6edf3" text-anchor="start" font-weight="600">5.06 h</text>
+<text x="80.0" y="590.0" font-size="22" fill="#9198a1" text-anchor="start" font-weight="normal">A whole FAH unit, P18264, 919,221 atoms, 5 ns. 21 of 21 state tests passed.</text>
 </svg>

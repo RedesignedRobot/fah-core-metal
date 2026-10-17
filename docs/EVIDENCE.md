@@ -362,8 +362,8 @@ CUDA mixed precision on the same model of card, with seeds 1 and 3.
 </picture>
 
 *Figure 3. RMS distance between the 2,520 solute atoms of two runs every 5,000 steps, minimum image and
-no fitting: each run against the real one, and CUDA seed 1 against CUDA seed 3
-(`docs/data/distance.csv`).*
+no fitting: the M3 Ultra and CUDA seed 1 against the real run, and CUDA seed 1 against CUDA seed 3
+(`docs/data/distance.csv`, which also keeps the M2's column).*
 
 At step 5,000, the first frame anyone writes, the M3 Ultra's solute is 0.475 nm from the real one and the
 M2's 0.479 nm. The two CUDA seeds are 0.481 nm from each other. Metal parts from the real run as fast as
@@ -394,8 +394,8 @@ on Metal and on CUDA mixed precision, against OpenMM's Reference platform.
 </picture>
 
 *Figure 5. Worst of six state tests per test system against OpenMM's Reference platform, on a log scale
-with FAHBench's limits dashed: Metal mixed on each Mac, and CUDA mixed (OpenMM 8.6.1) on an RTX 5060 Ti
-(`docs/data/accuracy.csv`).*
+with FAHBench's limits dashed: Metal mixed on the M3 Ultra, and CUDA mixed (OpenMM 8.6.1) on an RTX 5060 Ti
+(`docs/data/accuracy.csv`, which also keeps the M2's rows).*
 
 The test systems are gbsa (2,489 atoms, implicit solvent), neq (2,269 atoms, a nonequilibrium
 CustomIntegrator), tip3p-hmr (29,451 atoms, PME, 4 fs) and tip4pew (38,876 atoms, PME, virtual sites).
@@ -465,12 +465,12 @@ The M2, a base 8 GB chip, passes the same checks at 3fc8475; it has not run ceb9
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/parity-dark.svg">
-  <img alt="Parity with core 0x27 item by item on the M3 Ultra and the M2" src="figures/parity-light.svg">
+  <img alt="Parity with core 0x27 item by item, minicore on Apple Silicon" src="figures/parity-light.svg">
 </picture>
 
-*Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on each Mac: blue where minicore
-matches, outlined where FAH's own code or keys decide the answer, grey where only FAH's keys can make it,
-and a dash where the M2 has not run ceb9707, which changed the row (`docs/data/parity.csv`).*
+*Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on the M3 Ultra: blue where
+minicore matches, outlined where FAH's own code or keys decide the answer, grey where only FAH's keys can
+make it (`docs/data/parity.csv`, whose M2 column the "Parity per Mac" table above lists).*
 
 
 ### Where it differs
