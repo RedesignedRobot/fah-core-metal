@@ -37,7 +37,7 @@ Source: `core-realwu/REPORT.md`, the paragraph headed "Unit", and `core-realwu/r
 
 ## Speed
 
-| README figure | Value | Source |
+| Figure | Value | Source |
 | --- | --- | --- |
 | Real core, time per 1% | 192 s | Median of the real run's 1% intervals from its viewer frames 0-99; `core-realwu/results/real/timing.txt`, made by `core-realwu/scripts/realtiming.py`; `core-realwu/REPORT.md` section 5 |
 | Real core, time per unit | 5.37 h | 19,330 s wall, 2026-10-15 19:04:41Z to 00:26:51Z; same files |
@@ -326,10 +326,12 @@ figure paths and numbers. Figure S1, the progress trace, appears only here.
 P18264 run 153 clone 0 gen 272: 919,221 atoms, 1,250,000 steps of 4 fs (5 ns), PME, a Monte Carlo
 barostat and mixed precision. One 1% is 12,500 steps.
 
-| Machine | Core | Time per 1% | Time per unit |
-| --- | --- | ---: | ---: |
-| RTX 5060 Ti, Linux | core 0x27 8.2.1 (OpenMM 8.2.0, CUDA mixed), a real FAH run | 192 s | 5.37 h |
-| M3 Ultra, macOS 27 | minicore at b60c18b, Metal mixed, the whole unit (gpuq 2245) | 182 s | 5.06 h |
+The M3 Ultra (macOS 27) ran minicore at b60c18b, Metal mixed, over the whole unit (gpuq 2245): 182 s
+per 1%, 5.06 h.
+
+The reference run, kept as a record and not as a speed comparison, is core 0x27 8.2.1 (OpenMM 8.2.0,
+CUDA mixed) on an RTX 5060 Ti under Linux, a real FAH run: 192 s per 1%, 5.37 h. Speed is compared only
+on the same card ([One RTX 5060 Ti, core 0x27 against minicore](#one-rtx-5060-ti-core-0x27-against-minicore)).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/progress-dark.svg">
