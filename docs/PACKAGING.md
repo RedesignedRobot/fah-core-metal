@@ -49,7 +49,7 @@ adds (`packaging-guide/REPORT.md` section 7, cases client-args and metal-args).
 | `-lifeline PID` | minicore exits 103 when that pid is gone |
 | `-checkpoint MINUTES` | Checkpoint interval |
 | `-gpu N` | Must be 0 on Metal, since Metal uses the system GPU. 1 exits 126 |
-| `-gpu-vendor apple`, `-metal-platform`, `-metal-device` | Select Metal. They win over `-gpu-platform` (header comment, lines 47-52) |
+| `-gpu-vendor apple`, `-metal-device N` | Select Metal. They win over `-gpu-platform` (`choosePlatform`, lines 432-455). `-metal-platform` alone doesn't, like every `-<api>-platform` |
 | `-gpu-platform cuda\|opencl\|hip` | Without the above, asks for a platform this build lacks: exit 115 ("CUDA is not in this core") |
 | `-<api>-device N` | The device. Like `-gpu`, it must be 0 on Metal |
 | `-<api>-platform N` | Accepted, unused |
