@@ -1,5 +1,11 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: Run it on your Mac
-    url: https://github.com/RedesignedRobot/fah-core-metal/discussions
-    about: Questions about building or running minicore on your Mac, or a run report you'd rather post as a reply.
+  - name: Ask a question
+    url: https://github.com/RedesignedRobot/fah-core-metal/discussions/categories/q-a
+    about: Questions about building or running minicore go to Discussions Q&A.
+  - name: Share a run in the discussion
+    url: https://github.com/RedesignedRobot/fah-core-metal/discussions/1
+    about: Ran the bundled test unit and would rather reply than fill in the run report form? Post it in "Run it on your Mac".
+  - name: Report a security problem
+    url: https://github.com/RedesignedRobot/fah-core-metal/security
+    about: Report it privately with "Report a vulnerability" on the Security and quality tab, as SECURITY.md says.

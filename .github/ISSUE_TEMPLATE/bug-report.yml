@@ -1,0 +1,91 @@
+name: Bug report
+description: Something went wrong building or running minicore.
+title: "Bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting it. If you have a question rather than a bug, ask in [Discussions Q&A](https://github.com/RedesignedRobot/fah-core-metal/discussions/categories/q-a). For a security problem, see [SECURITY.md](https://github.com/RedesignedRobot/fah-core-metal/blob/main/SECURITY.md) instead.
+
+        **Paste only lines from the bundled test unit, `unit/` from `cp -R test/alanine-dipeptide unit`. Never paste a Folding@home work unit, your F@H ID or your passkey.** Don't paste the whole log either: its top lines hold your Mac's hostname and folder paths.
+
+  - type: input
+    id: chip
+    attributes:
+      label: Chip
+      description: Apple menu > About This Mac. On Linux, the GPU instead.
+      placeholder: M2, M4 Pro
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      description: Apple menu > About This Mac. On Linux, the distribution and NVIDIA driver version.
+      placeholder: "15.5"
+    validations:
+      required: true
+
+  - type: textarea
+    id: build
+    attributes:
+      label: Build
+      description: |
+        The last line `./build.sh` printed, which starts `minicore (fah-core-metal), OpenMM`. `./build/core/minicore --info` prints it again. If the build failed, paste its last 20 lines instead.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: The commands you ran, in order, from a fresh clone if you can.
+      placeholder: |
+        ./build.sh
+        cp -R test/alanine-dipeptide unit
+        ./build/core/minicore -dir unit -gpu-vendor apple -gpu 0; echo "exit $?"
+      render: sh
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+      description: What happened instead, including the exit code if minicore ran.
+    validations:
+      required: true
+
+  - type: textarea
+    id: log-tail
+    attributes:
+      label: Log tail
+      description: |
+        The last 40 lines of `unit/logfile_01.txt`, plus any line starting `ERROR:` or `An exception occurred`. Leave out the top lines, which hold your hostname and folder paths.
+      render: text
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything else, such as what you changed or tried.
+
+  - type: checkboxes
+    id: test-unit-only
+    attributes:
+      label: Check
+      options:
+        - label: Everything above comes from the bundled test unit or my own build, nothing from a real Folding@home work unit or the FAH client.
+          required: true

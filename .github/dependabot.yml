@@ -1,0 +1,10 @@
+# Keeps the SHA-pinned actions in .github/workflows up to date. Nothing else in the repo has a manifest
+# Dependabot reads: build.sh pins OpenMM by commit, and that pin moves only by hand.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "build"
