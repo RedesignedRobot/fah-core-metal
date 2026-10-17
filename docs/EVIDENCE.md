@@ -24,7 +24,7 @@ statistics taken from them.
 | Energy drift (Figure 6) | OpenMM's own VerletIntegrator through `drift/scripts/run1ns.py`, no core |
 | Core-gap checks, the holdout stop and resume, the second P18264 cut (gpuq 2235, 2236) | this repo's source as in ceb9707, linked by `src/link.sh` against the OpenMM prefix of the fresh clone of 3fc8475 (minicore sha256 5e7cc197761cb69f) |
 | P18264, the whole unit on the M3 Ultra (gpuq 2245) | this repo at b60c18b: a fresh `git clone --no-local --branch main`, built by `taskpolicy -b nice -n 10 ./build.sh -j 6` (gpuq 2243; minicore 7,090,688 B, sha256 9f2b962bbdd05ed3) |
-| P18264 on the RTX 5060 Ti: the 5,000-step cut to the end and the first 11% (gpud 347, 349, 350) | this repo at ba4ae8e, built on chimaera by `build-linux.sh` against conda-forge OpenMM 8.2.0 (minicore sha256 70588a33) and 8.6.1 (sha256 ae3c4331) |
+| P18264 on the RTX 5060 Ti: the 5,000-step cut to the end and the first 11% (gpud 347, 349, 350) | this repo at ba4ae8e, built on the Linux machine by `build-linux.sh` against conda-forge OpenMM 8.2.0 (minicore sha256 70588a33) and 8.6.1 (sha256 ae3c4331) |
 
 This repo's minicore is the lab's 416b78c7 reworked after two code reviews (`docs/design-notes.md`).
 On a clean run it writes the same files, members and log lines.
@@ -55,10 +55,10 @@ Source: `core-realwu/REPORT.md`, the paragraph headed "Unit", and `core-realwu/r
 
 ### One RTX 5060 Ti, core 0x27 against minicore
 
-minicore at fah-core-metal ba4ae8e, built on chimaera by `build-linux.sh` in each gpud job's scratch,
+minicore at fah-core-metal ba4ae8e, built on the Linux machine by `build-linux.sh` in each gpud job's scratch,
 ran WU2 (the delivered `wudata_01.dat` of the real run above) on card 0, the card core 0x27 used. The
-jobs ran on 2026-10-16 in a window in which Sara lent card 0. Raw records are in
-`core-cuda/results/chimaera/`, one directory per gpud job, and the lab's `core-cuda/REPORT.md` gives
+jobs ran on 2026-10-16. Raw records are in
+`core-cuda/results/`, one directory per gpud job, and the lab's `core-cuda/REPORT.md` gives
 the commands.
 
 | Figure | Value | Source |
@@ -68,7 +68,7 @@ the commands.
 | minicore 8.2.0, seconds per 1% | 11 intervals between viewer frames 0 and 11: 186, 184, 184, 184, 185, 183, 184, 184, 184, 186, 184 s, median 184 s; 3 state tests pass; SIGINT at 11%, exit 102 | gpud job 349; `349-time-8.2.0/time-8.2.0.frames` |
 | minicore 8.6.1, seconds per 1% | 186, 181, 178, 180, 182, 179, 180, 180, 179, 183, 181 s, median 180 s; 3 state tests pass; exit 102 | gpud job 350; `350-time-8.6.1/time-8.6.1.frames` |
 | minicore, hours per unit | 5.12 h (8.2.0) and 5.01 h (8.6.1): 30 s and 29 s of start-up to viewerFrame0 plus 100 x the median. The same sum for core 0x27, 82 s from gpud job #280's start to viewerFrame0 plus 100 x 192 s, gives 5.36 h against its measured 5.37 h. The intervals that end on a checkpoint (frames 5 and 10, steps 62,500 and 125,000) are 1 to 3 s above the median | the same files and `time-*.progress` |
-| Core 0x27 over the same 11% | Viewer frames 0 to 11 of the real run: 190, 186, 188, 187, 189, 186, 187, 187, 187, 191, 187 s, median 187 s. The whole unit's median is 192 s | `stat` of the real run's viewer frames on the bench, as for Figure S1; `core-cuda/results/chimaera/real-frames-0-11.txt` |
+| Core 0x27 over the same 11% | Viewer frames 0 to 11 of the real run: 190, 186, 188, 187, 189, 186, 187, 187, 187, 191, 187 s, median 187 s. The whole unit's median is 192 s | `stat` of the real run's viewer frames on the bench, as for Figure S1; `core-cuda/results/real-frames-0-11.txt` |
 | minicore against core 0x27 | Over the first 11%: 0.98 (8.2.0) and 0.96 (8.6.1). Against the whole unit's 192 s: 0.96 and 0.94 | 184 / 187, 180 / 187, 184 / 192, 180 / 192 |
 
 Conditions. Core 0x27 ran under fah-client 8.5.6 at nice 19 and SCHED_IDLE, with persistence mode on
@@ -78,7 +78,7 @@ at nice 19 and SCHED_IDLE (`core-cuda/scripts/run.py`), with persistence mode on
 been lowered to 150 W since the real run, and this lane could not raise it. Card 0 drew a median 150 W
 (8.2.0) and 150 W (8.6.1) at a median SM clock of 2,647 and 2,632 MHz, with the power-cap throttle
 flag set. nvidia-smi listed no process on card 0 but minicore in any 15 s sample. Card 1 rendered
-Sara's Blender job throughout, at a median 100% utilization and 101 W. The host's 1-minute load had a
+a Blender render throughout, at a median 100% utilization and 101 W. The host's 1-minute load had a
 median of 2.3 on 12 CPUs (`samples.log`, `conditions-*.txt` and `nvidia-smi-q-*.txt` in each job's
 directory).
 
