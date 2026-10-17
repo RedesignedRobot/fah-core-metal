@@ -134,4 +134,4 @@ writer from OpenMM's tree under the MIT License. `NOTICE` lists each part.
 fah-core-metal is not affiliated with or endorsed by Folding@home. It never connects to FAH servers. It
 reads a work unit from a directory and writes its result into that directory.
 
-Built and tested with Claude Opus 5.5.
+Built with Claude Fable 5.1 and Opus 5.5.
