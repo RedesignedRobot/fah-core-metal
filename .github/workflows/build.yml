@@ -1,0 +1,77 @@
+# Build check for pull requests. GitHub's hosted Apple Silicon runners are virtual machines with no usable
+# Metal GPU, so nothing here folds on Metal. The job builds minicore with build.sh as a Mac owner would,
+# checks that the Metal platform is linked in (registering it needs no GPU), and folds the bundled test unit
+# on OpenMM's CPU platform. That covers loading the unit, checkpoints and the result file. The state tests
+# run too, but on CPU they compare CPU with itself, so they check the plumbing and not accuracy.
+# Accuracy and speed on the GPU still come from runs on real Macs.
+name: build
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both are arm64 runners with 3 M1 cores and 7 GB. macos-15 has Xcode 16.4 and the macOS 15 SDK,
+        # the oldest toolchain build.sh accepts; macos-26 has Xcode 26.
+        runner: [macos-15, macos-26]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
+          cmake --version | head -n 1
+          if command -v ninja > /dev/null; then echo "ninja $(ninja --version)"; fi
+
+      - name: Build
+        run: ./build.sh -j 3
+
+      - name: Metal platform is linked in
+        run: ./build/core/minicore --info | grep -w Metal
+
+      # minicore's --platform CPU runs the whole unit on OpenMM's CPU platform. Its state tests compare CPU
+      # with CPU, so this proves they run and report, not that they would catch a wrong force.
+      - name: Fold the test unit on the CPU platform
+        run: |
+          cp -R test/alanine-dipeptide unit
+          code=0
+          ./build/core/minicore -dir unit --platform CPU || code=$?
+          echo "exit $code"
+          if [ "$code" -ne 100 ]; then
+            echo "::error::minicore exited $code, not 100 (FINISHED_UNIT)"
+            exit 1
+          fi
+          tar -xOf unit/wuresults_01.dat science.log > unit-science.log
+          run=$(grep -c 'Running tests' unit-science.log || true)
+          passed=$(grep -c 'All tests passed.' unit-science.log || true)
+          echo "state tests: $run run, $passed passed"
+          [ "$run" -gt 0 ] && [ "$run" -eq "$passed" ]
+
+      - name: Log tail
+        if: failure()
+        run: tail -n 60 unit/logfile_01.txt || true

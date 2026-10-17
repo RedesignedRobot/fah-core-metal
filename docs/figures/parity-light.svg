@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="672" height="606" viewBox="0 0 672 606" role="img" aria-label="Parity with core 0x27 item by item, minicore on Apple Silicon" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title>Parity with core 0x27 item by item, minicore on Apple Silicon</title>
+<rect x="0.0" y="6.0" width="34.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="17.0" y="19.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="42.0" y="20.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">match (20)</text>
+<rect x="130.0" y="6.0" width="34.0" height="18.0" rx="3" fill="#f6f8fa" stroke="#0969da" stroke-width="1.2"/>
+<text x="147.0" y="19.0" font-size="12" fill="#0969da" text-anchor="middle" font-weight="600">≠</text>
+<text x="172.0" y="20.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">a format the client never reads (3)</text>
+<rect x="425.0" y="6.0" width="34.0" height="18.0" rx="3" fill="#818b98"/>
+<text x="442.0" y="19.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">FAH</text>
+<text x="467.0" y="20.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">needs FAH's keys (2)</text>
+<text x="234.0" y="44.0" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="600">minicore</text>
+<text x="186.0" y="67.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Unit header fields</text>
+<rect x="198.0" y="54.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="67.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="67.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Project, run, clone, gen and payload size from the 512-byte header</text>
+<text x="186.0" y="89.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">core.xml keys</text>
+<rect x="198.0" y="76.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="89.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="89.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">All seven of P18264's keys read</text>
+<text x="186.0" y="111.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Output intervals</text>
+<rect x="198.0" y="98.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="111.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="111.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Checkpoint 5%, viewer frame 1%, XTC frame 0.4%</text>
+<text x="186.0" y="133.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">State test platform</text>
+<rect x="198.0" y="120.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="133.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="133.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">CPU</text>
+<text x="186.0" y="155.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">State test limits</text>
+<rect x="198.0" y="142.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="155.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="155.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Force 1e7, energy 1e9, from core.xml</text>
+<text x="186.0" y="177.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">State test schedule</text>
+<rect x="198.0" y="164.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="177.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="177.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Step 0, then at every checkpoint</text>
+<text x="186.0" y="199.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Interrupt at start-up</text>
+<rect x="198.0" y="186.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="199.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="199.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">The same four lines, exit 102</text>
+<text x="186.0" y="221.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">wuinfo_01.dat</text>
+<rect x="198.0" y="208.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="221.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="221.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">512 B, same layout and values</text>
+<text x="186.0" y="243.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">viewerTop.json</text>
+<rect x="198.0" y="230.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="243.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="243.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">56,183 B, byte-identical</text>
+<text x="186.0" y="265.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">viewerFrameN.json</text>
+<rect x="198.0" y="252.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="265.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="265.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">101 frames on a finished unit, same format</text>
+<text x="186.0" y="287.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">positions.xtc</text>
+<rect x="198.0" y="274.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="287.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="287.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">2,520 solute atoms every 5,000 steps, same format</text>
+<text x="186.0" y="309.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">xtcAtoms.csv.bz2</text>
+<rect x="198.0" y="296.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="309.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="309.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">2,824 B, byte-identical</text>
+<text x="186.0" y="331.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Result members and order</text>
+<rect x="198.0" y="318.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="331.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="331.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Six files, same order</text>
+<text x="186.0" y="353.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Result tar format</text>
+<rect x="198.0" y="340.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="353.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="353.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">ustar, mode 0666, uid and gid 0</text>
+<text x="186.0" y="375.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Exit code</text>
+<rect x="198.0" y="362.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="375.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="375.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">100 FINISHED_UNIT</text>
+<text x="186.0" y="397.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Box volume</text>
+<rect x="198.0" y="384.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="397.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="397.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">9,299 to 9,318 nm³ over the first 62,500 steps</text>
+<text x="186.0" y="419.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Log sections and order</text>
+<rect x="198.0" y="406.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="419.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="419.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Same sections in the same order</text>
+<text x="186.0" y="441.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">checkpointIntegrator.xml</text>
+<rect x="198.0" y="428.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="441.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="441.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">171 B, byte-identical</text>
+<text x="186.0" y="463.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Final step count</text>
+<rect x="198.0" y="450.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="463.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="463.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">One step past numSteps</text>
+<text x="186.0" y="485.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Work dir layout</text>
+<rect x="198.0" y="472.0" width="72.0" height="18.0" rx="3" fill="#0969da"/>
+<text x="234.0" y="485.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">✓</text>
+<text x="284.0" y="485.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Work files in 01/, removed at the end</text>
+<text x="186.0" y="507.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Log wording</text>
+<rect x="198.0" y="494.0" width="72.0" height="18.0" rx="3" fill="#f6f8fa" stroke="#0969da" stroke-width="1.2"/>
+<text x="234.0" y="507.0" font-size="12" fill="#0969da" text-anchor="middle" font-weight="600">≠</text>
+<text x="284.0" y="507.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">35 of 87 logfile line shapes word for word</text>
+<text x="186.0" y="529.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">OpenMM version strings</text>
+<rect x="198.0" y="516.0" width="72.0" height="18.0" rx="3" fill="#f6f8fa" stroke="#0969da" stroke-width="1.2"/>
+<text x="234.0" y="529.0" font-size="12" fill="#0969da" text-anchor="middle" font-weight="600">≠</text>
+<text x="284.0" y="529.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">8.6 where core 0x27 says 8.2</text>
+<text x="186.0" y="551.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Checkpoint format</text>
+<rect x="198.0" y="538.0" width="72.0" height="18.0" rx="3" fill="#f6f8fa" stroke="#0969da" stroke-width="1.2"/>
+<text x="234.0" y="551.0" font-size="12" fill="#0969da" text-anchor="middle" font-weight="600">≠</text>
+<text x="284.0" y="551.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">checkpt.crc is FAH's, so minicore checks its own footer</text>
+<text x="186.0" y="573.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Result header signature</text>
+<rect x="198.0" y="560.0" width="72.0" height="18.0" rx="3" fill="#818b98"/>
+<text x="234.0" y="573.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">FAH</text>
+<text x="284.0" y="573.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Signed with FAH's private key</text>
+<text x="186.0" y="595.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="normal">Unit signature check</text>
+<rect x="198.0" y="582.0" width="72.0" height="18.0" rx="3" fill="#818b98"/>
+<text x="234.0" y="595.0" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="600">FAH</text>
+<text x="284.0" y="595.0" font-size="11.5" fill="#59636e" text-anchor="start" font-weight="normal">Needs FAH's public key and scheme</text>
+</svg>

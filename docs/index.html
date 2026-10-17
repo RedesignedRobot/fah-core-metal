@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fah-core-metal: a real, fully working Folding@home core for Apple Silicon GPUs</title>
+<meta name="description" content="A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's own OpenMM work units end to end on the Mac's GPU and folds them to the standard of FAH's core 0x27: 21 of 21 state tests on a whole real FAH unit, and 101 of 101 core-parity checks.">
+<link rel="canonical" href="https://redesignedrobot.github.io/fah-core-metal/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="fah-core-metal: a real Folding@home core for Apple Silicon GPUs">
+<meta property="og:description" content="A real, fully working Folding@home core for Apple Silicon GPUs. It runs FAH's own OpenMM work units on the Mac's GPU and passed 21 of 21 state tests on a whole real FAH unit, as FAH's core did, and 101 of 101 core-parity checks.">
+<meta property="og:url" content="https://redesignedrobot.github.io/fah-core-metal/">
+<meta property="og:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="fah-core-metal: a real Folding@home core on Apple Silicon GPUs. 21 of 21 state tests on a whole FAH unit, as FAH's core 0x27 passed. 101 of 101 core-parity checks.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="fah-core-metal: a real Folding@home core for Apple Silicon GPUs">
+<meta name="twitter:description" content="A real, fully working Folding@home core for Apple Silicon GPUs. It runs FAH's own OpenMM work units on the Mac's GPU and passed 21 of 21 state tests on a whole real FAH unit, as FAH's core did, and 101 of 101 core-parity checks.">
+<meta name="twitter:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "fah-core-metal",
+  "description": "A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's own OpenMM work units end to end on the Mac's GPU and folds them to the standard of FAH's core 0x27: 21 of 21 state tests on a whole real FAH unit, and 101 of 101 core-parity checks.",
+  "codeRepository": "https://github.com/RedesignedRobot/fah-core-metal",
+  "url": "https://redesignedrobot.github.io/fah-core-metal/",
+  "programmingLanguage": "C++",
+  "runtimePlatform": "macOS 15 or later on Apple Silicon",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": {"@type": "Person", "name": "Amir Ayub"},
+  "keywords": ["Folding@home", "OpenMM", "Metal", "Apple Silicon", "GPU", "molecular dynamics"]
+}
+</script>
+<style>
+:root { --w: min(860px, calc(100vw - 40px)); --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --bg: #ffffff; --link: #0969da; }
+@media (prefers-color-scheme: dark) {
+  :root { --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --bg: #0d1117; --link: #4493f8; }
+}
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+h1 { font-size: 32px; margin: 0 0 12px; }
+h1 img, figure.wide img { width: var(--w); }
+.badges { text-align: center; margin: 0 0 24px; }
+.badges img { height: 20px; width: auto; margin: 2px 1px; }
+details { margin: 8px 0 24px; }
+summary { cursor: pointer; color: var(--muted); }
+h2 { font-size: 21px; margin: 40px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+a { color: var(--link); }
+img { max-width: var(--w); height: auto; }
+figure { margin: 24px 0; }
+td.n { text-align: right; font-weight: 600; white-space: nowrap; }
+figcaption { font-style: italic; color: var(--muted); font-size: 14px; margin-top: 6px; }
+table { border-collapse: collapse; width: var(--w); font-size: 15px; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+<h1><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/banner-dark.svg">
+  <img alt="fah-core-metal. A real, fully working Folding@home core for Apple Silicon GPUs." src="figures/banner-light.svg" width="1280" height="320">
+</picture></h1>
+
+<p class="badges">
+  <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#what-was-tested-and-where"><img alt="state tests: 21/21" src="https://img.shields.io/badge/state_tests-21%2F21-0969da"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#what-was-tested-and-where"><img alt="parity checks: 101/101" src="https://img.shields.io/badge/parity_checks-101%2F101-395fdc"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal#try-it"><img alt="platform: Apple Silicon" src="https://img.shields.io/badge/platform-Apple_Silicon-6a55de?logo=apple&amp;logoColor=white"></a>
+  <a href="https://github.com/openmm/openmm/pull/5488"><img alt="backend: OpenMM Metal" src="https://img.shields.io/badge/backend-OpenMM_Metal-8e4bce"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/LICENSE"><img alt="license: MIT" src="https://img.shields.io/badge/license-MIT-a742ab"></a>
+  <a href="https://github.com/RedesignedRobot/fah-core-metal"><img alt="source: GitHub" src="https://img.shields.io/badge/source-GitHub-bf3989?logo=github&amp;logoColor=white"></a>
+</p>
+
+<p>People have asked for Folding@home on Apple GPUs since 2019 (<a href="https://github.com/openmm/openmm/issues/2489">openmm#2489</a>) and
+2024 (<a href="https://github.com/FoldingAtHome/fah-client-bastet/issues/303">fah-client-bastet#303</a>). Here it
+is. minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
+platform, and folds them to the standard of FAH's own core.</p>
+
+<figure class="wide">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/pipeline-dark.svg">
+  <img alt="A FAH work unit goes into minicore, which runs it through OpenMM Metal with df64 mixed precision on the Apple GPU and writes FAH's result files, with the state tests" src="figures/pipeline-light.svg" width="1044" height="156">
+</picture>
+<figcaption>FAH's own work unit in, FAH's own result files out, all on the Mac.</figcaption>
+</figure>
+
+<figure class="wide">
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/cards-dark.svg">
+  <img alt="Checked against FAH's core 0x27. 21 of 21 state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21. Six files in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's. 101 of 101 core-parity checks passed, and 65 of 65 failure and stop-resume cases. 0.054 kJ/mol/nm worst state-test force RMSE, beside CUDA's 0.052, against FAHBench's limit of 5. 16 s to fold the bundled test unit on an M3 Ultra after ./build.sh" src="figures/cards-light.svg" width="1050" height="258">
+</picture></a>
+</figure>
+
+<details>
+<summary>The five checks as text</summary>
+<table>
+<tr><th></th><th>Checked against FAH's core 0x27</th></tr>
+<tr><td class="n">21 of 21</td><td>state tests passed on a whole real FAH unit (P18264, 919,221 atoms, 5 ns), as FAH's core 0x27 passed 21</td></tr>
+<tr><td class="n">Six files</td><td>in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's</td></tr>
+<tr><td class="n">101 of 101</td><td>core-parity checks passed, and 65 of 65 failure and stop-resume cases</td></tr>
+<tr><td class="n">0.054</td><td>worst state-test force RMSE in kJ/mol/nm, beside CUDA's 0.052, against FAHBench's limit of 5</td></tr>
+<tr><td class="n">16 s</td><td>to fold the bundled test unit on an M3 Ultra after <code>./build.sh</code>, so you can check it yourself (<a href="https://github.com/RedesignedRobot/fah-core-metal#try-it">Try it</a>)</td></tr>
+</table>
+</details>
+
+<h2>Accuracy</h2>
+<figure>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/accuracy-dark.svg">
+  <img alt="Worst state-test force and energy error per test system against the Reference platform, Metal and CUDA" src="figures/accuracy-light.svg">
+</picture>
+<figcaption>Worst state-test errors, Metal beside CUDA, far inside FAHBench's limits.</figcaption>
+</figure>
+<figure>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/drift-dark.svg">
+  <img alt="Energy drift of DHFR in NVE, Metal before and after #5492, CUDA mixed and CPU" src="figures/drift-light.svg">
+</picture>
+<figcaption>Energy drift in NVE, 10 runs each, Metal beside CUDA (Welch t -0.7).</figcaption>
+</figure>
+<figure>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/distance-dark.svg">
+  <img alt="Distance from FAH's trajectory against the distance between two CUDA seeds" src="figures/distance-light.svg">
+</picture>
+<figcaption>Metal parts from FAH's trajectory as fast as two CUDA runs part from each other.</figcaption>
+</figure>
+
+<h2>Parity with FAH's core</h2>
+<figure>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/parity-dark.svg">
+  <img alt="Parity with core 0x27 item by item, minicore on Apple Silicon" src="figures/parity-light.svg">
+</picture>
+</figure>
+<p>Every behaviour FAH's client acts on matches core 0x27. The rest needs FAH's own signing keys or is a
+format the client never reads.
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/PARITY.md">PARITY.md</a> lists every row.</p>
+
+<h2>Speed</h2>
+<h3>Same card, like for like</h3>
+<p>On one NVIDIA RTX 5060 Ti, minicore built for CUDA against FAH's core 0x27, over the same first 11% of
+P18264:</p>
+<table>
+<tr><th>Core</th><th>OpenMM</th><th>Per 1%</th></tr>
+<tr><td>FAH's core 0x27</td><td>8.2.0</td><td>187 s</td></tr>
+<tr><td>minicore, CUDA</td><td>8.2.0</td><td>184 s</td></tr>
+<tr><td>minicore, CUDA</td><td>8.6.1</td><td>180 s</td></tr>
+</table>
+<figure>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
+  <img alt="Seconds per 1% over the first 11% of P18264 on one RTX 5060 Ti, FAH's core 0x27 against minicore built for CUDA" src="figures/speed-light.svg">
+</picture>
+<figcaption>minicore keeps pace with FAH's own core on FAH's own hardware.</figcaption>
+</figure>
+<p>On a 5,000-step cut on that card, minicore's viewerTop.json and xtcAtoms.csv.bz2 were byte-identical to
+FAH's core's. Run conditions are in
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#one-rtx-5060-ti-core-0x27-against-minicore">EVIDENCE.md</a>.</p>
+
+<h3>On Apple Silicon</h3>
+<p>The M3 Ultra folded the whole unit in 5.06 h, 182 s per 1%. Run conditions are in
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#speed">EVIDENCE.md</a>.</p>
+
+<h2>FAQ</h2>
+<h3>Is it as accurate as FAH's core?</h3>
+<p>Yes. It passed all 21 of the unit's state tests, as FAH's core did, and its errors and drift sit with
+CUDA's.</p>
+<h3>Can Folding@home use the Apple Silicon GPU?</h3>
+<p>Yes. minicore runs FAH's real work units on it.</p>
+<h3>How fast is it?</h3>
+<p>On one RTX 5060 Ti, minicore built for CUDA took 184 s per 1% of P18264's first 11% on OpenMM 8.2.0 and
+180 s on 8.6.1, where FAH's core 0x27 took 187 s on the same card. On Apple Silicon, the M3 Ultra folded
+the whole unit in 5.06 h.</p>
+<h3>Can I fold for Folding@home points with it today?</h3>
+<p>No. FAH signs its cores and their results with its own private key, so that step is FAH's.</p>
+
+<p>The source, how to build and run it, and the evidence for each number are in the
+<a href="https://github.com/RedesignedRobot/fah-core-metal">repository</a>: the
+<a href="https://github.com/RedesignedRobot/fah-core-metal#readme">README</a> and
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md">docs/EVIDENCE.md</a>.</p>
+<p>Ran it on your Mac? <a href="https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=run-report.yml">Post your result</a>,
+whether it passed or not.</p>
+
+<footer>
+<p>fah-core-metal is not affiliated with or endorsed by Folding@home. It never connects to FAH servers. It
+reads a work unit from a directory and writes its result into that directory.</p>
+<p>MIT License. OpenMM's code keeps OpenMM's licenses and notices.</p>
+</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,4 @@
+core,openmm,cuda,s_per_1pct,s_per_1pct_first_11,unit_h,state_tests,viewer_top,xtc_atoms,power_limit_w,card1,run
+core 0x27 8.2.1,8.2.0,11 (NVRTC 11.2),192,187,5.37,21 of 21 over the unit,reference,reference,180,idle; FAH WU3 from 22:03Z,real FAH run 2026-10-15
+minicore,8.2.0,11.8,184,184,5.12,3 of 3 in the timing run; 3 of 3 in the cut,identical,identical,150,Blender render,gpud 349; cut gpud 347
+minicore,8.6.1,13.4,180,180,5.01,3 of 3 in the timing run; 3 of 3 in the cut,identical,identical,150,Blender render,gpud 350; cut gpud 347

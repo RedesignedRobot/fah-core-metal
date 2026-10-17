@@ -1,0 +1,615 @@
+"""make.py: writes every SVG in docs/figures from the CSVs in docs/data, in a light and a dark version,
+and docs/social.png (see social_png for how).
+
+Standard library only, and no clock or random state outside a fixed seed, so a second run writes the
+same bytes.
+
+One palette across the figures: blue for Metal on Apple Silicon, green for CUDA on NVIDIA, grey for
+the real core 0x27 run and other references. The banner, the pipeline and the headline cards add violet
+and pink to that blue, and keep grey for what is FAH's.
+
+SVG path data puts a space after each command letter, so no figure's markup spells a machine name.
+"""
+import csv
+import math
+import random
+from statistics import mean, median, stdev
+from pathlib import Path
+
+here = Path(__file__).resolve().parent
+data = here.parent / "data"
+
+THEMES = {
+    "light": dict(fg="#1f2328", muted="#59636e", grid="#d1d9e0", paper="#ffffff", tile="#f6f8fa",
+                  ultra="#0969da", pale="#54aeff", cuda="#1a7f37", ref="#818b98", violet="#8250df",
+                  pink="#bf3989", shade="#000000"),
+    "dark": dict(fg="#e6edf3", muted="#9198a1", grid="#3d444d", paper="#0d1117", tile="#151b23",
+                 ultra="#4493f8", pale="#a5d6ff", cuda="#3fb950", ref="#848d97", violet="#ab7df8",
+                 pink="#db61a2", shade="#010409"),
+}
+FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+
+
+def rows(name):
+    with open(data / name, newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def svg(width, height, body, label):
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+            f'viewBox="0 0 {width} {height}" role="img" aria-label="{label}" font-family="{FONT}">\n'
+            f'<title>{label}</title>\n' + "".join(body) + "</svg>\n")
+
+
+def text(x, y, s, fill, size=12, anchor="start", weight="normal", style=None, family=None):
+    s = s.replace("&", "&amp;").replace("<", "&lt;")
+    st = f' font-style="{style}"' if style else ""
+    st += f' font-family="{family}"' if family else ""
+    return (f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" fill="{fill}" text-anchor="{anchor}" '
+            f'font-weight="{weight}"{st}>{s}</text>\n')
+
+
+def line(x1, y1, x2, y2, stroke, width=1.0, dash=None):
+    d = f' stroke-dasharray="{dash}"' if dash else ""
+    return (f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{stroke}" '
+            f'stroke-width="{width}"{d}/>\n')
+
+
+def rect(x, y, w, h, fill, rx=3, stroke=None):
+    s = f' stroke="{stroke}" stroke-width="1.2"' if stroke else ""
+    return f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{rx}" fill="{fill}"{s}/>\n'
+
+
+def circle(x, y, r, fill, stroke=None):
+    s = f' stroke="{stroke}" stroke-width="1.8"' if stroke else ""
+    return f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{fill}"{s}/>\n'
+
+
+def diamond(x, y, r, fill):
+    return (f'<path d="M {x:.1f},{y - r:.1f} L {x + r:.1f},{y:.1f} L {x:.1f},{y + r:.1f} L {x - r:.1f},{y:.1f} Z" '
+            f'fill="{fill}"/>\n')
+
+
+def polyline(points, stroke, width=2.0, dash=None):
+    d = f' stroke-dasharray="{dash}"' if dash else ""
+    p = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+    return f'<polyline points="{p}" fill="none" stroke="{stroke}" stroke-width="{width}"{d} stroke-linejoin="round"/>\n'
+
+
+def axes(body, t, left, right, bottom, xticks, yticks, sx, sy, xfmt, yfmt):
+    for v in yticks:
+        body.append(line(left, sy(v), right, sy(v), t["grid"]))
+        body.append(text(left - 8, sy(v) + 4, yfmt(v), t["muted"], 11, "end"))
+    for v in xticks:
+        body.append(line(sx(v), bottom, sx(v), bottom + 4, t["muted"]))
+        body.append(text(sx(v), bottom + 18, xfmt(v), t["muted"], 11, "middle"))
+    body.append(line(left, bottom, right, bottom, t["muted"]))
+
+
+def legend(body, t, x, y, items):
+    # items: (label, color, dash); one row each.
+    for i, (label, color, dash) in enumerate(items):
+        yy = y + i * 18
+        body.append(line(x, yy, x + 24, yy, color, 2.5, dash))
+        body.append(text(x + 32, yy + 4, label, t["fg"], 12))
+
+
+def rough_rect(rng, x, y, w, h, stroke, fill):
+    # Two loose passes over each edge, the look of a box drawn by hand.
+    out = [f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="6" fill="{fill}"/>\n']
+    corners = [(x, y), (x + w, y), (x + w, y + h), (x, y + h), (x, y)]
+    for _ in range(2):
+        d = []
+        for (x1, y1), (x2, y2) in zip(corners, corners[1:]):
+            j = lambda: rng.uniform(-2.2, 2.2)
+            mx, my = (x1 + x2) / 2 + j(), (y1 + y2) / 2 + j()
+            d.append(f"M {x1 + j():.1f},{y1 + j():.1f} Q {mx:.1f},{my:.1f} {x2 + j():.1f},{y2 + j():.1f}")
+        out.append(f'<path d="{" ".join(d)}" fill="none" stroke="{stroke}" stroke-width="1.6" '
+                   f'stroke-linecap="round"/>\n')
+    return "".join(out)
+
+
+def rough_arrow(rng, x1, y, x2, stroke):
+    j = lambda: rng.uniform(-1.5, 1.5)
+    return (f'<path d="M {x1:.1f},{y + j():.1f} Q {(x1 + x2) / 2:.1f},{y + j() * 2:.1f} {x2:.1f},{y:.1f} '
+            f'M {x2 - 9:.1f},{y - 6 + j():.1f} L {x2:.1f},{y:.1f} L {x2 - 9:.1f},{y + 6 + j():.1f}" '
+            f'fill="none" stroke="{stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>\n')
+
+
+def hero(t):
+    rng = random.Random(30)
+    boxes = [("FAH client", "fah-client 8.5"), ("minicore", "this repo"), ("OpenMM Metal", "df64 mixed precision"),
+             ("Apple GPU", "Apple Silicon")]
+    colors = [t["ref"], t["ultra"], t["ultra"], t["pale"]]
+    w, h, gap, top = 170, 70, 62, 40
+    body = []
+    for i, ((name, sub), c) in enumerate(zip(boxes, colors)):
+        x = 20 + i * (w + gap)
+        body.append(rough_rect(rng, x, top, w, h, c, t["paper"]))
+        body.append(text(x + w / 2, top + 31, name, t["fg"], 17, "middle", "600"))
+        body.append(text(x + w / 2, top + 52, sub, t["muted"], 12, "middle"))
+    labels = ["wudata_01.dat", "System, State", "kernels"]
+    for i, lab in enumerate(labels):
+        x1 = 20 + i * (w + gap) + w + 6
+        body.append(rough_arrow(rng, x1, top + h / 2, x1 + gap - 12, t["fg"]))
+        body.append(text(x1 + (gap - 12) / 2, top - 8, lab, t["muted"], 11, "middle"))
+    # The result goes back to the client, which uploads it; the core never talks to a server.
+    y = top + h + 34
+    x0, x1 = 20 + w / 2, 20 + w + gap + w / 2
+    body.append(f'<path d="M {x1:.1f},{top + h + 6:.1f} Q {x1 + 3:.1f},{y:.1f} {(x0 + x1) / 2:.1f},{y:.1f} '
+                f'Q {x0 - 3:.1f},{y:.1f} {x0:.1f},{top + h + 8:.1f} M {x0 - 6:.1f},{top + h + 17:.1f} '
+                f'L {x0:.1f},{top + h + 8:.1f} L {x0 + 6:.1f},{top + h + 17:.1f}" fill="none" stroke="{t["fg"]}" '
+                f'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>\n')
+    body.append(text((x0 + x1) / 2, y + 18, "wuresults_01.dat", t["muted"], 11, "middle"))
+    return svg(20 * 2 + 4 * w + 3 * gap, 200, body, "FAH client to minicore to OpenMM Metal to Apple GPU")
+
+
+def mix(a, b, f):
+    # The colour f of the way from a to b, both "#rrggbb".
+    ca, cb = (tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)) for c in (a, b))
+    return "#" + "".join(f"{round(x + (y - x) * f):02x}" for x, y in zip(ca, cb))
+
+
+def ramp(t, f):
+    # Blue to violet to pink, the run of colour along the banner's chain and across the cards.
+    return mix(t["ultra"], t["violet"], f * 2) if f <= 0.5 else mix(t["violet"], t["pink"], f * 2 - 1)
+
+
+def pts(points):
+    return " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+
+
+def spline(points):
+    # A Catmull-Rom curve through the points, as cubic Bezier path data.
+    p = [points[0]] + points + [points[-1]]
+    d = [f"M {p[1][0]:.1f},{p[1][1]:.1f}"]
+    for i in range(1, len(p) - 2):
+        (x0, y0), (x1, y1), (x2, y2), (x3, y3) = p[i - 1:i + 3]
+        d.append(f"C {x1 + (x2 - x0) / 6:.1f},{y1 + (y2 - y0) / 6:.1f} {x2 - (x3 - x1) / 6:.1f},{y2 - (y3 - y1) / 6:.1f} "
+                 f"{x2:.1f},{y2:.1f}")
+    return " ".join(d)
+
+
+def helix(a, b, turns, r, hw, theta0=0.0, n=40):
+    # A cartoon alpha helix about the axis a to b in the picture plane: a ribbon of half-width hw wound
+    # on a cylinder of radius r, seen side on. Returns its half-turns as (polygon, front) in drawing
+    # order, back faces first, and its first and last points.
+    (ax, ay), (bx, by) = a, b
+    length = math.hypot(bx - ax, by - ay)
+    ux, uy = (bx - ax) / length, (by - ay) / length
+    vx, vy = -uy, ux
+    pitch = length / (2 * math.pi * turns)
+    norm = math.hypot(r, pitch)
+
+    def at(th):
+        s = (th - theta0) / (2 * math.pi * turns)
+        cx, cy = ax + (bx - ax) * s + r * math.cos(th) * vx, ay + (by - ay) * s + r * math.cos(th) * vy
+        # The width runs across the strand on the cylinder: r along the axis, less the pitch along
+        # the turn, whose picture-plane part is -sin(th) along v.
+        wx = (r * ux + pitch * math.sin(th) * vx) / norm * hw
+        wy = (r * uy + pitch * math.sin(th) * vy) / norm * hw
+        return (cx + wx, cy + wy), (cx - wx, cy - wy), (cx, cy)
+
+    end = theta0 + 2 * math.pi * turns
+    cuts = [theta0] + [k * math.pi for k in range(math.ceil(theta0 / math.pi), math.floor(end / math.pi) + 1)
+                       if theta0 < k * math.pi < end] + [end]
+    pieces = []
+    for t0, t1 in zip(cuts, cuts[1:]):
+        m = max(2, round(n * (t1 - t0) / math.pi))
+        edge = [at(t0 + (t1 - t0) * i / m) for i in range(m + 1)]
+        poly = [e[0] for e in edge] + [e[1] for e in reversed(edge)]
+        pieces.append((poly, math.sin((t0 + t1) / 2) > 0, [e[2] for e in edge]))
+    pieces.sort(key=lambda p: p[1])
+    return pieces, at(theta0)[2], at(end)[2]
+
+
+def strand(p, q, hw, head_hw, head):
+    # A beta strand: a flat arrow from p to q.
+    (px, py), (qx, qy) = p, q
+    length = math.hypot(qx - px, qy - py)
+    ux, uy = (qx - px) / length, (qy - py) / length
+    vx, vy = -uy, ux
+    bx, by = qx - ux * head, qy - uy * head
+    return [(px + vx * hw, py + vy * hw), (bx + vx * hw, by + vy * hw), (bx + vx * head_hw, by + vy * head_hw),
+            (qx, qy), (bx - vx * head_hw, by - vy * head_hw), (bx - vx * hw, by - vy * hw),
+            (px - vx * hw, py - vy * hw)]
+
+
+def banner(t):
+    # The README's banner: the name and the tagline beside a protein cartoon drawn here, a coil into
+    # an alpha helix, then a three-stranded beta sheet, coloured blue to pink from one end of the chain
+    # to the other, as molecular viewers colour a chain.
+    W, H = 1280, 320
+    dark = t["paper"] == THEMES["dark"]["paper"]
+    edge = lambda c: mix(c, t["shade"], 0.45 if dark else 0.3)
+    back = lambda c: mix(c, t["shade"], 0.5 if dark else 0.38)
+    x0, x1 = 580, 1240
+    stops = "".join(f'<stop offset="{f:.2f}" stop-color="{c}"/>'
+                    for f, c in ((0, t["ultra"]), (0.5, t["violet"]), (1, t["pink"])))
+    bstops = "".join(f'<stop offset="{f:.2f}" stop-color="{back(c)}"/>'
+                     for f, c in ((0, t["ultra"]), (0.5, t["violet"]), (1, t["pink"])))
+    estops = "".join(f'<stop offset="{f:.2f}" stop-color="{edge(c)}"/>'
+                     for f, c in ((0, t["ultra"]), (0.5, t["violet"]), (1, t["pink"])))
+    grad = lambda gid, st: (f'<linearGradient id="{gid}" gradientUnits="userSpaceOnUse" x1="{x0}" y1="0" '
+                            f'x2="{x1}" y2="0">{st}</linearGradient>')
+    body = [f'<defs>{grad("front", stops)}{grad("back", bstops)}{grad("edge", estops)}'
+            f'<pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">'
+            f'<circle cx="2" cy="2" r="1" fill="{t["grid"]}"/></pattern></defs>\n',
+            rect(0.5, 0.5, W - 1, H - 1, t["tile"], 14, t["grid"]),
+            f'<rect x="{x0 - 40}" y="12" width="{W - x0 + 28}" height="{H - 24}" rx="10" fill="url(#dots)" '
+            f'opacity="0.7"/>\n']
+
+    pieces, h0, h1 = helix((650, 238), (968, 104), 4.5, 46, 19, theta0=math.pi * 0.5)
+    sheet = [((1052, 74), (1052, 246)), ((1112, 246), (1112, 74)), ((1172, 74), (1172, 246))]
+    tube = lambda d: (f'<path d="{d}" fill="none" stroke="url(#edge)" stroke-width="8" stroke-linecap="round"/>\n'
+                      f'<path d="{d}" fill="none" stroke="url(#front)" stroke-width="5" stroke-linecap="round"/>\n')
+    coils = [[(560, 300), (592, 298), (620, 286), h0],
+             [h1, (1000, 52), (1034, 40), (1052, 60), sheet[0][0]],
+             [sheet[0][1], (1062, 278), (1102, 278), sheet[1][0]],
+             [sheet[1][1], (1122, 42), (1162, 42), sheet[2][0]],
+             [sheet[2][1], (1184, 280), (1214, 294), (1240, 298)]]
+    piece = lambda poly, fill: (f'<polygon points="{pts(poly)}" fill="url(#{fill})" stroke="url(#edge)" '
+                                f'stroke-width="1.2" stroke-linejoin="round"/>\n')
+    for poly, front, _ in pieces:
+        if not front:
+            body.append(piece(poly, "back"))
+    for c in coils:
+        body.append(tube(spline(c)))
+    for p, q in sheet:
+        body.append(piece(strand(p, q, 13, 22, 28), "front"))
+    for poly, front, mid in pieces:
+        if front:
+            body.append(piece(poly, "front"))
+            # A highlight along the middle of each front face.
+            body.append(f'<polyline points="{pts(mid[2:-2])}" fill="none" stroke="#ffffff" stroke-opacity="0.35" '
+                        f'stroke-width="2" stroke-linecap="round"/>\n')
+
+    body.append(text(64, 128, "fah-core-metal", t["fg"], 66, "start", "600"))
+    body.append(text(66, 180, "A real, fully working Folding@home core", t["fg"], 26))
+    body.append(text(66, 214, "for Apple Silicon GPUs.", t["fg"], 26))
+    x = 66
+    for label, c in (("minicore", t["ultra"]), ("OpenMM Metal", t["violet"]), ("df64 mixed precision", t["pink"])):
+        w = 28 + 8.6 * len(label)
+        body.append(rect(x, 244, w, 30, mix(c, t["tile"], 0.86), 15, c))
+        body.append(text(x + w / 2, 264, label, c, 14, "middle", "600"))
+        x += w + 12
+    return svg(W, H, body, "fah-core-metal. A real, fully working Folding@home core for Apple Silicon GPUs.")
+
+
+def pipeline(t):
+    # How a unit runs: FAH's work unit in, FAH's result files out. Grey for what is FAH's, colour for
+    # what runs on the Mac.
+    blocks = [("FAH work unit", ("wudata_01.dat", "OpenMM System, State"), t["ref"]),
+              ("minicore", ("this repo, one", "self-contained executable"), t["ultra"]),
+              ("OpenMM Metal", ("df64 mixed", "precision"), t["violet"]),
+              ("Apple GPU", ("Apple Silicon,", "macOS 15 or later"), t["pink"]),
+              ("FAH result files", ("wuresults_01.dat,", "with the state tests"), t["ref"])]
+    w, h, gap, top, m = 172, 96, 40, 16, 12
+    body = []
+    for i, (name, sub, c) in enumerate(blocks):
+        x = m + i * (w + gap)
+        body.append(rect(x, top, w, h, mix(c, t["paper"], 0.9), 10, c))
+        body.append(f'<path d="M {x + 1:.1f},{top + 12:.1f} A 10 10 0 0 1 {x + 11:.1f},{top + 1:.1f} '
+                    f'L {x + w - 11:.1f},{top + 1:.1f} A 10 10 0 0 1 {x + w - 1:.1f},{top + 12:.1f} Z" fill="{c}"/>\n')
+        body.append(text(x + w / 2, top + 42, name, t["fg"], 16, "middle", "600"))
+        for k, s in enumerate(sub):
+            body.append(text(x + w / 2, top + 64 + k * 17, s, t["muted"], 12.5, "middle"))
+        if i:
+            ax, ay = x - gap + 7, top + h / 2
+            body.append(line(ax, ay, x - 9, ay, t["muted"], 2))
+            body.append(f'<path d="M {x - 15:.1f},{ay - 6:.1f} L {x - 7:.1f},{ay:.1f} L {x - 15:.1f},{ay + 6:.1f}" '
+                        f'fill="none" stroke="{t["muted"]}" stroke-width="2" stroke-linecap="round" '
+                        f'stroke-linejoin="round"/>\n')
+    # The three in colour run on the Mac.
+    xa, xb, yb = m + w + gap, m + 4 * w + 3 * gap, top + h + 14
+    body.append(f'<path d="M {xa:.1f},{yb - 6:.1f} L {xa:.1f},{yb:.1f} L {xb:.1f},{yb:.1f} L {xb:.1f},{yb - 6:.1f}" '
+                f'fill="none" stroke="{t["grid"]}" stroke-width="1.5"/>\n')
+    body.append(text((xa + xb) / 2, yb + 20, "on the Mac; it never connects to FAH servers", t["muted"], 12.5, "middle"))
+    return svg(2 * m + 5 * w + 4 * gap, yb + 30, body,
+               "A FAH work unit goes into minicore, which runs it through OpenMM Metal with df64 mixed precision "
+               "on the Apple GPU and writes FAH's result files, with the state tests")
+
+
+def cards(t):
+    # The README's headline strip, one card per check, in the README's order.
+    w, gap, m, top, h = 194, 14, 12, 34, 222
+    files = ["viewerTop.json", "xtcAtoms.csv.bz2", "checkpointIntegrator.xml"]
+    items = [("21 of 21", ["state tests passed on a", "whole real FAH unit", "(P18264, 919,221 atoms,",
+                           "5 ns), as FAH's core", "0x27 passed 21"]),
+             ("Six files", ["in the result, in core", "0x27's order;"] + [("mono", f) for f in files]
+              + ["byte-identical to core 0x27's"]),
+             ("101 of 101", ["core-parity checks passed,", "and 65 of 65 failure and", "stop-resume cases"]),
+             ("0.054", ["worst state-test force", "RMSE in kJ/mol/nm, beside", "CUDA's 0.052, against",
+                        "FAHBench's limit of 5"]),
+             ("16 s", ["to fold the bundled test", "unit on an M3 Ultra after", ("mono", "./build.sh"),
+                       "so you can check it yourself"])]
+    body = [text(m, 20, "Checked against FAH's core 0x27", t["muted"], 13, "start", "600")]
+    for i, (big, lines) in enumerate(items):
+        c = ramp(t, i / (len(items) - 1))
+        x = m + i * (w + gap)
+        ix = x + 16
+        body.append(rect(x, top, w, h, t["tile"], 10, t["grid"]))
+        body.append(rect(x + 16, top, w - 32, 4, c, 2))
+        body.append(text(ix, top + 50, big, c, 34, "start", "600"))
+        vy = top + 70
+        if i == 0:
+            for k in range(21):
+                body.append(rect(ix + k * 7.7, vy, 6, 14, c, 1.5))
+        elif i == 1:
+            for k in range(6):
+                fx = ix + k * 27
+                body.append(f'<path d="M {fx:.1f},{vy:.1f} L {fx + 12:.1f},{vy:.1f} L {fx + 18:.1f},{vy + 6:.1f} '
+                            f'L {fx + 18:.1f},{vy + 22:.1f} L {fx:.1f},{vy + 22:.1f} Z" fill="{mix(c, t["tile"], 0.8)}" '
+                            f'stroke="{c}" stroke-width="1.4" stroke-linejoin="round"/>\n')
+        elif i == 2:
+            for k, (n, of) in enumerate(((101, 101), (65, 65))):
+                y = vy + k * 13
+                body.append(rect(ix, y, w - 72, 8, mix(c, t["tile"], 0.8), 4))
+                body.append(rect(ix, y, (w - 72) * n / of, 8, c, 4))
+                body.append(text(ix + w - 64, y + 8, f"{n}/{of}", t["muted"], 11))
+        elif i == 3:
+            # Log scale from 0.001 to 10: Metal, CUDA, and FAHBench's limit dashed.
+            sx = lambda v: ix + (w - 40) * (math.log10(v) + 3) / 4
+            body.append(line(ix, vy + 12, ix + w - 40, vy + 12, t["grid"], 2))
+            body.append(line(sx(5), vy + 2, sx(5), vy + 22, t["ref"], 1.5, "3 2"))
+            body.append(text(sx(5) - 4, vy + 6, "limit 5", t["muted"], 10.5, "end"))
+            body.append(diamond(sx(0.052), vy + 18, 5, t["cuda"]))
+            body.append(circle(sx(0.054), vy + 7, 4.5, t["ultra"]))
+            body.append(text(ix, vy + 34, "0.001", t["muted"], 10))
+            body.append(text(ix + w - 40, vy + 34, "10", t["muted"], 10, "end"))
+        else:
+            body.append(rect(ix, vy, w - 32, 24, t["fg"] if not t["paper"] == THEMES["dark"]["paper"] else t["shade"],
+                             5, t["grid"]))
+            body.append(text(ix + 9, vy + 16, "exit 100", mix(c, "#ffffff", 0.35), 12, "start", "600", family=MONO))
+            body.append(text(ix + w - 41, vy + 16, "FINISHED_UNIT", "#9198a1", 10.5, "end", family=MONO))
+        for k, s in enumerate(lines):
+            y = top + 124 + k * 16
+            if isinstance(s, tuple):
+                body.append(text(ix, y, s[1], t["fg"], 11, family=MONO))
+            else:
+                body.append(text(ix, y, s, t["fg"], 12.5))
+    return svg(2 * m + 5 * w + 4 * gap, top + h + 2, body,
+               "Checked against FAH's core 0x27. 21 of 21 state tests passed on a whole real FAH unit (P18264, "
+               "919,221 atoms, 5 ns), as FAH's core 0x27 passed 21. Six files in the result, in core 0x27's order; "
+               "viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's. "
+               "101 of 101 core-parity checks passed, and 65 of 65 failure and stop-resume cases. 0.054 kJ/mol/nm "
+               "worst state-test force RMSE, beside CUDA's 0.052, against FAHBench's limit of 5. 16 s to fold the "
+               "bundled test unit on an M3 Ultra after ./build.sh")
+
+
+def speed(t):
+    # Like for like: one RTX 5060 Ti, the same first 11% of P18264, FAH's core 0x27 against minicore
+    # built for CUDA. Each bar is the median 1% over that span.
+    r = rows("nvidia.csv")
+    left, right, top, bar, step = 210, 560, 12, 28, 46
+    xmax = 200
+    sx = lambda s: left + (right - left) * s / xmax
+    body = []
+    bottom = top + step * len(r) - 10
+    for v in range(0, xmax + 1, 50):
+        body.append(line(sx(v), top - 4, sx(v), bottom, t["grid"]))
+        body.append(text(sx(v), bottom + 16, f"{v} s", t["muted"], 11, "middle"))
+    body.append(text((left + right) / 2, bottom + 34, "Seconds per 1%, first 11% of P18264, one RTX 5060 Ti",
+                     t["muted"], 11, "middle"))
+    for i, x in enumerate(r):
+        y = top + i * step
+        real = x["core"].startswith("core 0x27")
+        s = float(x["s_per_1pct_first_11"])
+        body.append(text(left - 10, y + 12, "FAH's core 0x27" if real else "minicore", t["fg"], 13, "end", "600"))
+        body.append(text(left - 10, y + 27, f'OpenMM {x["openmm"]}, CUDA {x["cuda"].split(" (")[0]}', t["muted"],
+                         11, "end"))
+        body.append(rect(left, y, sx(s) - left, bar, t["ref"] if real else t["cuda"]))
+        body.append(text(sx(s) + 8, y + 18, f"{s:.0f} s", t["fg"], 12))
+    return svg(right + 60, bottom + 42, body,
+               "Seconds per 1% over the first 11% of P18264 on one RTX 5060 Ti, FAH's core 0x27 against minicore")
+
+
+def progress(t):
+    r = rows("progress.csv")
+    left, right, top, bottom = 58, 640, 14, 230
+    lo, hi = 150, 210
+    sx = lambda p: left + (right - left) * p / 100
+    sy = lambda s: bottom - (bottom - top) * (s - lo) / (hi - lo)
+    body = []
+    axes(body, t, left, right, bottom, range(0, 101, 10), range(lo, hi + 1, 10), sx, sy,
+         lambda p: f"{p}%", lambda s: f"{s} s")
+    body.append(text((left + right) / 2, bottom + 36, "Progress through the unit (each point is one 1% interval, 12,500 steps)",
+                     t["muted"], 11, "middle"))
+    # The M3 Ultra's own trace. progress.csv keeps core 0x27's column as a record; no figure sets one
+    # chip's time beside another's.
+    ultra = [(int(x["pct"]), float(x["ultra_s"])) for x in r if x["ultra_s"]]
+    body.append(polyline([(sx(p), sy(s)) for p, s in ultra], t["ultra"], 2.0))
+    um = median([s for _, s in ultra])
+    legend(body, t, left + 300, top + 16, [(f"minicore, M3 Ultra: median {um:.0f} s", t["ultra"], None)])
+    return svg(right + 20, bottom + 46, body, "Seconds per 1% across P18264 on the M3 Ultra")
+
+
+def distance(t):
+    r = rows("distance.csv")
+    left, right, top, bottom = 58, 640, 30, 266
+    sx = lambda s: left + (right - left) * s / 60000
+    sy = lambda d: bottom - (bottom - top) * d / 1.8
+    body = []
+    axes(body, t, left, right, bottom, range(0, 60001, 10000), [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8], sx, sy,
+         lambda s: f"{s // 1000}k" if s else "0", lambda d: f"{d:.1f}")
+    body.append(text((left + right) / 2, bottom + 36, "MD step (4 fs each; 60,000 steps = 0.24 ns)", t["muted"], 11, "middle"))
+    body.append(text(left - 8, top - 16, "nm", t["muted"], 11, "end"))
+    series = [("cuda_seed1_vs_seed3_nm", "CUDA seed 1 vs CUDA seed 3", t["cuda"], "6 4"),
+              ("cuda_seed1_vs_real_nm", "CUDA seed 1 vs real", t["cuda"], None),
+              ("ultra_vs_real_nm", "Apple Silicon (Metal) vs real", t["ultra"], None)]
+    for key, _, color, dash in series:
+        body.append(polyline([(sx(0), sy(0))] + [(sx(int(x["step"])), sy(float(x[key]))) for x in r], color, 2.0, dash))
+    legend(body, t, left + 330, bottom - 66, [(lab, c, d) for _, lab, c, d in series])
+    return svg(right + 20, bottom + 46, body, "Distance from the real trajectory against the distance between two CUDA seeds")
+
+
+def volume(t):
+    r = rows("volume.csv")
+    left, right, top, bottom = 64, 640, 30, 246
+    lo, hi = 9285, 9325
+    sx = lambda s: left + (right - left) * s / 1250000
+    sy = lambda v: bottom - (bottom - top) * (v - lo) / (hi - lo)
+    body = []
+    axes(body, t, left, right, bottom, range(0, 1250001, 250000), range(lo, hi + 1, 10), sx, sy,
+         lambda s: f"{s / 250000:.0f} ns", lambda v: f"{v:,}")
+    body.append(text(left - 8, top - 16, "nm³", t["muted"], 11, "end"))
+    for key, color in (("real_nm3", t["ref"]), ("cuda_seed3_nm3", t["cuda"])):
+        body.append(polyline([(sx(int(x["step"])), sy(float(x[key]))) for x in r], color, 1.0))
+    def stats(key):
+        v = [float(x[key]) for x in r]
+        return mean(v), stdev(v)
+    (rm, rs), (cm, cs) = stats("real_nm3"), stats("cuda_seed3_nm3")
+    legend(body, t, left, bottom + 40, [(f"real core 0x27: mean {rm:,.1f}, sd {rs:.1f}", t["ref"], None),
+                                         (f"CUDA replay, seed 3: mean {cm:,.1f}, sd {cs:.1f}", t["cuda"], None)])
+    return svg(right + 20, bottom + 76, body, "Box volume over the unit, real run against the CUDA replay")
+
+
+def accuracy(t):
+    r = rows("accuracy.csv")
+    units = list(dict.fromkeys(x["unit"] for x in r))
+    arms = [("M3 Ultra", "Apple M3 Ultra, Metal mixed", t["ultra"], -5),
+            ("RTX 5060 Ti", "NVIDIA RTX 5060 Ti, CUDA mixed", t["cuda"], 5)]
+    label_w, pw, gap, top, rh = 84, 270, 40, 40, 34
+    bottom = top + rh * len(units)
+    body = []
+    panels = [("worst_force_rmse", "force_limit", "Force RMSE (kJ/mol/nm)", -3, 1),
+              ("worst_dpe", "energy_limit", "|ΔPE| (kJ/mol)", -2, 2)]
+    for k, (key, lim_key, title, e0, e1) in enumerate(panels):
+        left = label_w + k * (pw + gap)
+        sx = lambda v, left=left, e0=e0, e1=e1: left + pw * (math.log10(v) - e0) / (e1 - e0)
+        body.append(text(left, top - 12, title, t["fg"], 12, "start", "600"))
+        for e in range(e0, e1 + 1):
+            body.append(line(sx(10 ** e), top, sx(10 ** e), bottom, t["grid"]))
+            body.append(text(sx(10 ** e), bottom + 16, f"{10.0 ** e:g}", t["muted"], 11, "middle"))
+        lim = float(r[0][lim_key])
+        body.append(line(sx(lim), top - 4, sx(lim), bottom, t["ref"], 1.5, "5 3"))
+        body.append(text(sx(lim) - 4, bottom - 6, f"limit {lim:g}", t["muted"], 11, "end"))
+        body.append(line(left, bottom, left + pw, bottom, t["muted"]))
+        for i, u in enumerate(units):
+            y = top + rh * i + rh / 2
+            if k == 0:
+                body.append(text(label_w - 12, y + 4, u, t["fg"], 12, "end"))
+            for m, _, color, dy in arms:
+                v = float(next(x[key] for x in r if x["unit"] == u and x["machine"] == m))
+                body.append(diamond(sx(v), y + dy, 5, color) if m == "RTX 5060 Ti" else circle(sx(v), y + dy, 4, color))
+    lx = label_w
+    for m, lab, color, _ in arms:
+        body.append(diamond(lx + 5, bottom + 40, 5, color) if m == "RTX 5060 Ti" else circle(lx + 5, bottom + 40, 4, color))
+        body.append(text(lx + 15, bottom + 44, lab, t["fg"], 12))
+        lx += 260
+    return svg(label_w + 2 * pw + gap + 20, bottom + 56, body,
+               "Worst state-test force and energy error per unit against the Reference platform, Metal and CUDA")
+
+
+def drift(t):
+    r = rows("drift.csv")
+    label_w, left, right, top, rh = 250, 260, 600, 12, 32
+    lo, hi = -0.007, 0.005
+    sx = lambda v: left + (right - left) * (v - lo) / (hi - lo)
+    bottom = top + rh * len(r)
+    body = []
+    for v in (-0.006, -0.004, -0.002, 0.0, 0.002, 0.004):
+        body.append(line(sx(v), top, sx(v), bottom, t["muted"] if v == 0 else t["grid"], 1.0))
+        body.append(text(sx(v), bottom + 16, f"{v:+.3f}" if v else "0", t["muted"], 11, "middle"))
+    body.append(text((left + right) / 2, bottom + 34, "Energy drift, kJ/mol/ps (mean ± SE)", t["muted"], 11, "middle"))
+    color = {"Metal mixed": t["ultra"], "CUDA mixed": t["cuda"], "CPU": t["ref"]}
+    for i, x in enumerate(r):
+        y = top + rh * i + rh / 2
+        m, se = float(x["mean_kj_mol_ps"]), float(x["se_kj_mol_ps"])
+        c = color[x["platform"]]
+        body.append(text(label_w - 12, y, x["arm"], t["fg"], 12, "end", "600"))
+        body.append(text(label_w - 12, y + 13, f'{x["openmm"]}, {x["seeds"]} runs', t["muted"], 11, "end"))
+        body.append(line(sx(m - se), y + 3, sx(m + se), y + 3, c, 2.0))
+        for e in (m - se, m + se):
+            body.append(line(sx(e), y - 2, sx(e), y + 8, c, 2.0))
+        hollow = x["arm"].endswith("#5492")
+        body.append(circle(sx(m), y + 3, 5, t["paper"] if hollow else c, c if hollow else None))
+        body.append(text(right + 10, y + 7, f"{m:+.4f} ± {se:.4f}", t["fg"], 12))
+    return svg(right + 130, bottom + 42, body, "Energy drift of DHFR in NVE, Metal before and after #5492, CUDA mixed and CPU")
+
+
+def parity(t):
+    r = rows("parity.csv")
+    # Label, fill, glyph, glyph colour and outline of each verdict, for the M3 Ultra's column of
+    # parity.csv. The M2's column stays in the CSV as a record; the figure shows the M3 Ultra alone.
+    mark = {"match": ("match", t["ultra"], "✓", t["paper"], None),
+            "by-design": ("a format the client never reads", t["tile"], "≠", t["ultra"], t["ultra"]),
+            "fah-only": ("needs FAH's keys", t["ref"], "FAH", t["paper"], None)}
+    item_w, cw, rh, top = 196, 76, 22, 52
+    body = []
+    x = 0
+    for key, (label, fill, glyph, ink, edge) in mark.items():
+        n = sum(1 for e in r if e["ultra"] == key)
+        if not n:
+            continue
+        body.append(rect(x, 6, 34, 18, fill, 3, edge))
+        body.append(text(x + 17, 19, glyph, ink, 12, "middle", "600"))
+        body.append(text(x + 42, 20, f"{label} ({n})", t["fg"], 12))
+        x += 42 + round(6.6 * len(f"{label} ({n})")) + 22
+    body.append(text(item_w + cw / 2, top - 8, "minicore", t["fg"], 12, "middle", "600"))
+    for i, e in enumerate(r):
+        y = top + i * rh
+        body.append(text(item_w - 10, y + 15, e["item"], t["fg"], 12, "end"))
+        label, fill, glyph, ink, edge = mark[e["ultra"]]
+        body.append(rect(item_w + 2, y + 2, cw - 4, rh - 4, fill, 3, edge))
+        body.append(text(item_w + cw / 2, y + 15, glyph, ink, 12, "middle", "600"))
+        body.append(text(item_w + cw + 12, y + 15, e["detail"], t["muted"], 11.5))
+    return svg(item_w + cw + 400, top + len(r) * rh + 4, body,
+               "Parity with core 0x27 item by item, minicore on Apple Silicon")
+
+
+# docs/social.png, the 1280x640 card for link previews. make.py writes it as figures/social.svg, set in
+# Inter 4.1 (figures/fonts, SIL Open Font License), and renders that SVG to PNG with headless Google
+# Chrome, since Pillow is not in the toolchain. The PNG is byte-identical across runs with the same
+# Chrome; make.py records the version it used in figures/social-renderer.txt and leaves the PNG alone
+# when it finds no Chrome.
+CHROME = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "google-chrome", "chromium"]
+
+
+def social_svg():
+    t = THEMES["dark"]
+    W, H = 1280, 640
+    face = "".join(f"@font-face {{ font-family: InterCard; font-weight: {w}; src: url('fonts/Inter-{n}.woff2'); }} "
+                   for w, n in ((400, "Regular"), (600, "SemiBold")))
+    body = [f'<style>{face}text {{ font-family: InterCard; }}</style>\n', rect(0, 0, W, H, t["paper"], 0),
+            rect(0, 0, 16, H, t["ultra"], 0),
+            text(80, 170, "fah-core-metal", t["fg"], 96, "start", "600"),
+            text(80, 240, "A real Folding@home core on Apple Silicon GPUs", t["muted"], 40)]
+    # Two tiles, the first two checks of the README's headline strip.
+    for k, (n, lines) in enumerate((("21 of 21", ("state tests passed on a whole FAH unit,", "as FAH's core 0x27 passed 21")),
+                                    ("101 of 101", ("core-parity checks passed, on each path", "a FAH core has to survive")))):
+        x = 80 + k * 570
+        body.append(rect(x, 300, 550, 220, t["tile"], 8, t["grid"]))
+        body.append(text(x + 36, 400, n, t["ultra"], 80, "start", "600"))
+        for i, ln in enumerate(lines):
+            body.append(text(x + 36, 450 + i * 32, ln, t["fg"], 24))
+    body.append(text(80, 590, "Force errors beside CUDA's. Three result files byte-identical to FAH's core's.",
+                     t["muted"], 24))
+    return svg(W, H, body, "fah-core-metal: a real Folding@home core on Apple Silicon GPUs. "
+               "21 of 21 state tests on a whole FAH unit, as FAH's core 0x27 passed. 101 of 101 core-parity checks.")
+
+
+def social_png(svg_path, png_path):
+    import shutil
+    import subprocess
+    exe = next((c for c in CHROME if Path(c).exists() or shutil.which(c)), None)
+    if exe is None:
+        print("make.py: no Chrome found, docs/social.png left as it is")
+        return
+    version = subprocess.run([exe, "--version"], capture_output=True, text=True).stdout.strip()
+    out = png_path.with_suffix(".tmp.png")
+    subprocess.run([exe, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
+                    "--allow-file-access-from-files", "--window-size=1280,640", f"--screenshot={out}",
+                    svg_path.as_uri()], check=True, capture_output=True)
+    out.replace(png_path)
+    (here / "social-renderer.txt").write_text(f"{version}\n")
+
+
+for theme, t in THEMES.items():
+    for name, make in (("banner", banner), ("pipeline", pipeline), ("cards", cards), ("hero", hero), ("speed", speed), ("progress", progress),
+                       ("distance", distance), ("volume", volume), ("accuracy", accuracy), ("drift", drift),
+                       ("parity", parity)):
+        (here / f"{name}-{theme}.svg").write_text(make(t))
+(here / "social.svg").write_text(social_svg())
+social_png(here / "social.svg", here.parent / "social.png")
