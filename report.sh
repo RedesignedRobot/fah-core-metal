@@ -74,8 +74,9 @@ link="$form?template=run-report.yml&title=$(encode "Run report: $chip, $gpu_core
 link="$link&chip=$(encode "$chip")&gpu-cores=$(encode "$gpu_cores")&ram=$(encode "$ram")"
 link="$link&macos=$(encode "$macos")&build=$(encode "$build")&exit-code=$code"
 long="$link&gpu-info=$(encode "$gpu_info")&state-tests=$(encode "$tests")"
-# GitHub answers 414 URI Too Long past about 8 KB; then the two long fields are left to paste.
-[ ${#long} -le 8000 ] && link=$long
+# Past about 7 KB GitHub answers 500, and past 9 KB 414 URI Too Long; then the two long fields are left to
+# paste.
+[ ${#long} -le 6000 ] && link=$long
 
 field() {
     printf '%s\n%s\n\n' "### $1" "$2"
