@@ -48,10 +48,10 @@ Source: `core-realwu/REPORT.md`, the paragraph headed "Unit", and `core-realwu/r
 | M3 Ultra, the earlier unit estimate | 4.66 h | 26.7 s start-up + 100 x 167 s + 20 checkpoints x 2 s; same file. The README no longer gives it. This build and the whole-unit run's differ, and no A/B separates the build from the conditions, so the gap between 167 s and 182 s has no measured cause |
 | M2, time per 1% | 1,280 s | Viewer frames 1-4 of a 62,500-step run at nice 10, 1,288, 1,279, 1,279, 1,278 s, minicore 942bac4b, by day; `core-realwu/results/m2-62500/files.txt`; `core-realwu/REPORT.md` section 5 |
 | M2, time per unit | 35.6 h, 74% of 48 h | 100 x 1,280 s plus start-up and checkpoints; same section |
-| M3 Ultra against the real core | 0.95 per 1%, 0.94 per unit | 182 / 192, 5.06 / 5.37 |
-| RTX 5060 Ti rows over the first 11%, "about the same speed, slightly faster" | core 0x27 187 s, minicore 184 s (OpenMM 8.2.0) and 180 s (8.6.1): 1.6% and 3.7% less time per 1% | The next section |
+| RTX 5060 Ti rows over the first 11%, "minicore keeps pace with FAH's own core on FAH's own hardware" | core 0x27 187 s, minicore 184 s (OpenMM 8.2.0) and 180 s (8.6.1): 1.6% and 3.7% less time per 1% | The next section |
 
-`docs/data/speed.csv` holds the real core and M3 Ultra whole-unit rows, and Figure 2 is drawn from it.
+`docs/data/speed.csv` holds the real core and M3 Ultra whole-unit rows as a record. Speed is compared
+only on one card: Figure 2, the README's speed figure, is drawn from `docs/data/nvidia.csv`.
 
 ### One RTX 5060 Ti, core 0x27 against minicore
 
@@ -89,12 +89,13 @@ g++ 16.2. Neither NVRTC 11.2 nor 11.8 knows the card's compute capability 12.0, 
 these causes.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/nvidia-dark.svg">
-  <img alt="Seconds per 1% of P18264 on one RTX 5060 Ti, core 0x27 against minicore" src="figures/nvidia-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
+  <img alt="Seconds per 1% over the first 11% of P18264 on one RTX 5060 Ti, FAH's core 0x27 against minicore built for CUDA" src="figures/speed-light.svg">
 </picture>
 
-*Figure S2. Seconds per 1% of P18264 on the RTX 5060 Ti over the unit's first 11%, with core 0x27's
-whole-unit median as the tick (`docs/data/nvidia.csv`).*
+*Figure 2. Seconds per 1% of P18264 on the RTX 5060 Ti over the unit's first 11%, the median of 11
+intervals each (`docs/data/nvidia.csv`, column `s_per_1pct_first_11`). It replaces Figure S2, which drew
+the same bars with core 0x27's whole-unit median as a tick; that median, 192 s, is in the table above.*
 
 The README gives no M2 speed. Its numbers stay here: 1,280 s per 1% and 35.6 h per unit (74% of the 48 h
 timeout) in the lab's run above, and 1,298 s for the first 1% with this repo's build (frames 0 and 1 of a
@@ -312,7 +313,8 @@ energies from `full-fold/results/summary.txt` and `full-fold/REPORT.md` section 
 ## The Pages files
 
 `docs/index.html`, `docs/llms.txt` and the Open Graph text repeat or shorten sentences of the README,
-so each claim there has its source in the sections above. `docs/social.png` repeats Figure 2's hours.
+so each claim there has its source in the sections above. `docs/social.png` repeats the first two
+checks of the README's headline strip.
 
 ## Detail moved from the README
 
@@ -330,23 +332,15 @@ barostat and mixed precision. One 1% is 12,500 steps.
 | M3 Ultra, macOS 27 | minicore at b60c18b, Metal mixed, the whole unit (gpuq 2245) | 182 s | 5.06 h |
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
-  <img alt="Hours per P18264 unit, M3 Ultra against the real core" src="figures/speed-light.svg">
-</picture>
-
-*Figure 2. Hours per P18264 unit, the wall clock of one whole unit on each: core 0x27 from its first
-start under FAH's client, minicore from the job's start to the core's exit (`docs/data/speed.csv`).*
-
-<picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/progress-dark.svg">
-  <img alt="Seconds per 1% across the unit, real core against the M3 Ultra" src="figures/progress-light.svg">
+  <img alt="Seconds per 1% across P18264 on the M3 Ultra" src="figures/progress-light.svg">
 </picture>
 
-*Figure S1. Seconds per 1% interval: core 0x27 from the times of its 100 viewer frames across the unit,
-the M3 Ultra from the times of its progress lines across the unit (`docs/data/progress.csv`).*
+*Figure S1. Seconds per 1% interval on the M3 Ultra, from the times of its progress lines across the
+unit (`docs/data/progress.csv`, which also keeps core 0x27's intervals as a record).*
 
-Across the whole unit the M3 Ultra takes 0.95 times the real core's time per 1%. Its intervals stay
-within 180 to 184 s from the first to the last, through a load average of 126 at 03:07Z.
+The M3 Ultra's intervals stay within 180 to 184 s from the first to the last, through a load average of
+126 at 03:07Z.
 
 
 ### Trajectories and box volume

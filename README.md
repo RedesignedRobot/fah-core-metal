@@ -51,23 +51,30 @@ format the client never reads. [docs/PARITY.md](docs/PARITY.md) lists every row.
 
 ## Speed
 
-| Machine | Core | Per 1% | Per unit |
-| --- | --- | ---: | ---: |
-| Apple Silicon, M3 Ultra | minicore, Metal | 182 s | 5.06 h |
-| NVIDIA RTX 5060 Ti | FAH's core 0x27, CUDA | 192 s | 5.37 h |
+### Same card, like for like
+
+On one NVIDIA RTX 5060 Ti, minicore built for CUDA against FAH's core 0x27, over the same first 11% of
+P18264:
+
+| Core | OpenMM | Per 1% |
+| --- | --- | ---: |
+| FAH's core 0x27 | 8.2.0 | 187 s |
+| minicore, CUDA | 8.2.0 | 184 s |
+| minicore, CUDA | 8.6.1 | 180 s |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/speed-dark.svg">
-  <img alt="Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA" src="docs/figures/speed-light.svg">
+  <img alt="Seconds per 1% over the first 11% of P18264 on one RTX 5060 Ti, FAH's core 0x27 against minicore built for CUDA" src="docs/figures/speed-light.svg">
 </picture>
 
-*Hours per whole P18264 unit.*
+*minicore keeps pace with FAH's own core on FAH's own hardware.*
 
-### Also on NVIDIA
+On a 5,000-step cut on that card, minicore's viewerTop.json and xtcAtoms.csv.bz2 were byte-identical to
+FAH's core's ([run conditions](docs/EVIDENCE.md#one-rtx-5060-ti-core-0x27-against-minicore)).
 
-minicore built for CUDA (OpenMM 8.6.1) ran the unit's first 11% on the same card at 180 s per 1%,
-against FAH's core's 187 s. On a 5,000-step cut its viewerTop.json and xtcAtoms.csv.bz2 were
-byte-identical to FAH's core's ([run conditions](docs/EVIDENCE.md#speed)).
+### On Apple Silicon
+
+The M3 Ultra folded the whole unit in 5.06 h, 182 s per 1% ([run conditions](docs/EVIDENCE.md#speed)).
 
 ## Try it
 
@@ -105,9 +112,11 @@ CUDA's.
 
 Yes. minicore runs FAH's real work units on it.
 
-### How fast is it against NVIDIA?
+### How fast is it?
 
-On P18264 minicore took 5.06 h on an M3 Ultra, and FAH's core took 5.37 h on an RTX 5060 Ti.
+On one RTX 5060 Ti, minicore built for CUDA took 184 s per 1% of P18264's first 11% on OpenMM 8.2.0 and
+180 s on 8.6.1, where FAH's core 0x27 took 187 s on the same card. On Apple Silicon, the M3 Ultra folded
+the whole unit in 5.06 h.
 
 ### Can I fold for Folding@home points with it today?
 

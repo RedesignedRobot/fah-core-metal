@@ -25,8 +25,6 @@ THEMES = {
                  ultra="#4493f8", pale="#a5d6ff", cuda="#3fb950", ref="#848d97"),
 }
 FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-# Display names: the M3 Ultra is the Apple Silicon machine, the RTX 5060 Ti the NVIDIA one.
-MACHINE = {"M3 Ultra": "Apple M3 Ultra", "RTX 5060 Ti": "NVIDIA RTX 5060 Ti"}
 
 
 def rows(name):
@@ -143,31 +141,8 @@ def hero(t):
 
 
 def speed(t):
-    r = rows("speed.csv")
-    color = {"RTX 5060 Ti": t["ref"], "M3 Ultra": t["ultra"]}
-    left, right, top, bar, step = 210, 600, 12, 28, 46
-    xmax = 6.0
-    sx = lambda h: left + (right - left) * h / xmax
-    body = []
-    bottom = top + step * len(r) - 10
-    for v in range(0, 7):
-        body.append(line(sx(v), top - 4, sx(v), bottom, t["grid"]))
-        body.append(text(sx(v), bottom + 16, f"{v} h", t["muted"], 11, "middle"))
-    body.append(text((left + right) / 2, bottom + 34, "Hours per unit", t["muted"], 11, "middle"))
-    for i, x in enumerate(r):
-        y = top + i * step
-        body.append(text(left - 10, y + 12, MACHINE[x["machine"]], t["fg"], 13, "end", "600"))
-        body.append(text(left - 10, y + 27, f'{x["core"].split(" (")[0]}, {x["api"]}', t["muted"], 11, "end"))
-        body.append(rect(left, y, sx(float(x["unit_h"])) - left, bar, color[x["machine"]]))
-        est = "" if x["unit_h_from"] == "full run" else " est."
-        body.append(text(sx(float(x["unit_h"])) + 8, y + 18,
-                         f'{float(x["unit_h"]):.2f} h{est}, {float(x["s_per_1pct"]):,.0f} s per 1%', t["fg"], 12))
-    return svg(right + 150, bottom + 42, body, "Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA")
-
-
-def nvidia(t):
-    # Every bar is the median 1% over the unit's first 11%, the span the minicore runs cover; core 0x27's
-    # whole-unit median is the tick beyond its bar.
+    # Like for like: one RTX 5060 Ti, the same first 11% of P18264, FAH's core 0x27 against minicore
+    # built for CUDA. Each bar is the median 1% over that span.
     r = rows("nvidia.csv")
     left, right, top, bar, step = 210, 560, 12, 28, 46
     xmax = 200
@@ -177,22 +152,19 @@ def nvidia(t):
     for v in range(0, xmax + 1, 50):
         body.append(line(sx(v), top - 4, sx(v), bottom, t["grid"]))
         body.append(text(sx(v), bottom + 16, f"{v} s", t["muted"], 11, "middle"))
-    body.append(text((left + right) / 2, bottom + 34, "Seconds per 1%, first 11% of the unit", t["muted"], 11,
-                     "middle"))
+    body.append(text((left + right) / 2, bottom + 34, "Seconds per 1%, first 11% of P18264, one RTX 5060 Ti",
+                     t["muted"], 11, "middle"))
     for i, x in enumerate(r):
         y = top + i * step
         real = x["core"].startswith("core 0x27")
         s = float(x["s_per_1pct_first_11"])
-        body.append(text(left - 10, y + 12, x["core"], t["fg"], 13, "end", "600"))
+        body.append(text(left - 10, y + 12, "FAH's core 0x27" if real else "minicore", t["fg"], 13, "end", "600"))
         body.append(text(left - 10, y + 27, f'OpenMM {x["openmm"]}, CUDA {x["cuda"].split(" (")[0]}', t["muted"],
                          11, "end"))
         body.append(rect(left, y, sx(s) - left, bar, t["ref"] if real else t["cuda"]))
-        label = f'{s:.0f} s, {float(x["unit_h"]):.2f} h per unit'
-        if real:
-            body.append(line(sx(float(x["s_per_1pct"])), y - 2, sx(float(x["s_per_1pct"])), y + bar + 2, t["fg"], 2))
-            label = f'{s:.0f} s ({float(x["s_per_1pct"]):.0f} s over the unit), {float(x["unit_h"]):.2f} h per unit'
-        body.append(text(sx(float(x["s_per_1pct"])) + 10, y + 18, label, t["fg"], 12))
-    return svg(right + 290, bottom + 42, body, "Seconds per 1% of P18264 on one RTX 5060 Ti, core 0x27 against minicore")
+        body.append(text(sx(s) + 8, y + 18, f"{s:.0f} s", t["fg"], 12))
+    return svg(right + 60, bottom + 42, body,
+               "Seconds per 1% over the first 11% of P18264 on one RTX 5060 Ti, FAH's core 0x27 against minicore")
 
 
 def progress(t):
@@ -206,14 +178,13 @@ def progress(t):
          lambda p: f"{p}%", lambda s: f"{s} s")
     body.append(text((left + right) / 2, bottom + 36, "Progress through the unit (each point is one 1% interval, 12,500 steps)",
                      t["muted"], 11, "middle"))
-    real = [(int(x["pct"]), float(x["real_s"])) for x in r if x["real_s"]]
+    # The M3 Ultra's own trace. progress.csv keeps core 0x27's column as a record; no figure sets one
+    # chip's time beside another's.
     ultra = [(int(x["pct"]), float(x["ultra_s"])) for x in r if x["ultra_s"]]
-    body.append(polyline([(sx(p), sy(s)) for p, s in real], t["ref"], 1.5))
     body.append(polyline([(sx(p), sy(s)) for p, s in ultra], t["ultra"], 2.0))
-    rm, um = median([s for _, s in real]), median([s for _, s in ultra])
-    legend(body, t, left + 300, top + 16, [(f"real core 0x27, RTX 5060 Ti: median {rm:.0f} s", t["ref"], None),
-                                          (f"minicore, M3 Ultra: median {um:.0f} s", t["ultra"], None)])
-    return svg(right + 20, bottom + 46, body, "Seconds per 1% across the unit, real core against the M3 Ultra")
+    um = median([s for _, s in ultra])
+    legend(body, t, left + 300, top + 16, [(f"minicore, M3 Ultra: median {um:.0f} s", t["ultra"], None)])
+    return svg(right + 20, bottom + 46, body, "Seconds per 1% across P18264 on the M3 Ultra")
 
 
 def distance(t):
@@ -398,7 +369,7 @@ def social_png(svg_path, png_path):
 
 
 for theme, t in THEMES.items():
-    for name, make in (("hero", hero), ("speed", speed), ("nvidia", nvidia), ("progress", progress),
+    for name, make in (("hero", hero), ("speed", speed), ("progress", progress),
                        ("distance", distance), ("volume", volume), ("accuracy", accuracy), ("drift", drift),
                        ("parity", parity)):
         (here / f"{name}-{theme}.svg").write_text(make(t))

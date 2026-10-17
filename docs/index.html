@@ -108,23 +108,28 @@ format the client never reads.
 <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/PARITY.md">PARITY.md</a> lists every row.</p>
 
 <h2>Speed</h2>
+<h3>Same card, like for like</h3>
+<p>On one NVIDIA RTX 5060 Ti, minicore built for CUDA against FAH's core 0x27, over the same first 11% of
+P18264:</p>
 <table>
-<tr><th>Machine</th><th>Core</th><th>Per 1%</th><th>Per unit</th></tr>
-<tr><td>Apple Silicon, M3 Ultra</td><td>minicore, Metal</td><td>182 s</td><td>5.06 h</td></tr>
-<tr><td>NVIDIA RTX 5060 Ti</td><td>FAH's core 0x27, CUDA</td><td>192 s</td><td>5.37 h</td></tr>
+<tr><th>Core</th><th>OpenMM</th><th>Per 1%</th></tr>
+<tr><td>FAH's core 0x27</td><td>8.2.0</td><td>187 s</td></tr>
+<tr><td>minicore, CUDA</td><td>8.2.0</td><td>184 s</td></tr>
+<tr><td>minicore, CUDA</td><td>8.6.1</td><td>180 s</td></tr>
 </table>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
-  <img alt="Hours per P18264 unit, Apple Silicon against FAH's core on NVIDIA" src="figures/speed-light.svg">
+  <img alt="Seconds per 1% over the first 11% of P18264 on one RTX 5060 Ti, FAH's core 0x27 against minicore built for CUDA" src="figures/speed-light.svg">
 </picture>
-<figcaption>Hours per whole P18264 unit.</figcaption>
+<figcaption>minicore keeps pace with FAH's own core on FAH's own hardware.</figcaption>
 </figure>
+<p>On a 5,000-step cut on that card, minicore's viewerTop.json and xtcAtoms.csv.bz2 were byte-identical to
+FAH's core's. Run conditions are in
+<a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#one-rtx-5060-ti-core-0x27-against-minicore">EVIDENCE.md</a>.</p>
 
-<h3>Also on NVIDIA</h3>
-<p>minicore built for CUDA (OpenMM 8.6.1) ran the unit's first 11% on the same card at 180 s per 1%,
-against FAH's core's 187 s. On a 5,000-step cut its viewerTop.json and xtcAtoms.csv.bz2 were
-byte-identical to FAH's core's. Run conditions are in
+<h3>On Apple Silicon</h3>
+<p>The M3 Ultra folded the whole unit in 5.06 h, 182 s per 1%. Run conditions are in
 <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#speed">EVIDENCE.md</a>.</p>
 
 <h2>FAQ</h2>
@@ -133,8 +138,10 @@ byte-identical to FAH's core's. Run conditions are in
 CUDA's.</p>
 <h3>Can Folding@home use the Apple Silicon GPU?</h3>
 <p>Yes. minicore runs FAH's real work units on it.</p>
-<h3>How fast is it against NVIDIA?</h3>
-<p>On P18264 minicore took 5.06 h on an M3 Ultra, and FAH's core took 5.37 h on an RTX 5060 Ti.</p>
+<h3>How fast is it?</h3>
+<p>On one RTX 5060 Ti, minicore built for CUDA took 184 s per 1% of P18264's first 11% on OpenMM 8.2.0 and
+180 s on 8.6.1, where FAH's core 0x27 took 187 s on the same card. On Apple Silicon, the M3 Ultra folded
+the whole unit in 5.06 h.</p>
 <h3>Can I fold for Folding@home points with it today?</h3>
 <p>No. FAH signs its cores and their results with its own private key, so that step is FAH's.</p>
 

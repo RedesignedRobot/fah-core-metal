@@ -4,7 +4,7 @@
 
 People have asked for Folding@home on Apple GPUs since 2019 (openmm#2489) and 2024 (fah-client-bastet#303). On P18264, a whole real FAH unit of 919,221 atoms and 5 ns, minicore passed 21 of 21 state tests, as FAH's core 0x27 passed 21. Its result holds the six files in core 0x27's order, and viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml are byte-identical to core 0x27's. It passed 101 of 101 core-parity checks and 65 of 65 failure and stop-resume cases. Its worst state-test force RMSE is 0.054 kJ/mol/nm, beside CUDA's 0.052, against FAHBench's limit of 5. The bundled test unit folds in 16 s on an M3 Ultra after `./build.sh`, so anyone can check it.
 
-On speed, minicore on an M3 Ultra took 5.06 h for P18264, and FAH's core 0x27 took 5.37 h on an NVIDIA RTX 5060 Ti (182 s against 192 s per 1%). Built for CUDA on the same RTX 5060 Ti, minicore ran at 180 s per 1% against FAH's core's 187 s over the unit's first 11%.
+On speed, like for like on one NVIDIA RTX 5060 Ti over the same first 11% of P18264, minicore built for CUDA took 184 s per 1% on OpenMM 8.2.0 and 180 s on 8.6.1, where FAH's core 0x27 took 187 s: minicore keeps pace with FAH's own core on FAH's own hardware. On Apple Silicon, the M3 Ultra folded the whole unit in 5.06 h, 182 s per 1%.
 
 Every behaviour FAH's client acts on matches core 0x27. The rest needs FAH's own signing keys or is a format the client never reads. For points, FAH signs its cores and their results with its own private key, so that step is FAH's.
 
