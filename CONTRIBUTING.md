@@ -8,8 +8,8 @@ don't need to know OpenMM or Metal to make a difference here.
 - **Run reports.** Build it, fold the bundled test unit and post how it went with the
   [run report form](https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=run-report.yml),
   or reply to [Run it on your Mac](https://github.com/RedesignedRobot/fah-core-metal/discussions/1). A
-  failure is as useful as a pass. I have only run it on an M3 Ultra and an M2, both on macOS 27.2, so
-  every other chip and every earlier macOS is new ground.
+  failure is as useful as a pass. So far it has only run on my own Macs, all on macOS 27.2, so most
+  chips and every earlier macOS are new ground.
 - **Bug reports with logs.** Use the
   [bug report form](https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=bug-report.yml).
   The log lines it asks for are what let me find the problem.
