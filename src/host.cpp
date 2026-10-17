@@ -63,9 +63,11 @@ string metalDeviceProblem() {
         return "macOS gives this process no Metal device (MTLCreateSystemDefaultDevice() returned nil)";
     const long apple7 = 1007;  // MTLGPUFamilyApple7
     bool usable = ((bool (*)(void*, SEL, long)) objc_msgSend)(device, sel_registerName("supportsFamily:"), apple7);
+    // CFStringGetCString writes the terminating zero only when it succeeds.
+    CFStringRef nameRef = (CFStringRef) ((void* (*)(void*, SEL)) objc_msgSend)(device, sel_registerName("name"));
     char name[256] = "";
-    CFStringGetCString((CFStringRef) ((void* (*)(void*, SEL)) objc_msgSend)(device, sel_registerName("name")), name,
-                       sizeof(name), kCFStringEncodingUTF8);
+    if (nameRef == NULL || !CFStringGetCString(nameRef, name, sizeof(name), kCFStringEncodingUTF8))
+        snprintf(name, sizeof(name), "unnamed");
     CFRelease(device);
     return usable ? "" : "the Metal device "+string(name)+" doesn't support the Apple7 GPU family (M1 or later)";
 }
