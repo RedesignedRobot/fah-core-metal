@@ -1,0 +1,19 @@
+# fah-core-metal
+
+> A Folding@home core that runs FAH's OpenMM work units on Apple Silicon GPUs through OpenMM's Metal platform. It folded a whole real FAH unit on the M3 Ultra.
+
+minicore is a Folding@home core that runs FAH's OpenMM work units on the GPU of Apple Silicon Macs through Metal. On the M3 Ultra it folded a whole real FAH unit, project 18264 with 919,221 atoms, to a finished result in 5.06 h, and every state test passed. On the M2 it ran the first 5% of that unit and ran shortened copies of it to a finished result. On the M3 Ultra it matches FAH's core 0x27 on 20 of the 25 items in the README's parity figure; the other 5 need FAH's keys or differ by design. On P18264 the M3 Ultra takes 0.95 times the time per 1% that core 0x27 takes on an RTX 5060 Ti, 182 s against 192 s, each over one whole unit. On that card minicore on CUDA is about the same speed as core 0x27, slightly faster: 184 s and 180 s per 1% against 187 s over the first 11%.
+
+fah-core-metal is not affiliated with or endorsed by Folding@home. It never connects to FAH servers. Its results carry no FAH signature.
+
+## Docs
+
+- [README](https://github.com/RedesignedRobot/fah-core-metal#readme): figures for speed, trajectories, accuracy and parity with core 0x27, where it differs, how to build and run it, FAQ
+- [Evidence](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md): the run and raw record behind every number in the README, and the README's longer text: what was tested, how it matches core 0x27, the test unit's transcript
+- [Design notes](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/design-notes.md): how the README and the core are laid out, and why
+
+## Source
+
+- [src/](https://github.com/RedesignedRobot/fah-core-metal/tree/main/src): minicore, the core
+- [build.sh](https://github.com/RedesignedRobot/fah-core-metal/blob/main/build.sh): fetches OpenMM with the Metal platform, builds it as static libraries and links the core
+- [docs/data/](https://github.com/RedesignedRobot/fah-core-metal/tree/main/docs/data): the CSVs behind every figure

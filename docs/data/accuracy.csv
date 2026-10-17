@@ -1,0 +1,13 @@
+unit,machine,platform,tests,fail,worst_force_rmse,worst_dpe,force_limit,energy_limit
+gbsa,M3 Ultra,Metal mixed,6,0,0.01105,0.04409,5,10
+gbsa,M2,Metal mixed,6,0,0.01141,0.04503,5,10
+gbsa,RTX 5060 Ti,CUDA mixed,6,0,0.01132,0.07532,5,10
+neq,M3 Ultra,Metal mixed,6,0,0.02188,0.06318,5,10
+neq,M2,Metal mixed,6,0,0.02138,0.05023,5,10
+neq,RTX 5060 Ti,CUDA mixed,6,0,0.01938,0.03782,5,10
+tip3p-hmr,M3 Ultra,Metal mixed,6,0,0.03594,0.5457,5,10
+tip3p-hmr,M2,Metal mixed,6,0,0.0383,0.6073,5,10
+tip3p-hmr,RTX 5060 Ti,CUDA mixed,6,0,0.0358,0.21,5,10
+tip4pew,M3 Ultra,Metal mixed,6,0,0.05438,0.4484,5,10
+tip4pew,M2,Metal mixed,6,0,0.05438,0.5257,5,10
+tip4pew,RTX 5060 Ti,CUDA mixed,6,0,0.05209,0.2765,5,10

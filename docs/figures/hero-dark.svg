@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="906" height="200" viewBox="0 0 906 200" role="img" aria-label="FAH client to minicore to OpenMM Metal to Apple GPU" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<rect x="20.0" y="40.0" width="170.0" height="70.0" rx="6" fill="#0d1117"/>
+<path d="M17.9,40.7 Q105.2,39.1 188.7,38.9 M192.2,39.8 Q189.5,75.6 192.2,112.2 M188.5,111.5 Q103.9,108.1 20.4,111.8 M20.2,108.1 Q22.1,75.7 17.9,41.3" fill="none" stroke="#848d97" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M20.3,40.8 Q105.8,41.2 190.6,41.7 M189.2,41.4 Q188.3,75.0 191.7,108.9 M189.2,111.2 Q103.2,108.9 19.6,111.1 M18.6,110.6 Q19.1,75.1 20.1,41.6" fill="none" stroke="#848d97" stroke-width="1.6" stroke-linecap="round"/>
+<text x="105.0" y="71.0" font-size="17" fill="#e6edf3" text-anchor="middle" font-weight="600">FAH client</text>
+<text x="105.0" y="92.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="normal">fah-client 8.5</text>
+<rect x="252.0" y="40.0" width="170.0" height="70.0" rx="6" fill="#0d1117"/>
+<path d="M250.1,41.9 Q339.0,40.1 424.0,39.9 M420.9,38.9 Q421.9,76.9 422.9,110.8 M422.1,109.6 Q337.8,111.4 250.8,108.7 M253.1,110.5 Q251.4,74.7 252.0,39.5" fill="none" stroke="#4493f8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M253.3,40.6 Q337.6,39.5 422.9,39.4 M424.0,40.1 Q422.1,76.0 421.2,110.8 M419.9,110.2 Q335.3,109.3 250.9,109.5 M250.0,109.7 Q253.3,75.6 249.8,41.4" fill="none" stroke="#4493f8" stroke-width="1.6" stroke-linecap="round"/>
+<text x="337.0" y="71.0" font-size="17" fill="#e6edf3" text-anchor="middle" font-weight="600">minicore</text>
+<text x="337.0" y="92.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="normal">this repo</text>
+<rect x="484.0" y="40.0" width="170.0" height="70.0" rx="6" fill="#0d1117"/>
+<path d="M483.0,41.4 Q569.0,41.5 652.4,41.6 M655.8,41.5 Q653.5,73.1 652.7,110.3 M653.7,112.1 Q568.9,108.4 483.5,111.1 M484.5,111.8 Q485.1,76.2 483.3,39.9" fill="none" stroke="#4493f8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M484.0,41.2 Q568.8,38.2 654.3,38.6 M652.3,38.7 Q652.9,74.9 655.1,108.3 M654.1,107.9 Q567.3,108.5 484.8,110.3 M485.0,110.1 Q485.1,76.2 483.1,40.4" fill="none" stroke="#4493f8" stroke-width="1.6" stroke-linecap="round"/>
+<text x="569.0" y="71.0" font-size="17" fill="#e6edf3" text-anchor="middle" font-weight="600">OpenMM Metal</text>
+<text x="569.0" y="92.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="normal">df64 mixed precision</text>
+<rect x="716.0" y="40.0" width="170.0" height="70.0" rx="6" fill="#0d1117"/>
+<path d="M716.9,40.4 Q799.5,38.8 884.4,39.7 M886.7,38.4 Q886.4,73.8 884.5,109.6 M885.6,109.1 Q800.1,111.0 717.4,111.5 M715.0,108.2 Q717.2,73.3 717.1,39.8" fill="none" stroke="#a5d6ff" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M714.1,38.0 Q799.2,41.9 887.8,39.8 M884.4,39.9 Q887.6,75.4 887.2,107.9 M886.1,109.2 Q802.2,109.3 717.3,109.9 M717.0,108.6 Q715.8,73.1 716.5,37.8" fill="none" stroke="#a5d6ff" stroke-width="1.6" stroke-linecap="round"/>
+<text x="801.0" y="71.0" font-size="17" fill="#e6edf3" text-anchor="middle" font-weight="600">Apple GPU</text>
+<text x="801.0" y="92.0" font-size="12" fill="#9198a1" text-anchor="middle" font-weight="normal">Apple Silicon</text>
+<path d="M196.0,73.8 Q221.0,75.8 246.0,75.0 M237.0,68.4 L246.0,75.0 L237.0,81.3" fill="none" stroke="#e6edf3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="221.0" y="32.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">wudata_01.dat</text>
+<path d="M428.0,75.6 Q453.0,74.1 478.0,75.0 M469.0,69.1 L478.0,75.0 L469.0,80.7" fill="none" stroke="#e6edf3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="453.0" y="32.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">System, State</text>
+<path d="M660.0,73.6 Q685.0,77.1 710.0,75.0 M701.0,69.1 L710.0,75.0 L701.0,82.1" fill="none" stroke="#e6edf3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="685.0" y="32.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">kernels</text>
+<path d="M337.0,116.0 Q340.0,144.0 221.0,144.0 Q102.0,144.0 105.0,118.0 M99.0,127.0 L105.0,118.0 L111.0,127.0" fill="none" stroke="#e6edf3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="221.0" y="162.0" font-size="11" fill="#9198a1" text-anchor="middle" font-weight="normal">wuresults_01.dat</text>
+</svg>

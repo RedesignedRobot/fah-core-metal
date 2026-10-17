@@ -1,0 +1,32 @@
+From 3d7e3b5170e0aa11c0b9feb7ec67e0698ec6974d Mon Sep 17 00:00:00 2001
+From: Amir Ayub <dev.amirayub@gmail.com>
+Date: Sat, 10 Oct 2026 21:50:35 +0300
+Subject: [PATCH 2/3] Build the shared Metal plugin only when shared libraries
+ are on
+
+With OPENMM_BUILD_SHARED_LIB=OFF there is no libOpenMM.dylib, but
+platforms/metal always added sharedTarget, so a static-only build failed to
+link libOpenMMMetal.dylib (ld: library 'OpenMM' not found). The CPU platform
+already guards its shared target the same way.
+---
+ platforms/metal/CMakeLists.txt | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/platforms/metal/CMakeLists.txt b/platforms/metal/CMakeLists.txt
+index ab154854a..93cc7aa1d 100644
+--- a/platforms/metal/CMakeLists.txt
++++ b/platforms/metal/CMakeLists.txt
+@@ -101,7 +101,9 @@ ADD_CUSTOM_TARGET(MetalKernels DEPENDS ${KERNELS_CPP} ${KERNELS_H})
+ FILE(GLOB CORE_HEADERS include/*.h ${KERNELS_H})
+ INSTALL_FILES(/include/openmm/metal FILES ${CORE_HEADERS})
+ 
+-SUBDIRS (sharedTarget)
++IF(OPENMM_BUILD_SHARED_LIB)
++    SUBDIRS (sharedTarget)
++ENDIF(OPENMM_BUILD_SHARED_LIB)
+ IF(OPENMM_BUILD_STATIC_LIB)
+     SUBDIRS (staticTarget)
+ ENDIF(OPENMM_BUILD_STATIC_LIB)
+-- 
+2.54.0 (Apple Git-157)
+
