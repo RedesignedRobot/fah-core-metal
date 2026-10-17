@@ -36,7 +36,7 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at TODO-owner (an email address for conduct reports; replace this placeholder before publishing). All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement by mentioning @RedesignedRobot in an issue or discussion, or, for anything that shouldn't be public, through GitHub's "Report content" option on the comment or the user's profile, which goes to GitHub ([how to report](https://docs.github.com/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam)). All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
 
