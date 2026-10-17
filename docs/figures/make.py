@@ -5,7 +5,8 @@ Standard library only, and no clock or random state outside a fixed seed, so a s
 same bytes.
 
 One palette across the figures: blue for Metal on Apple Silicon, green for CUDA on NVIDIA, grey for
-the real core 0x27 run and other references.
+the real core 0x27 run and other references. The banner, the pipeline and the headline cards add violet
+and pink to that blue, and keep grey for what is FAH's.
 
 SVG path data puts a space after each command letter, so no figure's markup spells a machine name.
 """
@@ -20,11 +21,14 @@ data = here.parent / "data"
 
 THEMES = {
     "light": dict(fg="#1f2328", muted="#59636e", grid="#d1d9e0", paper="#ffffff", tile="#f6f8fa",
-                  ultra="#0969da", pale="#54aeff", cuda="#1a7f37", ref="#818b98"),
+                  ultra="#0969da", pale="#54aeff", cuda="#1a7f37", ref="#818b98", violet="#8250df",
+                  pink="#bf3989", shade="#000000"),
     "dark": dict(fg="#e6edf3", muted="#9198a1", grid="#3d444d", paper="#0d1117", tile="#151b23",
-                 ultra="#4493f8", pale="#a5d6ff", cuda="#3fb950", ref="#848d97"),
+                 ultra="#4493f8", pale="#a5d6ff", cuda="#3fb950", ref="#848d97", violet="#ab7df8",
+                 pink="#db61a2", shade="#010409"),
 }
 FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
 
 
 def rows(name):
@@ -35,12 +39,13 @@ def rows(name):
 def svg(width, height, body, label):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
             f'viewBox="0 0 {width} {height}" role="img" aria-label="{label}" font-family="{FONT}">\n'
-            + "".join(body) + "</svg>\n")
+            f'<title>{label}</title>\n' + "".join(body) + "</svg>\n")
 
 
-def text(x, y, s, fill, size=12, anchor="start", weight="normal", style=None):
+def text(x, y, s, fill, size=12, anchor="start", weight="normal", style=None, family=None):
     s = s.replace("&", "&amp;").replace("<", "&lt;")
     st = f' font-style="{style}"' if style else ""
+    st += f' font-family="{family}"' if family else ""
     return (f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" fill="{fill}" text-anchor="{anchor}" '
             f'font-weight="{weight}"{st}>{s}</text>\n')
 
@@ -138,6 +143,239 @@ def hero(t):
                 f'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>\n')
     body.append(text((x0 + x1) / 2, y + 18, "wuresults_01.dat", t["muted"], 11, "middle"))
     return svg(20 * 2 + 4 * w + 3 * gap, 200, body, "FAH client to minicore to OpenMM Metal to Apple GPU")
+
+
+def mix(a, b, f):
+    # The colour f of the way from a to b, both "#rrggbb".
+    ca, cb = (tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)) for c in (a, b))
+    return "#" + "".join(f"{round(x + (y - x) * f):02x}" for x, y in zip(ca, cb))
+
+
+def ramp(t, f):
+    # Blue to violet to pink, the run of colour along the banner's chain and across the cards.
+    return mix(t["ultra"], t["violet"], f * 2) if f <= 0.5 else mix(t["violet"], t["pink"], f * 2 - 1)
+
+
+def pts(points):
+    return " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+
+
+def spline(points):
+    # A Catmull-Rom curve through the points, as cubic Bezier path data.
+    p = [points[0]] + points + [points[-1]]
+    d = [f"M {p[1][0]:.1f},{p[1][1]:.1f}"]
+    for i in range(1, len(p) - 2):
+        (x0, y0), (x1, y1), (x2, y2), (x3, y3) = p[i - 1:i + 3]
+        d.append(f"C {x1 + (x2 - x0) / 6:.1f},{y1 + (y2 - y0) / 6:.1f} {x2 - (x3 - x1) / 6:.1f},{y2 - (y3 - y1) / 6:.1f} "
+                 f"{x2:.1f},{y2:.1f}")
+    return " ".join(d)
+
+
+def helix(a, b, turns, r, hw, theta0=0.0, n=40):
+    # A cartoon alpha helix about the axis a to b in the picture plane: a ribbon of half-width hw wound
+    # on a cylinder of radius r, seen side on. Returns its half-turns as (polygon, front) in drawing
+    # order, back faces first, and its first and last points.
+    (ax, ay), (bx, by) = a, b
+    length = math.hypot(bx - ax, by - ay)
+    ux, uy = (bx - ax) / length, (by - ay) / length
+    vx, vy = -uy, ux
+    pitch = length / (2 * math.pi * turns)
+    norm = math.hypot(r, pitch)
+
+    def at(th):
+        s = (th - theta0) / (2 * math.pi * turns)
+        cx, cy = ax + (bx - ax) * s + r * math.cos(th) * vx, ay + (by - ay) * s + r * math.cos(th) * vy
+        # The width runs across the strand on the cylinder: r along the axis, less the pitch along
+        # the turn, whose picture-plane part is -sin(th) along v.
+        wx = (r * ux + pitch * math.sin(th) * vx) / norm * hw
+        wy = (r * uy + pitch * math.sin(th) * vy) / norm * hw
+        return (cx + wx, cy + wy), (cx - wx, cy - wy), (cx, cy)
+
+    end = theta0 + 2 * math.pi * turns
+    cuts = [theta0] + [k * math.pi for k in range(math.ceil(theta0 / math.pi), math.floor(end / math.pi) + 1)
+                       if theta0 < k * math.pi < end] + [end]
+    pieces = []
+    for t0, t1 in zip(cuts, cuts[1:]):
+        m = max(2, round(n * (t1 - t0) / math.pi))
+        edge = [at(t0 + (t1 - t0) * i / m) for i in range(m + 1)]
+        poly = [e[0] for e in edge] + [e[1] for e in reversed(edge)]
+        pieces.append((poly, math.sin((t0 + t1) / 2) > 0, [e[2] for e in edge]))
+    pieces.sort(key=lambda p: p[1])
+    return pieces, at(theta0)[2], at(end)[2]
+
+
+def strand(p, q, hw, head_hw, head):
+    # A beta strand: a flat arrow from p to q.
+    (px, py), (qx, qy) = p, q
+    length = math.hypot(qx - px, qy - py)
+    ux, uy = (qx - px) / length, (qy - py) / length
+    vx, vy = -uy, ux
+    bx, by = qx - ux * head, qy - uy * head
+    return [(px + vx * hw, py + vy * hw), (bx + vx * hw, by + vy * hw), (bx + vx * head_hw, by + vy * head_hw),
+            (qx, qy), (bx - vx * head_hw, by - vy * head_hw), (bx - vx * hw, by - vy * hw),
+            (px - vx * hw, py - vy * hw)]
+
+
+def banner(t):
+    # The README's banner: the name and the tagline beside a protein cartoon drawn here, a coil into
+    # an alpha helix, then a three-stranded beta sheet, coloured blue to pink from one end of the chain
+    # to the other, as molecular viewers colour a chain.
+    W, H = 1280, 320
+    dark = t["paper"] == THEMES["dark"]["paper"]
+    edge = lambda c: mix(c, t["shade"], 0.45 if dark else 0.3)
+    back = lambda c: mix(c, t["shade"], 0.5 if dark else 0.38)
+    x0, x1 = 580, 1240
+    stops = "".join(f'<stop offset="{f:.2f}" stop-color="{c}"/>'
+                    for f, c in ((0, t["ultra"]), (0.5, t["violet"]), (1, t["pink"])))
+    bstops = "".join(f'<stop offset="{f:.2f}" stop-color="{back(c)}"/>'
+                     for f, c in ((0, t["ultra"]), (0.5, t["violet"]), (1, t["pink"])))
+    estops = "".join(f'<stop offset="{f:.2f}" stop-color="{edge(c)}"/>'
+                     for f, c in ((0, t["ultra"]), (0.5, t["violet"]), (1, t["pink"])))
+    grad = lambda gid, st: (f'<linearGradient id="{gid}" gradientUnits="userSpaceOnUse" x1="{x0}" y1="0" '
+                            f'x2="{x1}" y2="0">{st}</linearGradient>')
+    body = [f'<defs>{grad("front", stops)}{grad("back", bstops)}{grad("edge", estops)}'
+            f'<pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">'
+            f'<circle cx="2" cy="2" r="1" fill="{t["grid"]}"/></pattern></defs>\n',
+            rect(0.5, 0.5, W - 1, H - 1, t["tile"], 14, t["grid"]),
+            f'<rect x="{x0 - 40}" y="12" width="{W - x0 + 28}" height="{H - 24}" rx="10" fill="url(#dots)" '
+            f'opacity="0.7"/>\n']
+
+    pieces, h0, h1 = helix((650, 238), (968, 104), 4.5, 46, 19, theta0=math.pi * 0.5)
+    sheet = [((1052, 74), (1052, 246)), ((1112, 246), (1112, 74)), ((1172, 74), (1172, 246))]
+    tube = lambda d: (f'<path d="{d}" fill="none" stroke="url(#edge)" stroke-width="8" stroke-linecap="round"/>\n'
+                      f'<path d="{d}" fill="none" stroke="url(#front)" stroke-width="5" stroke-linecap="round"/>\n')
+    coils = [[(560, 300), (592, 298), (620, 286), h0],
+             [h1, (1000, 52), (1034, 40), (1052, 60), sheet[0][0]],
+             [sheet[0][1], (1062, 278), (1102, 278), sheet[1][0]],
+             [sheet[1][1], (1122, 42), (1162, 42), sheet[2][0]],
+             [sheet[2][1], (1184, 280), (1214, 294), (1240, 298)]]
+    piece = lambda poly, fill: (f'<polygon points="{pts(poly)}" fill="url(#{fill})" stroke="url(#edge)" '
+                                f'stroke-width="1.2" stroke-linejoin="round"/>\n')
+    for poly, front, _ in pieces:
+        if not front:
+            body.append(piece(poly, "back"))
+    for c in coils:
+        body.append(tube(spline(c)))
+    for p, q in sheet:
+        body.append(piece(strand(p, q, 13, 22, 28), "front"))
+    for poly, front, mid in pieces:
+        if front:
+            body.append(piece(poly, "front"))
+            # A highlight along the middle of each front face.
+            body.append(f'<polyline points="{pts(mid[2:-2])}" fill="none" stroke="#ffffff" stroke-opacity="0.35" '
+                        f'stroke-width="2" stroke-linecap="round"/>\n')
+
+    body.append(text(64, 128, "fah-core-metal", t["fg"], 66, "start", "600"))
+    body.append(text(66, 180, "A real, fully working Folding@home core", t["fg"], 26))
+    body.append(text(66, 214, "for Apple Silicon GPUs.", t["fg"], 26))
+    x = 66
+    for label, c in (("minicore", t["ultra"]), ("OpenMM Metal", t["violet"]), ("df64 mixed precision", t["pink"])):
+        w = 28 + 8.6 * len(label)
+        body.append(rect(x, 244, w, 30, mix(c, t["tile"], 0.86), 15, c))
+        body.append(text(x + w / 2, 264, label, c, 14, "middle", "600"))
+        x += w + 12
+    return svg(W, H, body, "fah-core-metal. A real, fully working Folding@home core for Apple Silicon GPUs.")
+
+
+def pipeline(t):
+    # How a unit runs: FAH's work unit in, FAH's result files out. Grey for what is FAH's, colour for
+    # what runs on the Mac.
+    blocks = [("FAH work unit", ("wudata_01.dat", "OpenMM System, State"), t["ref"]),
+              ("minicore", ("this repo, one", "self-contained executable"), t["ultra"]),
+              ("OpenMM Metal", ("df64 mixed", "precision"), t["violet"]),
+              ("Apple GPU", ("Apple Silicon,", "macOS 15 or later"), t["pink"]),
+              ("FAH result files", ("wuresults_01.dat,", "with the state tests"), t["ref"])]
+    w, h, gap, top, m = 172, 96, 40, 16, 12
+    body = []
+    for i, (name, sub, c) in enumerate(blocks):
+        x = m + i * (w + gap)
+        body.append(rect(x, top, w, h, mix(c, t["paper"], 0.9), 10, c))
+        body.append(f'<path d="M {x + 1:.1f},{top + 12:.1f} A 10 10 0 0 1 {x + 11:.1f},{top + 1:.1f} '
+                    f'L {x + w - 11:.1f},{top + 1:.1f} A 10 10 0 0 1 {x + w - 1:.1f},{top + 12:.1f} Z" fill="{c}"/>\n')
+        body.append(text(x + w / 2, top + 42, name, t["fg"], 16, "middle", "600"))
+        for k, s in enumerate(sub):
+            body.append(text(x + w / 2, top + 64 + k * 17, s, t["muted"], 12.5, "middle"))
+        if i:
+            ax, ay = x - gap + 7, top + h / 2
+            body.append(line(ax, ay, x - 9, ay, t["muted"], 2))
+            body.append(f'<path d="M {x - 15:.1f},{ay - 6:.1f} L {x - 7:.1f},{ay:.1f} L {x - 15:.1f},{ay + 6:.1f}" '
+                        f'fill="none" stroke="{t["muted"]}" stroke-width="2" stroke-linecap="round" '
+                        f'stroke-linejoin="round"/>\n')
+    # The three in colour run on the Mac.
+    xa, xb, yb = m + w + gap, m + 4 * w + 3 * gap, top + h + 14
+    body.append(f'<path d="M {xa:.1f},{yb - 6:.1f} L {xa:.1f},{yb:.1f} L {xb:.1f},{yb:.1f} L {xb:.1f},{yb - 6:.1f}" '
+                f'fill="none" stroke="{t["grid"]}" stroke-width="1.5"/>\n')
+    body.append(text((xa + xb) / 2, yb + 20, "on the Mac; it never connects to FAH servers", t["muted"], 12.5, "middle"))
+    return svg(2 * m + 5 * w + 4 * gap, yb + 30, body,
+               "A FAH work unit goes into minicore, which runs it through OpenMM Metal with df64 mixed precision "
+               "on the Apple GPU and writes FAH's result files, with the state tests")
+
+
+def cards(t):
+    # The README's headline strip, one card per check, in the README's order.
+    w, gap, m, top, h = 194, 14, 12, 34, 222
+    files = ["viewerTop.json", "xtcAtoms.csv.bz2", "checkpointIntegrator.xml"]
+    items = [("21 of 21", ["state tests passed on a", "whole real FAH unit", "(P18264, 919,221 atoms,",
+                           "5 ns), as FAH's core", "0x27 passed 21"]),
+             ("Six files", ["in the result, in core", "0x27's order;"] + [("mono", f) for f in files]
+              + ["byte-identical to core 0x27's"]),
+             ("101 of 101", ["core-parity checks passed,", "and 65 of 65 failure and", "stop-resume cases"]),
+             ("0.054", ["worst state-test force", "RMSE in kJ/mol/nm, beside", "CUDA's 0.052, against",
+                        "FAHBench's limit of 5"]),
+             ("16 s", ["to fold the bundled test", "unit on an M3 Ultra after", ("mono", "./build.sh"),
+                       "so you can check it yourself"])]
+    body = [text(m, 20, "Checked against FAH's core 0x27", t["muted"], 13, "start", "600")]
+    for i, (big, lines) in enumerate(items):
+        c = ramp(t, i / (len(items) - 1))
+        x = m + i * (w + gap)
+        ix = x + 16
+        body.append(rect(x, top, w, h, t["tile"], 10, t["grid"]))
+        body.append(rect(x + 16, top, w - 32, 4, c, 2))
+        body.append(text(ix, top + 50, big, c, 34, "start", "600"))
+        vy = top + 70
+        if i == 0:
+            for k in range(21):
+                body.append(rect(ix + k * 7.7, vy, 6, 14, c, 1.5))
+        elif i == 1:
+            for k in range(6):
+                fx = ix + k * 27
+                body.append(f'<path d="M {fx:.1f},{vy:.1f} L {fx + 12:.1f},{vy:.1f} L {fx + 18:.1f},{vy + 6:.1f} '
+                            f'L {fx + 18:.1f},{vy + 22:.1f} L {fx:.1f},{vy + 22:.1f} Z" fill="{mix(c, t["tile"], 0.8)}" '
+                            f'stroke="{c}" stroke-width="1.4" stroke-linejoin="round"/>\n')
+        elif i == 2:
+            for k, (n, of) in enumerate(((101, 101), (65, 65))):
+                y = vy + k * 13
+                body.append(rect(ix, y, w - 72, 8, mix(c, t["tile"], 0.8), 4))
+                body.append(rect(ix, y, (w - 72) * n / of, 8, c, 4))
+                body.append(text(ix + w - 64, y + 8, f"{n}/{of}", t["muted"], 11))
+        elif i == 3:
+            # Log scale from 0.001 to 10: Metal, CUDA, and FAHBench's limit dashed.
+            sx = lambda v: ix + (w - 40) * (math.log10(v) + 3) / 4
+            body.append(line(ix, vy + 12, ix + w - 40, vy + 12, t["grid"], 2))
+            body.append(line(sx(5), vy + 2, sx(5), vy + 22, t["ref"], 1.5, "3 2"))
+            body.append(text(sx(5) - 4, vy + 6, "limit 5", t["muted"], 10.5, "end"))
+            body.append(diamond(sx(0.052), vy + 18, 5, t["cuda"]))
+            body.append(circle(sx(0.054), vy + 7, 4.5, t["ultra"]))
+            body.append(text(ix, vy + 34, "0.001", t["muted"], 10))
+            body.append(text(ix + w - 40, vy + 34, "10", t["muted"], 10, "end"))
+        else:
+            body.append(rect(ix, vy, w - 32, 24, t["fg"] if not t["paper"] == THEMES["dark"]["paper"] else t["shade"],
+                             5, t["grid"]))
+            body.append(text(ix + 9, vy + 16, "exit 100", mix(c, "#ffffff", 0.35), 12, "start", "600", family=MONO))
+            body.append(text(ix + w - 41, vy + 16, "FINISHED_UNIT", "#9198a1", 10.5, "end", family=MONO))
+        for k, s in enumerate(lines):
+            y = top + 124 + k * 16
+            if isinstance(s, tuple):
+                body.append(text(ix, y, s[1], t["fg"], 11, family=MONO))
+            else:
+                body.append(text(ix, y, s, t["fg"], 12.5))
+    return svg(2 * m + 5 * w + 4 * gap, top + h + 2, body,
+               "Checked against FAH's core 0x27. 21 of 21 state tests passed on a whole real FAH unit (P18264, "
+               "919,221 atoms, 5 ns), as FAH's core 0x27 passed 21. Six files in the result, in core 0x27's order; "
+               "viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's. "
+               "101 of 101 core-parity checks passed, and 65 of 65 failure and stop-resume cases. 0.054 kJ/mol/nm "
+               "worst state-test force RMSE, beside CUDA's 0.052, against FAHBench's limit of 5. 16 s to fold the "
+               "bundled test unit on an M3 Ultra after ./build.sh")
 
 
 def speed(t):
@@ -369,7 +607,7 @@ def social_png(svg_path, png_path):
 
 
 for theme, t in THEMES.items():
-    for name, make in (("hero", hero), ("speed", speed), ("progress", progress),
+    for name, make in (("banner", banner), ("pipeline", pipeline), ("cards", cards), ("hero", hero), ("speed", speed), ("progress", progress),
                        ("distance", distance), ("volume", volume), ("accuracy", accuracy), ("drift", drift),
                        ("parity", parity)):
         (here / f"{name}-{theme}.svg").write_text(make(t))

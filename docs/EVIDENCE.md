@@ -316,6 +316,19 @@ energies from `full-fold/results/summary.txt` and `full-fold/REPORT.md` section 
 so each claim there has its source in the sections above. `docs/social.png` repeats the first two
 checks of the README's headline strip.
 
+## The banner, badges, pipeline and cards
+
+The pictures at the top of the README and the Pages site add no number of their own. `make.py` draws
+the banner, the pipeline and the cards; the badges are static shields.io badges.
+
+| Picture | Says | Source |
+| --- | --- | --- |
+| Badge "state tests 21/21" | The 21 state tests of the whole unit, all passed | [What was tested and where](#what-was-tested-and-where), gpuq job 2245 |
+| Badge "parity checks 101/101" | The 101 core-parity checks, all passed | [What was tested and where](#what-was-tested-and-where), "101 core-parity checks on each Mac" |
+| Badges "Apple Silicon", "OpenMM Metal", "MIT" | The platform it runs on, the OpenMM platform it runs through (openmm#5488) and the license of this repo's code | [Which Macs](#which-macs), [Credits and the last line](#credits-and-the-last-line), `LICENSE` |
+| Pipeline | wudata_01.dat in, wuresults_01.dat out; minicore one self-contained executable; df64 mixed precision; macOS 15 or later; no connection to FAH servers | [How it matches](#how-it-matches), [Try it and Build it](#try-it-and-build-it), [Which Macs](#which-macs), [Credits and the last line](#credits-and-the-last-line), [Background and FAQ](#background-and-faq) |
+| Cards | The README's five checks, word for word in the alt text and in "The five checks as text" | The rows behind each check above; the 0.001-to-10 scale in the 0.054 card places Metal's 0.054, CUDA's 0.052 and the limit of 5 from [Accuracy](#accuracy-figure-5) |
+
 ## Detail moved from the README
 
 The README keeps the figures and one line each. The longer text it had is here, unchanged apart from
