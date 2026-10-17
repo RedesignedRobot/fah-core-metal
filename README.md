@@ -14,11 +14,14 @@
   <a href="https://redesignedrobot.github.io/fah-core-metal/"><img alt="docs: GitHub Pages" src="https://img.shields.io/badge/docs-GitHub_Pages-bf3989"></a>
 </p>
 
+Folding@home on Apple Silicon Mac GPUs (M1 and later): an independent, fully working Folding at home core on
+OpenMM's Metal platform.
+
 People have asked for Folding@home on Apple GPUs since 2019
 ([openmm#2489](https://github.com/openmm/openmm/issues/2489)) and 2024
 ([fah-client-bastet#303](https://github.com/FoldingAtHome/fah-client-bastet/issues/303)). Here it is.
 minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
-platform, and folds them to the standard of FAH's own core.
+platform, and folds them to the standard of Folding@home's own core.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/pipeline-dark.svg">

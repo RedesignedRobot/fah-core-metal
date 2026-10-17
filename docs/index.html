@@ -3,34 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>fah-core-metal: a real, fully working Folding@home core for Apple Silicon GPUs</title>
-<meta name="description" content="A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's own OpenMM work units end to end on the Mac's GPU and folds them to the standard of FAH's core 0x27: 21 of 21 state tests on a whole real FAH unit, and 101 of 101 core-parity checks.">
+<title>Folding@home on Apple Silicon Macs: a Metal GPU core | fah-core-metal</title>
+<meta name="description" content="An independent, fully working Folding@home core for Apple Silicon Mac GPUs (M1 and later). It runs Folding at home work units on the GPU through OpenMM's Metal platform and passes Folding@home's own state tests.">
 <link rel="canonical" href="https://redesignedrobot.github.io/fah-core-metal/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="fah-core-metal: a real Folding@home core for Apple Silicon GPUs">
-<meta property="og:description" content="A real, fully working Folding@home core for Apple Silicon GPUs. It runs FAH's own OpenMM work units on the Mac's GPU and passed 21 of 21 state tests on a whole real FAH unit, as FAH's core did, and 101 of 101 core-parity checks.">
+<meta property="og:title" content="Folding@home on Apple Silicon Macs: a Metal GPU core">
+<meta property="og:description" content="An independent, fully working Folding@home core for Apple Silicon Mac GPUs (M1 and later). It runs Folding at home work units on the GPU through OpenMM's Metal platform and passes Folding@home's own state tests.">
 <meta property="og:url" content="https://redesignedrobot.github.io/fah-core-metal/">
 <meta property="og:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
-<meta property="og:image:alt" content="fah-core-metal: a real Folding@home core on Apple Silicon GPUs. 21 of 21 state tests on a whole FAH unit, as FAH's core 0x27 passed. 101 of 101 core-parity checks.">
+<meta property="og:image:alt" content="fah-core-metal: a real Folding@home core on Apple Silicon GPUs. 21 of 21 state tests on a whole Folding@home unit, as Folding@home's core 0x27 passed. 101 of 101 core-parity checks.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="fah-core-metal: a real Folding@home core for Apple Silicon GPUs">
-<meta name="twitter:description" content="A real, fully working Folding@home core for Apple Silicon GPUs. It runs FAH's own OpenMM work units on the Mac's GPU and passed 21 of 21 state tests on a whole real FAH unit, as FAH's core did, and 101 of 101 core-parity checks.">
+<meta name="twitter:title" content="Folding@home on Apple Silicon Macs: a Metal GPU core">
+<meta name="twitter:description" content="An independent, fully working Folding@home core for Apple Silicon Mac GPUs (M1 and later). It runs Folding at home work units on the GPU through OpenMM's Metal platform and passes Folding@home's own state tests.">
 <meta name="twitter:image" content="https://redesignedrobot.github.io/fah-core-metal/social.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareSourceCode",
   "name": "fah-core-metal",
-  "description": "A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's own OpenMM work units end to end on the Mac's GPU and folds them to the standard of FAH's core 0x27: 21 of 21 state tests on a whole real FAH unit, and 101 of 101 core-parity checks.",
+  "description": "An independent, fully working Folding@home core for Apple Silicon Mac GPUs (M1 and later). It runs Folding at home work units on the GPU through OpenMM's Metal platform and passes Folding@home's own state tests.",
   "codeRepository": "https://github.com/RedesignedRobot/fah-core-metal",
   "url": "https://redesignedrobot.github.io/fah-core-metal/",
   "programmingLanguage": "C++",
   "runtimePlatform": "macOS 15 or later on Apple Silicon",
   "license": "https://opensource.org/licenses/MIT",
   "author": {"@type": "Person", "name": "Amir Ayub"},
-  "keywords": ["Folding@home", "OpenMM", "Metal", "Apple Silicon", "GPU", "molecular dynamics"]
+  "keywords": ["Folding@home", "Folding at home", "Folding@home Mac", "OpenMM", "Metal", "Apple Silicon", "Mac", "macOS", "M1", "M2", "M3", "M4", "GPU", "molecular dynamics", "protein folding"]
 }
 </script>
 <style>
@@ -41,8 +41,9 @@
 body { margin: 0; background: var(--bg); color: var(--fg);
   font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
 main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
-h1 { font-size: 32px; margin: 0 0 12px; }
-h1 img, figure.wide img { width: var(--w); }
+h1 { font-size: 32px; margin: 0 0 12px; text-align: center; }
+.banner { margin: 0 0 12px; }
+.banner img, figure.wide img { width: var(--w); }
 .badges { text-align: center; margin: 0 0 24px; }
 .badges img { height: 20px; width: auto; margin: 2px 1px; }
 details { margin: 8px 0 24px; }
@@ -60,10 +61,11 @@ footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
 </head>
 <body>
 <main>
-<h1><picture>
+<h1>Folding@home for Apple Silicon Mac GPUs</h1>
+<p class="banner"><picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/banner-dark.svg">
   <img alt="fah-core-metal. A real, fully working Folding@home core for Apple Silicon GPUs." src="figures/banner-light.svg" width="1280" height="320">
-</picture></h1>
+</picture></p>
 
 <p class="badges">
   <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#what-was-tested-and-where"><img alt="state tests: 21/21" src="https://img.shields.io/badge/state_tests-21%2F21-0969da"></a>
@@ -77,7 +79,7 @@ footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
 <p>People have asked for Folding@home on Apple GPUs since 2019 (<a href="https://github.com/openmm/openmm/issues/2489">openmm#2489</a>) and
 2024 (<a href="https://github.com/FoldingAtHome/fah-client-bastet/issues/303">fah-client-bastet#303</a>). Here it
 is. minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
-platform, and folds them to the standard of FAH's own core.</p>
+platform, and folds them to the standard of Folding@home's own core.</p>
 
 <figure class="wide">
 <picture>
@@ -129,7 +131,7 @@ platform, and folds them to the standard of FAH's own core.</p>
 <figcaption>Metal parts from FAH's trajectory as fast as two CUDA runs part from each other.</figcaption>
 </figure>
 
-<h2>Parity with FAH's core</h2>
+<h2>Parity with Folding@home's core</h2>
 <figure>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/parity-dark.svg">
@@ -166,11 +168,13 @@ FAH's core's. Run conditions are in
 <a href="https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md#speed">EVIDENCE.md</a>.</p>
 
 <h2>FAQ</h2>
-<h3>Is it as accurate as FAH's core?</h3>
+<h3>Is it as accurate as Folding@home's core?</h3>
 <p>Yes. It passed all 21 of the unit's state tests, as FAH's core did, and its errors and drift sit with
 CUDA's.</p>
 <h3>Can Folding@home use the Apple Silicon GPU?</h3>
-<p>Yes. minicore runs FAH's real work units on it.</p>
+<p>Yes. minicore runs Folding@home's real work units on M1 and later GPUs.</p>
+<h3>Can I run Folding at home on my Mac's GPU?</h3>
+<p>Not through the official client yet: it folds on the Mac's CPU only. fah-core-metal is the GPU core that would change that, and you can test it on your Mac today with <code>./report.sh</code>.</p>
 <h3>How fast is it?</h3>
 <p>On one RTX 5060 Ti, minicore built for CUDA took 184 s per 1% of P18264's first 11% on OpenMM 8.2.0 and
 180 s on 8.6.1, where FAH's core 0x27 took 187 s on the same card. On Apple Silicon, the M3 Ultra folded
