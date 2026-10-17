@@ -275,7 +275,7 @@ From `packaging-guide/REPORT.md` section 3 (`vtool`, `lipo`, `otool`) on the 2a0
 
 | | |
 | --- | --- |
-| Architecture | arm64 only, not a fat binary (`-arch arm64` in `src/link.sh`) |
+| Architecture | arm64 only, not a fat binary (`-arch arm64` in `src/link.sh`). An opt-in x86_64 build is below |
 | macOS | 15.0 or later: LC_BUILD_VERSION minos 15.0, built with SDK 27.2. `build.sh` needs SDK 15 or later and sets the deployment target to 15.0 |
 | GPU | Apple Silicon. minicore exits 126 if Metal gives it no device or one without the Apple7 family, M1 or later (`src/host.cpp`; `no-metal-device/REPORT.md`) |
 | Size | 7,091,440 bytes |
@@ -290,6 +290,39 @@ dyld ignores `DYLD_*` variables in a hardened process, so the as-built copy prin
 single file; nothing goes beside it.
 
 macOS 15 and 26 are untested: I ran only macOS 27.2, and the run report in section 5 is macOS 27.0.1.
+
+### x86_64 OpenCL build, opt in
+
+`MINICORE_ARCH=x86_64 MINICORE_OPENCL=1 ./build.sh` builds minicore for Intel Macs with OpenMM's OpenCL
+platform linked in (patch 0004) and Apple's OpenCL.framework. Without the two variables `build.sh` builds what
+it built before: at the same OUT path, the default minicore is byte-identical to main at 4bd010b (7,091,440
+bytes, sha256 f4d3c2c17085455a; `opencl-x86/logs/build/default-cmp.txt`).
+
+The `opencl x86_64` CI job builds it on GitHub's Intel runners, an i7-8700B with 4 cores. Run
+[39040049286](https://github.com/RedesignedRobot/fah-core-metal/actions/runs/39040049286):
+
+| | macos-15-intel | macos-26-intel |
+| --- | --- | --- |
+| macOS, Xcode, SDK | 15.7.9 (24G830), Xcode 16.4, SDK 15.5 | 26.6.1 (25G76), Xcode 26.6, SDK 26.5 |
+| minicore | 8,986,016 bytes, sha256 06aebffd8cab9a7d | 9,032,992 bytes, sha256 7709f7efbc833d9e |
+| `lipo -info` | Non-fat, x86_64 | Non-fat, x86_64 |
+| OpenMM build and install, `-j 4` | 312 s | 350 s |
+
+Both link only `/usr/lib` and `/System/Library`, with OpenCL.framework added to the list above, and LC_BUILD_VERSION
+minos 15.0. The job uploads each core as `minicore-x86_64-opencl-<runner>.tar.gz`, which unpacks to
+`core/minicore` and `BUILD-INFO` for `./report.sh <dir>`.
+
+The client sends an OpenCL GPU `-gpu-platform opencl -gpu-vendor <vendor> -opencl-platform P -opencl-device D
+-gpu D`, and the core logs every OpenCL device, then folds on device D. D must be a GPU that can run the unit:
+mixed precision, as the test unit ships, needs `cl_khr_fp64`, and a GPU without it exits 126. If D is missing or
+is not a GPU, the core falls back to the first GPU that can run the unit, with a WARNING line, and otherwise
+exits 126. It never folds on a CPU device.
+
+The runners' OpenCL lists one device, `Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz, vendor Intel, CPU, fp64 yes`,
+and no GPU, so the client's arguments exit 126 there: `ERROR:OpenCL device 0 is not a GPU, and no OpenCL GPU
+can run mixed precision`. Nothing in CI folds through OpenCL. A fold on an Intel or AMD GPU is untested.
+The only OpenCL folds so far ran an arm64 OpenCL build on the M3 Ultra's GPU, which reports no fp64: mixed
+precision exited 126, and single precision exited 100 with 11 state tests passed (`opencl-x86/REPORT.md`).
 
 ## 5. Run reports
 

@@ -325,6 +325,23 @@ No FAH client ran.
 | Requirements | LC_BUILD_VERSION platform MACOS, minos 15.0, sdk 27.2; non-fat arm64; 9 LC_LOAD_DYLIB, 1 LC_LOAD_WEAK_DYLIB (Foundation), no LC_RPATH; the `otool -L` list | `packaging-guide/REPORT.md` section 3, `logs/requirements.txt` |
 | 551 images at run time | `DYLD_PRINT_LIBRARIES=1` on a copy signed without the hardened runtime: 551 paths, all under `/System/` or `/usr/lib/` but minicore; the hardened copy printed 0 lines; both exited 100 | `packaging-guide/REPORT.md` section 3, `logs/dyld-images-*.txt` |
 
+### x86_64 OpenCL build
+
+`docs/PACKAGING.md` section 4, "x86_64 OpenCL build, opt in". The opencl-x86 lane ran on 2026-10-17. CI run
+[39040049286](https://github.com/RedesignedRobot/fah-core-metal/actions/runs/39040049286) is this repo at
+87323ec on branch test/opencl-x86, and the local builds ran on the M3 Ultra by `taskpolicy -b nice -n 10
+./build.sh -j 6` or `-j 8`. `opencl-x86/logs/ci/` has the CI logs of the three runs named here.
+
+| PACKAGING.md claim | Value | Source |
+| --- | --- | --- |
+| The default build is unchanged | main 4bd010b and this branch built at the same OUT path: both 7,091,440 bytes, sha256 f4d3c2c17085455a14a85091f3146419b38c0790f5b3629dba2439ae6326ffbe, `cmp` identical at b2c98c2 and at 54e0428, and a relink of 87323ec's source against the same prefix matched too. Built at different OUT paths they differ, because OpenMM's static libraries carry 30 absolute `__FILE__` paths | `opencl-x86/logs/build/default-cmp.txt` |
+| x86_64 build on GitHub's Intel runners | macos-15-intel: macOS 15.7.9 (24G830), Xcode 16.4, SDK 15.5, minicore 8,986,016 bytes, sha256 06aebffd8cab9a7d, build and install 312 s. macos-26-intel: macOS 26.6.1 (25G76), Xcode 26.6, SDK 26.5, minicore 9,032,992 bytes, sha256 7709f7efbc833d9e, 350 s. Both `Non-fat file: build/core/minicore is architecture: x86_64`, minos 15.0, `otool -L` only `/usr/lib` and `/System/Library` | Run 39040049286, steps Build and "Binary and OpenCL devices"; `opencl-x86/logs/ci/run-39040049286-*.log` |
+| The device table | `OpenCL device 0: Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz, vendor Intel, CPU, fp64 yes, 4 compute units, max work group 1024, max work item 1024, OpenCL 1.2, driver 1.1`, the only device on both runners | Run 39040049286, step "Binary and OpenCL devices" |
+| No OpenCL GPU exits 126 | With `-gpu-platform opencl -gpu-vendor amd -opencl-platform 0 -opencl-device 0 -gpu 0` and with `-gpu 0` only: `exit 126`, `ERROR:OpenCL device 0 is not a GPU, and no OpenCL GPU can run mixed precision`, `Folding@home Core Shutdown: GPU_UNAVAILABLE_ERROR`, on both runners | Run 39040049286, step "No OpenCL GPU exits 126" |
+| The artifacts | `minicore-x86_64-opencl-macos-15-intel.tar.gz` 3,259,839 bytes, sha256 8a7e3828a7a62717; `-macos-26-intel.tar.gz` 3,263,229 bytes, sha256 ed5ed2b0d2b48dc8; kept until 2027-01-15. Fetched with `gh api .../actions/artifacts/<id>/zip`, the macos-15-intel tarball matched its sha256 and unpacked to `core/minicore` (sha256 06aebffd8cab9a7d, `flags=0x10002(adhoc,runtime)`) and `BUILD-INFO`, with no `com.apple.quarantine` | Run 39040049286, step "Upload the core"; `opencl-x86/REPORT.md`, "Running report.sh on an Intel Mac" |
+| It never folds on a CPU device | Apple's OpenCL CPU device on the runners, named by `-opencl-device 0` through a patch that lifted OpenMM's skip: `Error invoking kernel clearBuffer: clEnqueueNDRangeKernel (-54)`, exit 125 (run 39037710181). With work groups capped at `CL_KERNEL_WORK_GROUP_SIZE` as well: `Floating point exception: 8`, exit 136, in mixed and single precision on both runners (run 39039344098). Both patches were dropped | `opencl-x86/REPORT.md`, "CI runs" |
+| The only OpenCL folds | arm64 OpenCL build on the M3 Ultra, device `Apple M3 Ultra, vendor Apple, GPU, fp64 no`: the client's arguments at mixed precision exit 126 (`does not report cl_khr_fp64, which mixed precision needs`); at single precision exit 100 with 11 "All tests passed."; `-opencl-device 1` falls back to device 0 with a WARNING and exits 100 | `opencl-x86/logs/studio-arm64/` |
+
 ## The opening lines
 
 The sentences under Figure 1 repeat facts from the sections above: project 18264 with 919,221 atoms
