@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for running it. Follow the README's [Try it](https://github.com/RedesignedRobot/fah-core-metal#try-it) section, then fill this in. A failure is as useful as a pass.
+        Thanks for running it. A failure is as useful as a pass. The easy way: after `./build.sh`, run `./report.sh`. It folds the bundled test unit and prints every field below, then a link that opens this form with them filled in. To do it by hand, follow the README's [Try it](https://github.com/RedesignedRobot/fah-core-metal#try-it) section, then fill this in.
 
         **Paste only lines from the bundled test unit, `unit/` from `cp -R test/alanine-dipeptide unit`. Never paste a Folding@home work unit, your F@H ID or your passkey.** Don't paste the whole log either: its top lines hold your Mac's hostname and folder paths.
 

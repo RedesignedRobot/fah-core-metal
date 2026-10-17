@@ -113,15 +113,24 @@ On Apple Silicon with macOS 15 or later, Xcode or the Command Line Tools, git an
 git clone https://github.com/RedesignedRobot/fah-core-metal.git
 cd fah-core-metal
 ./build.sh
+./report.sh
+```
+
+`./report.sh` folds the bundled test unit in a temp dir, exits with minicore's exit code (100 is
+FINISHED_UNIT) and prints a run report: your Mac's chip, GPU cores, RAM and macOS, the build, the exit
+code, the GPU info lines and the state tests, then a link that opens the
+[run-report form](https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=run-report.yml) with
+them filled in. It sends nothing itself: read the form over and submit it, whether the fold passed or not.
+
+To fold it by hand instead:
+
+```sh
 cp -R test/alanine-dipeptide unit
 ./build/core/minicore -dir unit -gpu-vendor apple -gpu 0; echo "exit $?"
 ```
 
 The fold logs to `unit/logfile_01.txt`, exits 100 (FINISHED_UNIT) and writes its result to
 `unit/wuresults_01.dat`.
-
-Ran it on your Mac? [Post your result](https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=run-report.yml),
-whether it passed or not.
 
 Tested Macs: the M3 Ultra on macOS 27.2, and a base M3 (10 GPU cores, 16 GB) on macOS 27.0.1 from
 [run report #5](https://github.com/RedesignedRobot/fah-core-metal/issues/5). On both the test unit exited
