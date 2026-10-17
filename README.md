@@ -123,6 +123,10 @@ The fold logs to `unit/logfile_01.txt`, exits 100 (FINISHED_UNIT) and writes its
 Ran it on your Mac? [Post your result](https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=run-report.yml),
 whether it passed or not.
 
+Tested Macs: the M3 Ultra on macOS 27.2, and a base M3 (10 GPU cores, 16 GB) on macOS 27.0.1 from
+[run report #5](https://github.com/RedesignedRobot/fah-core-metal/issues/5). On both the test unit exited
+100 with all 11 state tests passed ([details](docs/EVIDENCE.md#tested-macs)).
+
 ## Build it
 
 `./build.sh [-j JOBS] [OUT]` fetches OpenMM with the Metal platform at a pinned commit and links
@@ -132,6 +136,10 @@ whether it passed or not.
 rm -rf build
 ./build.sh
 ```
+
+Packaging it for FAH's client on macOS: [docs/PACKAGING.md](docs/PACKAGING.md) covers the arguments, files
+and exit codes, the service user, signing and notarization, and the requirements, each measured or taken
+from Apple's documentation.
 
 ## FAQ
 

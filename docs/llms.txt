@@ -16,6 +16,7 @@ fah-core-metal is not affiliated with or endorsed by Folding@home. It never conn
 - [Evidence](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/EVIDENCE.md): the run, conditions and raw record behind every number
 - [Parity](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/PARITY.md): every behaviour of core 0x27 next to minicore's
 - [Design notes](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/design-notes.md): how the README and the core are laid out, and why
+- [Packaging](https://github.com/RedesignedRobot/fah-core-metal/blob/main/docs/PACKAGING.md): for FAH's macOS packager: the core's arguments, files and exit codes, the service user, signing and notarization, requirements
 - [Run report](https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=run-report.yml): ran the bundled test unit on your Mac? Post your result, whether it passed or not
 
 ## Source

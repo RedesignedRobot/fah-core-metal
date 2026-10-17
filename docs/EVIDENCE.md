@@ -280,6 +280,51 @@ design and 2 FAH only.
 | Apple7 and later | The GPU families of Apple Silicon Macs. The Metal platform checks no family; the M3 Ultra and the M2 are the two I ran |
 | Tested on macOS 27.2 | `BUILD-INFO` of gpuq 2196, "host macOS 27.2 26B5101f, Apple M3 Ultra"; `core-timing/results/m2/BUILD-INFO-static`, "host macOS 27.2 26B5101f, Apple M2". No run on an earlier macOS |
 
+### Tested Macs
+
+The README's "Tested Macs" note and `docs/PACKAGING.md` section 5. A run report counts when it gives
+the build's `--info` line, the exit code and the state test lines from the bundled test unit.
+
+| Chip | GPU cores | Memory | macOS | Build | Exit | State tests | Source |
+| --- | ---: | ---: | --- | --- | ---: | --- | --- |
+| M3 Ultra | 60 | 96 GB | 27.2 (26B5101f) | this repo at 2a08b87, minicore sha256 949a2f95 | 100 | 11 "All tests passed." | `packaging-guide/REPORT.md` section 5: every run that started exited 100 with 11 passes. `service-user/REPORT.md` header for the GPU cores; the logfile_01.txt header for the memory |
+| M3 | 10 | 16 GB | 27.0.1 (26A434) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100 | 11 "All tests passed." | [issue #5](https://github.com/RedesignedRobot/fah-core-metal/issues/5), a run-report form, opened 2026-10-17. GPU info "Device: Apple M3", "Driver: macOS 27.0.1". The report notes 11 build warnings |
+
+## Packaging
+
+`docs/PACKAGING.md`. The packaging-guide lane ran on 2026-10-17 on the M3 Ultra, macOS 27.2, with this repo
+at 2a08b87 built by `nice -n 10 sh build.sh -j 6` from `git archive` (`packaging-guide/REPORT.md`
+section 2: minicore 7,091,440 bytes, sha256 949a2f9553965280; 8 s fetch and configure, 50 s build and
+install, 4 s link). Every run folded a fresh copy of `test/alanine-dipeptide` with
+`nice -n 19 minicore -dir <run>/unit -gpu-vendor apple -gpu 0 -verbose`, unless the row says otherwise.
+No FAH client ran.
+
+| PACKAGING.md claim | Value | Source |
+| --- | --- | --- |
+| The client's arguments | `-dir D -suffix 01 -version 8.5.6 -lifeline <pid> -gpu-platform opencl -gpu-vendor apple -opencl-platform 0 -opencl-device 0 -gpu 0`: exit 100. The #459 form with `-metal-platform 0 -metal-device 0 -gpu 0 -gpu-uuid none -np 1 -checkpoint 15`: exit 100 | `packaging-guide/REPORT.md` section 7, cases client-args and metal-args; the client's line from `corekit/README.md` section 3 (fah-client-bastet Unit.cpp 627-722) |
+| Nice 19, SIGINT then kill after 60 s | | `corekit/README.md` section 3 (cbang SystemUtilities.cpp:855, CoreProcess) |
+| Exit codes 0, 98, 100, 102, 103, 114, 115, 116, 117, 126 | 14 cases, each the code `src/minicore.cpp` names: `--info` 0; second core on a locked unit 98 (the first exited 100); client arguments 100; SIGINT 2 s in 102 (at 21%); lifeline gone 103 (at 33%); precision `quad` 114; no `-dir`, `-gpu one`, `-gpu-platform cuda` 115; empty dir 116; dir mode 555 117; `-gpu 1` and a sandbox denying the GPU 126 | `packaging-guide/REPORT.md` section 7, `logs/exits/` |
+| 125 before 2a08b87, 126 after | No Metal device: 125 at 5a803fb, 126 at 2a08b87, also on GitHub's runners (runs 39025686116 and 39026129250) | `no-metal-device/REPORT.md` |
+| Work dir files | While stepping: the four unit files, logfile_01.txt, viewerTop.json, viewerFrame<N>.json, wudata_01.lock (6 bytes), wuinfo_01.dat (512 bytes), `01/` with checkpoint, numRetries, science.log, stepsDone, xtcAtoms.csv.bz2. After exit 100: `01/` gone, wuresults_01.dat 222,720 or 223,232 bytes, 101 viewer frames | `packaging-guide/REPORT.md` section 7, "Work dir"; each run's run.log |
+| A read-only dir's error goes to stderr | `ERROR:cannot create .../unit/01: Permission denied`, `Folding@home Core Shutdown: FILE_IO_ERROR` on stderr, no logfile | `packaging-guide/REPORT.md` section 7, case read-only |
+| 13 service-user runs | As `nobody` and `_fahclient`, daemon and sudo, all exit 100 on Metal | `service-user/REPORT.md`, "Results" |
+| 14 more as `_fahclient` | LaunchDaemon in the system domain, the client's plist keys: 12 exit 100 with 11 state tests passed, the unsigned copy 137, the quarantined copy never started | `packaging-guide/REPORT.md` section 5 |
+| HOME and `/var/empty` don't matter | No HOME, TMPDIR or home-directory call in `src/`; runs with HOME `/var/empty` and HOME unset | `service-user/REPORT.md`, "What minicore needs" and rows sudo-nobody-nohome, daemon-* |
+| Audit sessions, SkyLight errors | 0x1 in a plain daemon, 0x0 with SessionCreate; `This user is not allowed access to the window system right now` | `service-user/REPORT.md`, "What the rows show" |
+| Metal cache dirs | `_fahclient`: `/var/folders/0b/w0qpqkf9001cs2g2gvftknf00000gl/C/`; `nobody`: `/var/folders/zz/zyxvpxvq6csfxvn_ngzzzzzvzzzzzy/C/`; mode 700 | `service-user/REPORT.md`, "The Metal shader cache"; `packaging-guide/REPORT.md` section 6 |
+| A user's first start, 6.9-7.2 s | Service-user cold runs 6.9, 7.0, 7.0, 7.1 s; packaging-guide daemon-hr-cold 7.2 s with 97 Metal compiles | `service-user/REPORT.md` "Results"; `packaging-guide/REPORT.md` sections 5 and 6 |
+| A new core file, about 4.5 s, 24 compiles | First runs of each new file: 4.5, 4.7, 4.6 s as myself and 4.8, 4.5, 4.5, 4.5 s as `_fahclient`, each 24 compiles, including a byte-identical `cp -p` and `cp` of the same file. Second runs 0.1 s, 0 compiles. One unexplained exception: the allow-unsigned-executable-memory copy started warm on its first run | `packaging-guide/REPORT.md` section 6 |
+| An unwritable cache, every start | 7.0, 6.7, 6.6 s with an empty cache at mode 555 | `service-user/REPORT.md`, rows *-ro |
+| What `build.sh` signs | `flags=0x10002(adhoc,runtime)`, `Signature=adhoc`, `TeamIdentifier=not set`, no entitlements, no Timestamp, identifier `minicore-55554944c523e580f64534ad8ecf84f2562c0850`; `codesign -vvv --strict` valid; `spctl -vvv --assess --type exec` rejected, exit 3 | `packaging-guide/REPORT.md` section 3, `logs/requirements.txt` |
+| The signing table | As built, plus allow-jit, plus allow-unsigned-executable-memory, no hardened runtime: exit 100 as myself and as `_fahclient`. Unsigned: 137 both ways, kernel `ASP: Security policy would not allow process`. Quarantined: as myself `GK evaluateScanResult: 1`, `Prompt shown (6, 0), waiting for response`, stopped after 136 s; as `_fahclient` at exec after 60 s, stopped by launchd | `packaging-guide/REPORT.md` sections 4 and 5 |
+| No entitlement needed | Entitlements made no difference to exit, compiles or time; compiles run in MTLCompilerService (`Compilation BEGIN (ParentProcessName=minicore_<pid>)`) | `packaging-guide/REPORT.md` section 5 |
+| Lepton without allow-jit | `mmap(MAP_JIT)` fails, Lepton falls back to its interpreter; the corekit neq test took the same time either way | `corekit/README.md` section 5, "Codesigning" |
+| Gatekeeper's first-exec scan | syspolicyd `-67018 "Code did not match any currently allowed policy"`, `GK evaluateScanResult: 2`; AMFI `is adhoc signed`; the process ran; later execs logged no scan | `packaging-guide/REPORT.md` section 5, unified logs of own-hr, daemon-hr-copy, daemon-hr-touched |
+| Apple's requirements and commands | Quoted from developer.apple.com | The pages linked in PACKAGING.md section 3; `packaging-guide/REPORT.md` section 8 |
+| launchd keys | UserName, SessionCreate, ProcessType, LowPriorityIO, Umask, ExitTimeOut, KeepAlive | `man 5 launchd.plist` on macOS 27.2; fah-client-bastet master 706d6a0 `install/osx/launchd.plist` |
+| Requirements | LC_BUILD_VERSION platform MACOS, minos 15.0, sdk 27.2; non-fat arm64; 9 LC_LOAD_DYLIB, 1 LC_LOAD_WEAK_DYLIB (Foundation), no LC_RPATH; the `otool -L` list | `packaging-guide/REPORT.md` section 3, `logs/requirements.txt` |
+| 551 images at run time | `DYLD_PRINT_LIBRARIES=1` on a copy signed without the hardened runtime: 551 paths, all under `/System/` or `/usr/lib/` but minicore; the hardened copy printed 0 lines; both exited 100 | `packaging-guide/REPORT.md` section 3, `logs/dyld-images-*.txt` |
+
 ## The opening lines
 
 The sentences under Figure 1 repeat facts from the sections above: project 18264 with 919,221 atoms
