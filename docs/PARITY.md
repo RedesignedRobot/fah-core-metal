@@ -177,12 +177,12 @@ Sources:
 | O5 | positions.xtc | No step-0 frame, precision 1000 (log) | Same steps, times and precision (P18264 cut: one frame at 5000) | match | ca F10, sc 31 |
 | O6 | Order at step 0 | xtcAtoms, viewerTop, viewerFrame0, wuinfo and "Completed 0", the tests, the checkpoint (obs strace) | Tests, frame, checkpoint, then wuinfo. Now core 0x27's order | fixed, ceb9707 | ca O1, sc 18 |
 | O7 | Order at 1% and checkpoint steps | wuinfo, xtc, viewer; at a checkpoint wuinfo, tests, xtc, checkpoint, viewer (obs strace) | xtc and viewer first. Now core 0x27's order | fixed, ceb9707 | ca O2, O3 |
-| O8 | Final step | stepCount = input + numSteps + 1 (rw `extra-step.txt`: every P18264 gen) | Was input + numSteps. Now + 1 (P18264 cut: 341,105,272) | fixed, ceb9707 | ca E1, sc 30 |
+| O8 | Final step | stepCount = input + numSteps + 1 (rw `extra-step.txt`: every P18264 gen) | Was input + numSteps. Now + 1 (P18264 cut: 341,105,272; the whole unit at b60c18b: 342,350,272, as core 0x27's) | fixed, ceb9707 | ca E1, sc 30 |
 | O9 | checkpointState.xml.bz2 | Positions, velocities, forces, energies, parameters, box (log) | Same members, by OpenMM 8.6, which 8.2's reader takes | match | ca E2, sc 8, 32 |
-| O10 | checkpointIntegrator.xml | The unit's integrator.xml byte for byte, from a third read (log) | Was re-serialized (199 B against 171). Now the third read's bytes | fixed, ceb9707 | ca E3, T6 |
+| O10 | checkpointIntegrator.xml | The unit's integrator.xml byte for byte, from a third read (log) | Was re-serialized (199 B against 171). Now the third read's bytes (P18264 cut, and the whole unit at b60c18b, sha256 as core 0x27's) | fixed, ceb9707 | ca E3, T6 |
 | O11 | PME | Alpha and grid from the default box, rounded to 7-smooth sizes, pinned with `setPMEParameters`: "Ewald parameters: alpha 2.62826 nx 189 ny 180 nz 160" (log:345-346) | Left both to each platform (189 x 176 x 154). Now the same alpha, grid and line (P18264 cut) | fixed, ceb9707 | sc 4, 5 |
 | O12 | Barostat, motion remover, seeds, custom integrators | Left as the unit has them (S:94, 129, 132, 162; WU2's system.xml) | Same | match | sc 24-27 |
-| O13 | Clean-up | Unlinks the 13 files in `01/` and removes it, then exits 100 (obs strace) | Left about 342 MB. Now removes `01/` (P18264 cut, run `straight`) | fixed, ceb9707 | ca E6, cl 9.4 |
+| O13 | Clean-up | Unlinks the 13 files in `01/` and removes it, then exits 100 (obs strace) | Left about 342 MB. Now removes `01/` (P18264 cut, run `straight`, and the whole unit at b60c18b) | fixed, ceb9707 | ca E6, cl 9.4 |
 | O14 | A full disk | cbang's "write() failed", "xtc write failed..." (S:19321, 20755) | 117 for each file; an xtc frame that didn't grow the file was lost silently, and is now 117 too (run `disk-full`) | fixed, ceb9707 | fa F2, F3 |
 | O15 | A work dir it can't write | Can't log either (S:19730, 20440) | 117 with no log (run `dir-readonly`, `dir-missing`) | match | fa F1 |
 | O16 | Timing of a checkpoint | 0.95 s to rewrite 136 MB (obs strace) | Not measured | open: the lane's brief allowed no timing runs | ca C3 |

@@ -202,12 +202,10 @@ def progress(t):
          lambda p: f"{p}%", lambda s: f"{s} s")
     body.append(text((left + right) / 2, bottom + 36, "Progress through the unit (each point is one 1% interval, 12,500 steps)",
                      t["muted"], 11, "middle"))
-    real = [(int(x["pct"]), float(x["real_s"])) for x in r]
+    real = [(int(x["pct"]), float(x["real_s"])) for x in r if x["real_s"]]
     ultra = [(int(x["pct"]), float(x["ultra_s"])) for x in r if x["ultra_s"]]
     body.append(polyline([(sx(p), sy(s)) for p, s in real], t["ref"], 1.5))
     body.append(polyline([(sx(p), sy(s)) for p, s in ultra], t["ultra"], 2.0))
-    for p, s in ultra:
-        body.append(circle(sx(p), sy(s), 3, t["ultra"]))
     rm, um = median([s for _, s in real]), median([s for _, s in ultra])
     legend(body, t, left + 300, top + 16, [(f"real core 0x27, RTX 5060 Ti: median {rm:.0f} s", t["ref"], None),
                                           (f"minicore, M3 Ultra: median {um:.0f} s", t["ultra"], None)])
@@ -381,7 +379,7 @@ def social_svg():
         body.append(rect(420, y, w, 50, c, 4))
         est = "" if x["unit_h_from"] == "full run" else " est."
         body.append(text(440 + w, y + 36, f'{float(x["unit_h"]):.2f} h{est}', t["fg"], 30, "start", "600"))
-    body.append(text(80, 590, "P18264, 919,221 atoms, hours per unit; the M3 Ultra's from its first 5%", t["muted"], 22))
+    body.append(text(80, 590, "P18264, 919,221 atoms, hours per unit, one whole unit on each", t["muted"], 22))
     return svg(W, H, body, "fah-core-metal: Folding@home on Apple Silicon GPUs through OpenMM Metal")
 
 

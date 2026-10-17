@@ -10,27 +10,37 @@ A Folding@home core for Apple Silicon GPUs, built on OpenMM's Metal platform.
 *Figure 1. A work unit goes from the FAH client through minicore and OpenMM Metal to the Mac's GPU, and the result goes back.*
 
 minicore is a Folding@home core that runs FAH's OpenMM work units on the GPU of Apple Silicon Macs
-through Metal. On the M3 Ultra and the M2 it ran the first 5% of a real FAH unit, project 18264 with
-919,221 atoms, and ran shortened copies of that unit to a finished result. On the M3 Ultra it matches FAH's
-core 0x27 on 20 of the 25 items in Figure 7; the other 5 are listed under "Where it differs".
+through Metal. On the M3 Ultra it folded a whole real FAH unit, project 18264 with 919,221 atoms, to a
+finished result in 5.06 h, and every state test passed. On the M2 it ran the first 5% of that unit and ran
+shortened copies of it to a finished result. On the M3 Ultra it matches FAH's core 0x27 on 20 of the 25
+items in Figure 7; the other 5 are listed under "Where it differs".
 
 ## Speed
 
-| Machine | Core | Per 1% | Per unit |
-| --- | --- | ---: | ---: |
-| RTX 5060 Ti, Linux | core 0x27 8.2.1, CUDA | 192 s | 5.37 h |
-| M3 Ultra, macOS 27 | minicore, Metal | 167 s | 4.66 h, estimated |
+| Machine | Core | Span | Per 1% | Per unit |
+| --- | --- | --- | ---: | ---: |
+| M3 Ultra, macOS 27 | minicore, Metal | whole unit | 182 s | 5.06 h |
+| RTX 5060 Ti, Linux | core 0x27 8.2.1, CUDA, OpenMM 8.2.0 | whole unit | 192 s | 5.37 h |
+| RTX 5060 Ti, Linux | core 0x27 8.2.1, CUDA, OpenMM 8.2.0 | first 11% | 187 s | |
+| RTX 5060 Ti, Linux | minicore, CUDA, OpenMM 8.2.0 | first 11% | 184 s | |
+| RTX 5060 Ti, Linux | minicore, CUDA, OpenMM 8.6.1 | first 11% | 180 s | |
 
-The RTX 5060 Ti row is one whole unit FAH's client ran, timed from its first start. The M3 Ultra row is the
-first 5% of the same unit, run by the lab's build of minicore before this repo, in a night slot with a
-load average of 7.14 at the start; 4.66 h is 100 times that 167 s plus start-up and checkpoints.
+The M3 Ultra row is one run of the whole unit by this repo at b60c18b, at nice 0 on 2026-10-17 from 00:46
+to 05:50Z, with a load average of 10.00 at the start and a CPU FAH core at nice 19 beside it. 182 s is the
+median of the 24 1% intervals that ended by 02:00Z, when no other GPU work was booked; all 100 took 180 to
+184 s. 5.06 h is the run's wall clock. The RTX 5060 Ti rows come from one card. Core 0x27's rows are the
+whole unit FAH's client ran, timed from its first start, and that run's first 11%, the span the minicore
+runs cover. minicore's rows are the first 11% of the same unit at a 150 W power limit, where core 0x27 had
+180 W; both drew a median 150 W. On that card minicore is about the same speed as core 0x27, slightly
+faster: 1.6% less time per 1% on OpenMM 8.2.0 and 3.7% less on 8.6.1. Across the two machines, the M3
+Ultra takes 0.95 times core 0x27's time per 1% and 0.94 times its hours, one run of one unit on each.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/speed-dark.svg">
   <img alt="Hours per P18264 unit, M3 Ultra against the real core" src="docs/figures/speed-light.svg">
 </picture>
 
-*Figure 2. Hours per P18264 unit, 5 ns of a 919,221-atom system. The M3 Ultra bar is estimated from its first 5%.*
+*Figure 2. Hours per P18264 unit, 5 ns of a 919,221-atom system: the wall clock of one whole unit on each.*
 
 ## Trajectories and box volume
 
@@ -47,6 +57,12 @@ load average of 7.14 at the start; 4.66 h is 100 times that 167 s plus start-up 
 </picture>
 
 *Figure 4. Across the whole unit, a CUDA run with another seed samples the real run's box volume.*
+
+The M3 Ultra's whole unit is not byte-identical to core 0x27's, and over 5 ns it can't be: the unit's seed
+0 gives every run its own random noise, so no two runs of it share a trajectory. What can match does. Its
+result holds core 0x27's six files in the same order, with 101 viewer frames and 250 XTC frames at the
+same steps, and all 21 state tests passed, as core 0x27's did. Its mean box volume is 9,307.4 nm³ (sd 6.2)
+against the real run's 9,307.1 (sd 5.9), and its final energies sit within one sd of the CUDA replay's.
 
 ## Accuracy
 
@@ -74,11 +90,12 @@ load average of 7.14 at the start; 4.66 h is 100 times that 167 s plus start-up 
 *Figure 7. Each file and behaviour of core 0x27's run of P18264, checked on each Mac. The M2 last ran 3fc8475, before ceb9707 changed four of the rows.*
 
 Each Mac also passed all 101 core-parity checks, run with the lab's build of minicore before this repo,
-and every state test it ran on the real unit: 12 on the M3 Ultra and 5 on the M2. The build in this commit
-passed 65 of 65 failure and stop-resume cases on the M3 Ultra, three of them in a second run after fixes
-to the test script. The M2 last ran 3fc8475, the build before ceb9707. [docs/PARITY.md](docs/PARITY.md)
-lists every behaviour of core 0x27 next to minicore's. The runs and raw records behind every number are
-in [docs/EVIDENCE.md](docs/EVIDENCE.md).
+and every state test it ran on the real unit: 12 on the M3 Ultra and 5 on the M2. This repo at b60c18b
+passed all 21 in the M3 Ultra's whole unit. The build in this commit passed 65 of 65 failure and
+stop-resume cases on the M3 Ultra, three of them in a second run after fixes to the test script. The M2
+last ran 3fc8475, the build before ceb9707. [docs/PARITY.md](docs/PARITY.md) lists every behaviour of core
+0x27 next to minicore's. The runs and raw records behind every number are in
+[docs/EVIDENCE.md](docs/EVIDENCE.md).
 
 ## Where it differs
 
@@ -132,7 +149,7 @@ rm -rf build
 Not through a core FAH ships today, though people have asked since
 [openmm#2489](https://github.com/openmm/openmm/issues/2489) (2019) and
 [fah-client-bastet#303](https://github.com/FoldingAtHome/fah-client-bastet/issues/303) (2024). minicore
-runs a real FAH unit on Apple Silicon GPUs; the longest run so far is the first 5% of one.
+folded a whole real FAH unit on the M3 Ultra in 5.06 h, run on the unit's files without FAH's client.
 
 ### Does this work with the official Folding@home client?
 
@@ -146,9 +163,10 @@ have run it on the M3 Ultra and the M2, both on macOS 27.2.
 
 ### How fast is it compared to NVIDIA?
 
-On P18264 the M3 Ultra takes 0.87 times the time per 1% that core 0x27 takes on an RTX 5060 Ti. The
-Mac's figure is the first 5% of the unit with the lab's build of minicore, and the card's is the whole
-unit; one unit, one Mac and one card.
+On P18264 the M3 Ultra takes 0.95 times the time per 1% that core 0x27 takes on an RTX 5060 Ti, 182 s
+against 192 s, and 5.06 h against 5.37 h for the unit; each is one whole unit, on one Mac and one card. On
+that card, minicore on CUDA is about the same speed as core 0x27, slightly faster: 184 s and 180 s per 1%
+against 187 s over the first 11%.
 
 ### Is it as accurate as the official core?
 

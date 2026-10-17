@@ -3,7 +3,7 @@
 Every number and claim in the README, with the run that produced it and where the raw record is.
 
 The runs on the real unit and the core-parity checks were made in my lab repo, which is private. Paths
-below that start with `core-realwu/` or `core-parity/` are under its
+below that start with a lane's name, such as `core-realwu/`, `core-parity/` or `full-fold/`, are under its
 `experiments/030-upstream-metal/lanes/`. Each REPORT.md there gives the commands. FAH's unit, its
 result files and the real core's logs stay on the bench machine. Neither repo holds them, only
 statistics taken from them.
@@ -12,7 +12,7 @@ statistics taken from them.
 
 | Result | Code |
 | --- | --- |
-| Real unit runs, file-by-file parity, the 167 s per 1% night timing | minicore at lab commit 416b78c7 and the commits before it, as each row below names |
+| Real unit runs before this repo, file-by-file parity, the earlier 167 s per 1% timing of the first 5% | minicore at lab commit 416b78c7 and the commits before it, as each row below names |
 | 101 core-parity checks | minicore at lab commit 7a92bbba ("core v3"), state tests against the Reference platform |
 | CUDA replay | OpenMM 8.2.0 from conda-forge, `replay.py` in `core-realwu/scripts/` |
 | Test unit fold and stop and resume checks (gpuq 2181, 2182) | this repo at 414c69a (source as in 3fc8475, which only sets the scripts' executable bits) |
@@ -23,6 +23,7 @@ statistics taken from them.
 | Accuracy on four test systems (Figure 5) | Metal: minicore at lab commit 7a92bbba. CUDA: `cuda-ref/scripts/pycore.py`, a Python port of minicore's straight run and FAHBench's state test, on conda-forge OpenMM 8.6.1 |
 | Energy drift (Figure 6) | OpenMM's own VerletIntegrator through `drift/scripts/run1ns.py`, no core |
 | Core-gap checks, the holdout stop and resume, the second P18264 cut (gpuq 2235, 2236) | this repo's source as in ceb9707, linked by `src/link.sh` against the OpenMM prefix of the fresh clone of 3fc8475 (minicore sha256 5e7cc197761cb69f) |
+| P18264, the whole unit on the M3 Ultra (gpuq 2245) | this repo at b60c18b: a fresh `git clone --no-local --branch main`, built by `taskpolicy -b nice -n 10 ./build.sh -j 6` (gpuq 2243; minicore 7,090,688 B, sha256 9f2b962bbdd05ed3) |
 | P18264 on the RTX 5060 Ti: the 5,000-step cut to the end and the first 11% (gpud 347, 349, 350) | this repo at ba4ae8e, built on chimaera by `build-linux.sh` against conda-forge OpenMM 8.2.0 (minicore sha256 70588a33) and 8.6.1 (sha256 ae3c4331) |
 
 This repo's minicore is the lab's 416b78c7 reworked after two code reviews (`docs/design-notes.md`).
@@ -40,13 +41,17 @@ Source: `core-realwu/REPORT.md`, the paragraph headed "Unit", and `core-realwu/r
 | --- | --- | --- |
 | Real core, time per 1% | 192 s | Median of the real run's 1% intervals from its viewer frames 0-99; `core-realwu/results/real/timing.txt`, made by `core-realwu/scripts/realtiming.py`; `core-realwu/REPORT.md` section 5 |
 | Real core, time per unit | 5.37 h | 19,330 s wall, 2026-10-15 19:04:41Z to 00:26:51Z; same files |
-| M3 Ultra, time per 1% | 167 s | gpuq job 2151, night slot, nice 0, minicore 416b78c7 (binary sha256 8e3c8173). 1% intervals 168, 167, 165, 165, 167 s from host-clock stamps of the progress lines. The load average was 7.14 at the start, above the 3 the night rule asks for. Other work on the machine can only slow a run, so 167 s is conservative. It agrees with the daytime run of minicore 942bac4b (gpuq 2150), whose viewer frames 0-4 came 167 s apart (`core-realwu/results/ultra-62500/viewer-mtimes.txt`). No timing run of this repo's own build was made. `core-realwu/results/night-62500/timing.txt`; `core-realwu/REPORT.md` section 5 |
-| M3 Ultra, time per unit | 4.66 h | 26.7 s start-up + 100 x 167 s + 20 checkpoints x 2 s; same file |
+| M3 Ultra, time per 1% | 182 s | Median of the 24 1% intervals that ended by 02:00Z in gpuq timing job 2245, the whole unit, on 2026-10-17. All 100 intervals took 180 to 184 s, median 182 s, and the 76 after 02:00Z have the same median and range. Times are host-clock stamps of the "Completed" lines in logfile_01.txt, read every second. `full-fold/results/intervals.tsv` and `summary.txt`, made by `full-fold/scripts/analyze.py`; `full-fold/REPORT.md` section 3 |
+| M3 Ultra, time per unit | 5.06 h | 18,224 s wall clock, 00:46:21Z to 05:50:06Z, from the job's start to the core's exit 100: 27 s to "Completed 0", 100 intervals, 18 s from "Completed 100%" to exit. `full-fold/results/unit.exit`, `start-state.txt`, `unit.progress` |
+| M3 Ultra, conditions | Timing class (the GPU to itself in gpuq, nice 0), queued after gpuq 2148 and started when it ended. Load average 10.00 11.62 11.68 at the start, AC power, GPU idle. fah-observe's CPU FAH core FahCore_a8 ran beside it all night at nice 19, 270% to 590% CPU. 00:00-02:00Z the lab's board window held the GPU exclusive; from 02:00Z it was shared, and the nightly show (headless Chromium at nice 10, 02:22Z) and the walls (bun, tsc, tmutil at nice 10, then BambuStudio at nice 5, 03:00-03:35Z, load up to 126) ran beside it. Interval times did not move with the load | `full-fold/results/start-state.txt`, `unit.samples` (60 s), `unit.top` (300 s); `full-fold/REPORT.md` section 2 |
+| M3 Ultra, the earlier figure | 167 s per 1% and 4.66 h, estimated | gpuq job 2151, night slot, nice 0, minicore 416b78c7 (binary sha256 8e3c8173). 1% intervals 168, 167, 165, 165, 167 s from host-clock stamps of the progress lines. The load average was 7.14 at the start, above the 3 the night rule asks for. It agrees with the daytime run of minicore 942bac4b (gpuq 2150), whose viewer frames 0-4 came 167 s apart (`core-realwu/results/ultra-62500/viewer-mtimes.txt`). It was the README's figure until gpuq 2245. `core-realwu/results/night-62500/timing.txt`; `core-realwu/REPORT.md` section 5 |
+| M3 Ultra, the earlier unit estimate | 4.66 h | 26.7 s start-up + 100 x 167 s + 20 checkpoints x 2 s; same file. The README no longer gives it. This build and the whole-unit run's differ, and no A/B separates the build from the conditions, so the gap between 167 s and 182 s has no measured cause |
 | M2, time per 1% | 1,280 s | Viewer frames 1-4 of a 62,500-step run at nice 10, 1,288, 1,279, 1,279, 1,278 s, minicore 942bac4b, by day; `core-realwu/results/m2-62500/files.txt`; `core-realwu/REPORT.md` section 5 |
 | M2, time per unit | 35.6 h, 74% of 48 h | 100 x 1,280 s plus start-up and checkpoints; same section |
-| M3 Ultra against the real core | 0.87 | 167 / 192 |
+| M3 Ultra against the real core | 0.95 per 1%, 0.94 per unit | 182 / 192, 5.06 / 5.37 |
+| RTX 5060 Ti rows over the first 11%, "about the same speed, slightly faster" | core 0x27 187 s, minicore 184 s (OpenMM 8.2.0) and 180 s (8.6.1): 1.6% and 3.7% less time per 1% | The next section |
 
-`docs/data/speed.csv` holds the real core and M3 Ultra rows, and Figure 2 is drawn from it.
+`docs/data/speed.csv` holds the real core and M3 Ultra whole-unit rows, and Figure 2 is drawn from it.
 
 ### One RTX 5060 Ti, core 0x27 against minicore
 
@@ -99,9 +104,10 @@ interval that also holds the step-0 checkpoint).
 | Figure S1 | Value | Source |
 | --- | --- | --- |
 | Real core, seconds per 1% | 99 intervals between viewer frames 0 and 99, median 192 s, 186 to 199 s | Modification times of the real run's `viewerFrame0.json` to `viewerFrame99.json` on the bench, read with `stat`; the same times `core-realwu/results/real/timing.txt` uses |
-| M3 Ultra, seconds per 1% | 168, 167, 165, 165, 167 s | `core-realwu/results/night-62500/timing.txt`, host-clock stamps of the progress lines |
+| M3 Ultra, seconds per 1% | 100 intervals between "Completed 0" and "Completed 1250000", median 182 s, 180 to 184 s | `full-fold/results/intervals.tsv`, host-clock stamps of the progress lines in gpuq 2245 |
 
-`docs/data/progress.csv` holds both columns.
+`docs/data/progress.csv` holds both columns. The real run has 99 intervals (viewer frames 0 to 99), so
+its row 100 is empty.
 
 ## Trajectories and volume
 
@@ -111,6 +117,7 @@ interval that also holds the step-0 checkpoint).
 | CUDA seed 1 against CUDA seed 3 at step 5,000 | 0.481 nm | `core-realwu/results/frames/s1-vs-s3.tsv` |
 | randomSeed 0 | A new seed per Context | The unit's integrator.xml; `core-realwu/REPORT.md` section 3 |
 | Box volume over the unit | 9,307.1 nm³ mean for both, sd 5.9 (real) and 6.2 (CUDA seed 3) | 250 frames each; `core-realwu/results/frames/real-s3-full.tsv` and `real-s3-summary.txt` |
+| The M3 Ultra's whole unit | Box volume mean 9,307.4 nm³, sd 6.2, range 9,290.7 to 9,324.6 over its 250 XTC frames (the real run's: 9,307.1, sd 5.9, 9,289.7 to 9,320.8). Returned state PE -12,690,171 and KE 2,297,664 kJ/mol, against the CUDA replay's PE mean -12,686,816 (sd 3,842) and KE mean 2,300,045 (sd 2,573): -0.87 and -0.93 sd. Not byte-identical to core 0x27's files, and not expected to be, for the seed above | `full-fold/results/volume.tsv` (both runs' box per frame, from the lab's xtcdump), `full-fold/results/summary.txt`; `full-fold/REPORT.md` section 5 |
 | Box volume range, first 62,500 steps | 9,299 to 9,318 nm³ in all four runs (9,299.23 to 9,317.67) | `core-realwu/REPORT.md` section 3 |
 
 `docs/data/distance.csv` (every 5,000 steps to 60,000) and `docs/data/volume.csv` (every 5,000 steps
@@ -130,11 +137,14 @@ of the unit) are those tables' columns.
 | This repo's build, P18264 to the end, M3 Ultra | A copy of the unit with numSteps 5,000 and checkpointFreq 2,500, all else unchanged: exit 100, 101 viewer frames, viewerTop.json sha256 9431b3ab and xtcAtoms.csv.bz2 sha256 616d8e69 as the real run's, wuinfo_01.dat 512 B, the six result members in order with mode 0666 and uid and gid 0, checkpointIntegrator.xml 199 B, stepCount 341,105,271 (input 341,100,271 + 5,000), 3 state tests pass, 0 fail | gpuq job 2199 |
 | This repo's build, P18264, M2 | From the input to 1%: viewerTop.json and xtcAtoms.csv.bz2 hashes as above, wuinfo_01.dat 512 B, 1 state test pass. The 5,000-step copy to the end: the same facts as the M3 Ultra's row, 3 state tests pass, 0 fail. SIGINT 3 s into start-up: the four lines, exit 102 | Runs under the M2's job lock on 2026-10-16 |
 | This repo's build at ceb9707, P18264 to the end, M3 Ultra | The same 5,000-step copy: exit 100 in 121 s, viewerTop.json sha256 9431b3ab and xtcAtoms.csv.bz2 sha256 616d8e69 as the real run's, wuinfo_01.dat 512 B, 101 viewer frames, one XTC frame at step 5,000, the six members in core 0x27's order, checkpointIntegrator.xml 171 B with sha256 53b47b00 as the real result's member, stepCount 341,105,272 (input 341,100,271 + 5,001, as core 0x27), "Ewald parameters: alpha 2.62826 nx 189 ny 180 nz 160" as core 0x27's science.log, `01/` removed, 3 state tests pass, 0 fail | gpuq job 2235, [core-gap runs](#core-gap-runs) |
-| State tests on the real unit, this repo's build | 5 pass on the M3 Ultra (2180 test 4: 2; 2199: 3), 4 pass on the M2 (1; 3), 0 fail | The rows above |
+| This repo's build at b60c18b, the whole unit P18264, M3 Ultra | From the delivered wudata_01.dat, with the arguments fah-client passes and no client: exit 100, logfile_01.txt ends "Folding@home Core Shutdown: FINISHED_UNIT". In science.log 21 "Running tests", 21 "All tests passed.", 1 initial-State comparison and 0 lines with FAIL, Discrepancy, NaNs detected, BAD_STATE or ERROR, as core 0x27's 21 and 21; force RMSE 0.228 to 1.88 kJ/mol/nm (limit 1e7), \|dPE\| 6.86 to 23.6 kJ/mol (limit 1e9). The unit dir holds logfile_01.txt, viewerTop.json (sha256 9431b3ab, as the real run's), viewerFrame0.json to viewerFrame100.json (101, as the real run), wuinfo_01.dat 512 B, wudata_01.dat, wudata_01.lock and wuresults_01.dat. The result tar holds logfile_01.txt 7,585 B, checkpointIntegrator.xml 171 B (sha256 53b47b00, as the real member), checkpointState.xml.bz2 68,438,443 B, positions.xtc 3,488,908 B, science.log 28,666 B and xtcAtoms.csv.bz2 2,824 B (sha256 616d8e69, as the real member), in that order, mode 0666, uid and gid 0. 250 XTC frames at steps 5,000 to 1,250,000, the real run's steps. Returned stepCount 342,350,272, as the real run's | gpuq job 2245; `full-fold/results/summary.txt`, `science.log`, `logfile_01.txt`, `end-state.txt`; `full-fold/REPORT.md` sections 4 and 5 |
+| State tests on the real unit, this repo's build | 26 pass on the M3 Ultra (2180 test 4: 2; 2199: 3; 2245, the whole unit: 21), 4 pass on the M2 (1; 3), 0 fail | The rows above |
 | "The M2, a base 8 GB chip" | Apple M2, 8 GB (8,589,934,592 B from `sysctl hw.memsize`) | The M2 run's own header line |
 
 The state-test counts above come from counting the "State test at step" lines in the raw logs, pass
-and FAIL, and not from a harness's summary.
+and FAIL, and not from a harness's summary. From ceb9707 on, minicore writes core 0x27's lines instead,
+so gpuq 2245's count is `grep -c "Running tests"`, `grep -c "All tests passed."` and a grep for failure
+lines in its science.log.
 
 Command for the core-parity count, run in `core-parity/results`:
 
@@ -272,10 +282,14 @@ design and 2 FAH only.
 ## The opening lines
 
 The sentences under Figure 1 repeat facts from the sections above: project 18264 with 919,221 atoms
-(the unit), the first 5% and the shortened copies run to the end (what was tested and where), and "20
+(the unit), the whole unit on the M3 Ultra in 5.06 h with every state test passing (speed, and what was
+tested and where), the M2's first 5% and the shortened copies run to the end (what was tested and
+where), and "20
 of the 25 items in Figure 7" on the M3 Ultra, where 3 differ by design and 2 need FAH's keys (parity per
 Mac). The lines under Figure 7 are "what was tested and where": 101 of 101 checks per Mac with the lab
-build 7a92bbba, every real-unit state test each Mac ran, and the 65 core-gap cases.
+build 7a92bbba, every real-unit state test each Mac ran, the 21 of the whole unit, and the 65 core-gap
+cases. The paragraph under Figure 4 is the whole-unit row of the same section, with the volume and
+energies from `full-fold/results/summary.txt` and `full-fold/REPORT.md` section 5.
 
 ## Background and FAQ
 
@@ -284,6 +298,7 @@ build 7a92bbba, every real-unit state test each Mac ran, and the 65 core-gap cas
 | openmm#2489 "Future of osx GPU support", 2019-11-28 | `gh api repos/openmm/openmm/issues/2489`: title and created_at |
 | fah-client-bastet#303 "Support for Apple's integrated GPUs", 2024-11-05, open | `gh api repos/FoldingAtHome/fah-client-bastet/issues/303`: title, created_at and state, read 2026-10-16 |
 | fah-client ran the lab's build of minicore against a local stand-in for FAH's servers and took its results | `core-parity/REPORT.md` section 5 (`loopback.sh`): fah-client master 706d6a0, patched only to trust a test CA, against a fake work server on the same machine; the core was core v3 (lab 7a92bbba), gpuq 2095 and 2096 |
+| minicore folded a whole real FAH unit on the M3 Ultra in 5.06 h, on the unit's files without FAH's client | `full-fold/REPORT.md` section 1: gpuq 2245 ran `full-fold/scripts/fold-job.sh`, which copies the delivered wudata_01.dat into a directory and starts minicore with the arguments fah-client passes |
 | Results carry no FAH signature, nothing connects to FAH's servers | "Where it differs"; `src/` opens no socket |
 
 ## Credits and the last line
@@ -312,15 +327,15 @@ barostat and mixed precision. One 1% is 12,500 steps.
 | Machine | Core | Time per 1% | Time per unit |
 | --- | --- | ---: | ---: |
 | RTX 5060 Ti, Linux | core 0x27 8.2.1 (OpenMM 8.2.0, CUDA mixed), a real FAH run | 192 s | 5.37 h |
-| M3 Ultra, macOS 27 | minicore 416b78c7, Metal mixed, the first 5% | 167 s | 4.66 h, estimated |
+| M3 Ultra, macOS 27 | minicore at b60c18b, Metal mixed, the whole unit (gpuq 2245) | 182 s | 5.06 h |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/speed-dark.svg">
   <img alt="Hours per P18264 unit, M3 Ultra against the real core" src="figures/speed-light.svg">
 </picture>
 
-*Figure 2. Hours per P18264 unit: core 0x27 from the real run's wall clock, minicore from 100 times its
-median 1% interval plus start-up and checkpoints (`docs/data/speed.csv`).*
+*Figure 2. Hours per P18264 unit, the wall clock of one whole unit on each: core 0x27 from its first
+start under FAH's client, minicore from the job's start to the core's exit (`docs/data/speed.csv`).*
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/progress-dark.svg">
@@ -328,9 +343,10 @@ median 1% interval plus start-up and checkpoints (`docs/data/speed.csv`).*
 </picture>
 
 *Figure S1. Seconds per 1% interval: core 0x27 from the times of its 100 viewer frames across the unit,
-the M3 Ultra from the times of its progress lines over the first 5% (`docs/data/progress.csv`).*
+the M3 Ultra from the times of its progress lines across the unit (`docs/data/progress.csv`).*
 
-Over the first 5% the M3 Ultra takes 0.87 times the real core's time per 1% across the whole unit.
+Across the whole unit the M3 Ultra takes 0.95 times the real core's time per 1%. Its intervals stay
+within 180 to 184 s from the first to the last, through a load average of 126 at 03:07Z.
 
 
 ### Trajectories and box volume
@@ -407,6 +423,13 @@ precision core 0x27 runs, drifts -0.0001 ± 0.0011, and 10 runs each can't tell 
 - **minicore on the M3 Ultra and the M2, under macOS 27.** Each Mac ran the real unit to step 62,500 and
   ran shortened copies to the end, which writes the result files. Every state test on the real unit
   passed: 12 of 12 on the M3 Ultra and 5 of 5 on the M2, with none failed.
+- **The whole unit on the M3 Ultra.** This repo at b60c18b folded all 1,250,000 steps of the real unit
+  in 5.06 h, from FAH's own wudata_01.dat to FINISHED_UNIT. All 21 state tests passed, as core 0x27's
+  21 did. The result holds the same six members in the same order, 101 viewer frames and 250 XTC frames
+  at the same steps, and the returned stepCount is core 0x27's. The trajectory differs, as every run's
+  does with the unit's seed 0: the mean box volume is 9,307.4 nm³ (sd 6.2) against 9,307.1 (sd 5.9), and
+  the returned potential and kinetic energies sit 0.87 and 0.93 sd below the CUDA replay's means, where
+  the real run's sit 0.6 and 0.0 sd away.
 - **101 core-parity checks on each Mac.** These cover four smaller test systems and every path a FAH
   core has to survive: a straight run, a pause and resume, SIGKILL, a NaN, a stalled GPU, repeated
   failures, a unit that fails its first test, a corrupted checkpoint, a dead client and bad arguments.
