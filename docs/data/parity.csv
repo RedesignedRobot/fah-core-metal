@@ -1,0 +1,26 @@
+item,ultra,m2,detail
+Unit header fields,match,match,"Project, run, clone, gen and payload size from the 512-byte header"
+core.xml keys,match,match,All seven of P18264's keys read
+Output intervals,match,match,"Checkpoint 5%, viewer frame 1%, XTC frame 0.4%"
+State test platform,match,match,CPU
+State test limits,match,match,"Force 1e7, energy 1e9, from core.xml"
+State test schedule,match,match,"Step 0, then at every checkpoint"
+Interrupt at start-up,match,match,"The same four lines, exit 102"
+wuinfo_01.dat,match,match,"512 B, same layout and values"
+viewerTop.json,match,match,"56,183 B, byte-identical"
+viewerFrameN.json,match,match,"101 frames on a finished unit, same format"
+positions.xtc,match,match,"2,520 solute atoms every 5,000 steps, same format"
+xtcAtoms.csv.bz2,match,match,"2,824 B, byte-identical"
+Result members and order,match,match,"Six files, same order"
+Result tar format,match,match,"ustar, mode 0666, uid and gid 0"
+Exit code,match,match,100 FINISHED_UNIT
+Box volume,match,match,"9,299 to 9,318 nm³ over the first 62,500 steps"
+Log sections and order,match,not-rerun,Same sections in the same order
+checkpointIntegrator.xml,match,not-rerun,"171 B, byte-identical"
+Final step count,match,not-rerun,One step past numSteps
+Work dir layout,match,not-rerun,"Work files in 01/, removed at the end"
+Log wording,by-design,by-design,35 of 87 logfile line shapes word for word
+OpenMM version strings,by-design,by-design,8.6 where core 0x27 says 8.2
+Checkpoint format,by-design,by-design,"checkpt.crc is FAH's, so minicore checks its own footer"
+Result header signature,fah-only,fah-only,Signed with FAH's private key
+Unit signature check,fah-only,fah-only,Needs FAH's public key and scheme
