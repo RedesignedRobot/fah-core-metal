@@ -1,6 +1,7 @@
 # Build check for pull requests. GitHub's hosted Apple Silicon runners are virtual machines with no usable
 # Metal GPU, so nothing here folds on Metal. The job builds minicore with build.sh as a Mac owner would,
-# checks that the Metal platform is linked in (registering it needs no GPU), and folds the bundled test unit
+# checks that the Metal platform is linked in (registering it needs no GPU) and that asking for the Apple GPU
+# there exits GPU_UNAVAILABLE_ERROR, and folds the bundled test unit
 # on OpenMM's CPU platform. That covers loading the unit, checkpoints and the result file. The state tests
 # run too, but on CPU they compare CPU with itself, so they check the plumbing and not accuracy.
 # Accuracy and speed on the GPU still come from runs on real Macs.
@@ -53,6 +54,20 @@ jobs:
 
       - name: Metal platform is linked in
         run: ./build/core/minicore --info | grep -w Metal
+
+      # The runner's only Metal device is the VM's "Apple Paravirtual device", outside the Apple7 family, so the
+      # client's Apple GPU arguments must end the fold at once with 126, as on a Mac with no usable GPU.
+      - name: No usable Metal GPU exits 126
+        run: |
+          cp -R test/alanine-dipeptide no-gpu
+          code=0
+          ./build/core/minicore -dir no-gpu -gpu-vendor apple -gpu 0 || code=$?
+          echo "exit $code"
+          tail -n 2 no-gpu/logfile_01.txt
+          if [ "$code" -ne 126 ]; then
+            echo "::error::minicore exited $code, not 126 (GPU_UNAVAILABLE_ERROR)"
+            exit 1
+          fi
 
       # minicore's --platform CPU runs the whole unit on OpenMM's CPU platform. Its state tests compare CPU
       # with CPU, so this proves they run and report, not that they would catch a wrong force.

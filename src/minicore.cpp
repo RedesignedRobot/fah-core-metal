@@ -1479,6 +1479,9 @@ void CoreRun::createContexts() {
 
     say("Attempting to create %s context:", choice.platform.c_str());
     say("  Configuring platform %s", choice.platform.c_str());
+    string problem = choice.platform == "Metal" ? metalDeviceProblem() : "";
+    if (!problem.empty())
+        throw Failure(GPU_UNAVAILABLE_ERROR, problem);
     map<string, string> properties = chooseProperties(settings, choice, *platform);
     try {
         context.reset(new Context(*system, *integrator, *platform, properties));

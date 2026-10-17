@@ -23,4 +23,8 @@ struct GpuInfo {
     std::string device, vendor, pci, compute, driver;
 };
 GpuInfo gpuInfo(const std::string& platform, int device);
+
+// Why OpenMM's Metal platform can't use the device MTLCreateSystemDefaultDevice() gives, as it does for its
+// Context: nil, or a GPU outside the Apple7 family (M1 and later), such as a VM's paravirtual one; "" if usable.
+std::string metalDeviceProblem();
 #endif

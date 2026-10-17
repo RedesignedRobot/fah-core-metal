@@ -9,8 +9,10 @@
 using namespace std;
 
 #ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
+#include <objc/message.h>
 #include <sys/sysctl.h>
 
 static string sysctlText(const char* name) {
@@ -50,6 +52,22 @@ double memoryMB() {
 GpuInfo gpuInfo(const string&, int) {
     return {sysctlText("machdep.cpu.brand_string"), "0x106b", "none", "unknown",
             "macOS "+sysctlText("kern.osproductversion")};
+}
+
+// Metal's C entry point and two MTLDevice messages, sent as metal-cpp sends them. The device comes back retained.
+extern "C" void* MTLCreateSystemDefaultDevice();
+
+string metalDeviceProblem() {
+    void* device = MTLCreateSystemDefaultDevice();
+    if (device == NULL)
+        return "macOS gives this process no Metal device (MTLCreateSystemDefaultDevice() returned nil)";
+    const long apple7 = 1007;  // MTLGPUFamilyApple7
+    bool usable = ((bool (*)(void*, SEL, long)) objc_msgSend)(device, sel_registerName("supportsFamily:"), apple7);
+    char name[256] = "";
+    CFStringGetCString((CFStringRef) ((void* (*)(void*, SEL)) objc_msgSend)(device, sel_registerName("name")), name,
+                       sizeof(name), kCFStringEncodingUTF8);
+    CFRelease(device);
+    return usable ? "" : "the Metal device "+string(name)+" doesn't support the Apple7 GPU family (M1 or later)";
 }
 
 #else
@@ -121,5 +139,9 @@ GpuInfo gpuInfo(const string& platform, int device) {
     }
     dlclose(cuda);
     return gpu;
+}
+
+string metalDeviceProblem() {
+    return "";
 }
 #endif

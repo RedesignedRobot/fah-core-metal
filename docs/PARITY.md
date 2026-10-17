@@ -203,7 +203,7 @@ Sources:
 | --- | --- | --- | --- | --- | --- |
 | G1 | Platform from the arguments | CUDA or OpenCL from `-gpu-platform` and `-gpu-vendor`; "Bad gpu-vendor flag passed" (S:19364-19385) | Metal from `-gpu-vendor apple` or `-metal-*`; another vendor gets 115 "X is not in this core" (run `args-nvidia`, `args-amd-opencl`) | FAH's call: FAH assigns units to cores by GPU | cl 10.3, fa A2, A3 |
 | G2 | Device index past the last GPU | The Context fails: "Failed to create OpenCL context:" (S:19526) | 126 naming the device (run `args-gpu-index`, `args-metal-device`) | not observable | fa A4, A5 |
-| G3 | No usable GPU at Context creation | "Attempting to create CUDA context:", "Failed to create CUDA context:", "Failed to create a GPU-enabled OpenMM Context." (S:19512-19526) | The first line, then 125 with OpenMM's reason | not observable | fa D2 |
+| G3 | No usable GPU at Context creation | "Attempting to create CUDA context:", "Failed to create CUDA context:", "Failed to create a GPU-enabled OpenMM Context." (S:19512-19526) | The first line, then 125 with OpenMM's reason; 126 when macOS gives no Metal device or one outside the Apple7 family, such as a VM's paravirtual GPU | not observable | fa D2 |
 | G4 | GPU lost or out of memory while stepping | The T9 path (forum p=354483) | Same | match | fa D1, D3 |
 | G5 | CUDA-only and OpenCL-only properties | DeviceIndex, UseBlockingSync set; DeterministicForces and UseCpuPme never set (log; S) | Metal declares none of the first two; the last two stay unset | match | sc 12-14 |
 | G6 | Apple GPU in the client | 8.5.6 skips GPUs without a PCI id; client main detects Apple GPUs (B6 `GPUResources.cpp:155`; Cm `GPUVendor.h:50`) | Nothing to do | FAH's call: the client is FAH's | cl 10.1, 10.2 |
