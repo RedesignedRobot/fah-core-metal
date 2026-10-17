@@ -1,6 +1,6 @@
 # fah-core-metal
 
-> Folding@home on Apple Silicon GPUs. minicore is a Folding@home core that runs FAH's real OpenMM work units on the Mac's GPU through OpenMM's Metal platform. It folded a whole real FAH unit faster than FAH's own core on an NVIDIA card.
+> A real, fully working Folding@home core for Apple Silicon GPUs. minicore runs FAH's real OpenMM work units on the Mac's GPU through OpenMM's Metal platform. It folded a whole real FAH unit faster than FAH's own core on an NVIDIA card.
 
 People have asked for Folding@home on Apple GPUs since 2019 (openmm#2489) and 2024 (fah-client-bastet#303). On P18264, a whole real FAH unit of 919,221 atoms and 5 ns, minicore on Apple Silicon took 5.06 h, against 5.37 h for FAH's core 0x27 on an NVIDIA RTX 5060 Ti (182 s against 192 s per 1%). It passed 21 of 21 state tests on that unit, as FAH's core passed 21, and its result holds FAH's six files in the same order with the same frame counts, three output files byte-identical to FAH's core's. It passed 101 of 101 core-parity checks and 65 of 65 failure and stop-resume cases. Built for CUDA on the same RTX 5060 Ti, minicore ran at 180 s per 1% against FAH's core's 187 s over the unit's first 11%.
 

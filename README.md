@@ -1,19 +1,21 @@
 # fah-core-metal
 
-Folding@home on Apple Silicon GPUs.
+A real, fully working Folding@home core for Apple Silicon GPUs.
 
-People have asked for it since 2019 ([openmm#2489](https://github.com/openmm/openmm/issues/2489)) and
-2024 ([fah-client-bastet#303](https://github.com/FoldingAtHome/fah-client-bastet/issues/303)). Here it
-is. minicore is a Folding@home core that runs FAH's real OpenMM work units on the Mac's GPU through
-OpenMM's Metal platform. It folded a whole real FAH unit faster than FAH's own core on an NVIDIA card.
+People have asked for Folding@home on Apple GPUs since 2019
+([openmm#2489](https://github.com/openmm/openmm/issues/2489)) and 2024
+([fah-client-bastet#303](https://github.com/FoldingAtHome/fah-client-bastet/issues/303)). Here it is.
+minicore runs Folding@home's own OpenMM work units end to end on the Mac's GPU, through OpenMM's Metal
+platform, and writes FAH's result files. On a whole real FAH unit, my M3 Ultra took 5.06 h. FAH's own
+core took 5.37 h on an NVIDIA RTX 5060 Ti.
 
 | | P18264, a whole real FAH unit: 919,221 atoms, 5 ns |
 | ---: | --- |
-| **5.06 h** | on Apple Silicon, against 5.37 h for FAH's core 0x27 on an NVIDIA RTX 5060 Ti (182 s against 192 s per 1%) |
-| **21 of 21** | state tests passed on that unit, as FAH's core passed 21 |
-| **Six files** | in the result, in FAH's order with FAH's frame counts; three output files byte-identical to FAH's core's; box volume 9,307.4 against 9,307.1 nm³ |
-| **101 of 101** | core-parity checks passed |
-| **65 of 65** | failure and stop-resume cases passed |
+| **5.06 h** | on an M3 Ultra, against 5.37 h for FAH's core 0x27 on an NVIDIA RTX 5060 Ti (182 s against 192 s per 1%) |
+| **21 of 21** | of the unit's state tests passed against the CPU platform, as core 0x27's 21 did |
+| **Six files** | in the result, in core 0x27's order; viewerTop.json, xtcAtoms.csv.bz2 and checkpointIntegrator.xml byte-identical to core 0x27's |
+| **101 of 101** | core-parity checks passed, and 65 of 65 failure and stop-resume cases |
+| **16 s** | to fold the bundled test unit on the M3 Ultra after `./build.sh`, so you can check it yourself ([Try it](#try-it)) |
 
 ## Speed
 
