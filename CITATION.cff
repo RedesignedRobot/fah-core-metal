@@ -2,6 +2,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "fah-core-metal: a Folding@home OpenMM core for Apple Silicon GPUs through Metal"
 type: software
+version: 0.1.0
+date-released: 2026-10-17
 authors:
   - family-names: Ayub
     given-names: Amir

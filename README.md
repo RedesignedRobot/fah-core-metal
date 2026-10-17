@@ -91,6 +91,9 @@ cp -R test/alanine-dipeptide unit
 The fold logs to `unit/logfile_01.txt`, exits 100 (FINISHED_UNIT) and writes its result to
 `unit/wuresults_01.dat`.
 
+Ran it on your Mac? [Post your result](https://github.com/RedesignedRobot/fah-core-metal/issues/new?template=run-report.yml),
+whether it passed or not.
+
 ## Build it
 
 `./build.sh [-j JOBS] [OUT]` fetches OpenMM with the Metal platform at a pinned commit and links

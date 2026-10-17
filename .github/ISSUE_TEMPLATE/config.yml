@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Run it on your Mac
+    url: https://github.com/RedesignedRobot/fah-core-metal/discussions
+    about: Questions about building or running minicore on your Mac, or a run report you'd rather post as a reply.
