@@ -17,15 +17,21 @@ xtc=$prefix/../src/wrappers/python/openmm/app/internal/xtc_utils
 
 [ -e "$core" ] && { echo "$core exists; pick a new directory" >&2; exit 2; }
 mkdir -p "$core"
+obj=$(mktemp -d "${TMPDIR:-/tmp}/minicore-xtc.XXXXXX")
+trap 'rm -rf "$obj"' EXIT
+# xdrfile.cpp is GROMACS code bundled with OpenMM; its warnings are silenced here only, and the fix belongs upstream.
+for f in xtc xdrfile xdrfile_xtc; do
+    xcrun clang++ -std=c++17 -O2 -arch arm64 -mmacosx-version-min=15.0 -Wall -Wno-deprecated-declarations \
+        -Wno-unused-variable -Wno-unused-but-set-variable -Wno-implicit-const-int-float-conversion \
+        -I"$xtc/include" -c "$xtc/src/$f.cpp" -o "$obj/$f.o"
+done
 # -force_load keeps every object of libOpenMM_static.a. The serialization proxies register from an
 # __attribute__((constructor)) that nothing references, so a plain archive link drops them and
 # XmlSerializer fails with "no serialization proxy registered for type 'System'". The Metal archive
 # needs no force_load: registerMetalPlatform() pulls in what it uses.
 xcrun clang++ -std=c++17 -O2 -arch arm64 -mmacosx-version-min=15.0 -Wall -Wno-reorder-ctor -Wno-unused-function \
-    -Wno-implicit-const-int-float-conversion \
     -I"$prefix/include" -I"$xtc/include" -DOPENMM_USE_STATIC_LIBRARIES -DLEPTON_USE_STATIC_LIBRARIES \
-    "$src/minicore.cpp" "$src/host.cpp" "$src/wufiles.cpp" \
-    "$xtc/src/xtc.cpp" "$xtc/src/xdrfile.cpp" "$xtc/src/xdrfile_xtc.cpp" \
+    "$src/minicore.cpp" "$src/host.cpp" "$src/wufiles.cpp" "$obj/xtc.o" "$obj/xdrfile.o" "$obj/xdrfile_xtc.o" \
     "$prefix/lib/plugins/libOpenMMMetal_static.a" "$prefix/lib/plugins/libOpenMMCPU_static.a" \
     "$prefix/lib/plugins/libOpenMMPME_static.a" -Wl,-force_load,"$prefix/lib/libOpenMM_static.a" \
     -lbz2 -lz -lobjc -framework Metal -framework Foundation -framework QuartzCore -framework IOKit -framework CoreFoundation \
