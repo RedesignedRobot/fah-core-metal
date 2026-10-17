@@ -77,7 +77,7 @@ body:
     attributes:
       label: State tests
       description: |
-        The end of `unit/logfile_01.txt`, from the last `Completed ... steps` line to `Folding@home Core Shutdown`, plus any line starting `ERROR:` or `An exception occurred`. minicore runs a state test at every checkpoint and finishes the unit with exit 100 only if every one passed. A failed test shows in those lines, with a different exit code.
+        On a pass, the output of `tar -xOf unit/wuresults_01.dat science.log | grep -E 'Running tests|All tests passed'`. minicore runs a state test at every checkpoint, writes these lines to science.log inside the result, and exits 100 only if every one passed. On a failure, paste the end of `unit/logfile_01.txt` from the last `Completed ... steps` line, including any line starting `ERROR:` or `An exception occurred`.
       render: text
 
   - type: textarea

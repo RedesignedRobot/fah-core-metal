@@ -75,8 +75,8 @@ tar -xOf unit/wuresults_01.dat science.log | grep -E 'Running tests|All tests pa
 Add `-verbose` to the minicore line to get each test's force and energy figures in science.log as well.
 
 To check a change without the GPU, fold the same unit on OpenMM's CPU platform with
-`./build/core/minicore -dir unit --platform CPU`. That checks loading, checkpoints, state tests and the
-result file, but not Metal. It's what CI runs, because GitHub's macOS runners have no usable Metal GPU.
+`./build/core/minicore -dir unit --platform CPU`. That checks loading, checkpoints and the result file,
+but not Metal. The state tests run, but on the CPU platform they compare CPU with itself. It's what CI runs, because GitHub's macOS runners have no usable Metal GPU.
 
 `test/make-unit.py` rebuilds the test unit from OpenMM's own test PDB. You only need it if you change the
 unit, and it needs OpenMM with Python.

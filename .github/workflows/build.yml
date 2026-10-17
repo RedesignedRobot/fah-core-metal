@@ -1,7 +1,8 @@
 # Build check for pull requests. GitHub's hosted Apple Silicon runners are virtual machines with no usable
 # Metal GPU, so nothing here folds on Metal. The job builds minicore with build.sh as a Mac owner would,
 # checks that the Metal platform is linked in (registering it needs no GPU), and folds the bundled test unit
-# on OpenMM's CPU platform. That covers loading the unit, checkpoints, the state tests and the result file.
+# on OpenMM's CPU platform. That covers loading the unit, checkpoints and the result file. The state tests
+# run too, but on CPU they compare CPU with itself, so they check the plumbing and not accuracy.
 # Accuracy and speed on the GPU still come from runs on real Macs.
 name: build
 
@@ -53,7 +54,8 @@ jobs:
       - name: Metal platform is linked in
         run: ./build/core/minicore --info | grep -w Metal
 
-      # minicore's --platform CPU runs the whole unit on OpenMM's CPU platform, state tests and all.
+      # minicore's --platform CPU runs the whole unit on OpenMM's CPU platform. Its state tests compare CPU
+      # with CPU, so this proves they run and report, not that they would catch a wrong force.
       - name: Fold the test unit on the CPU platform
         run: |
           cp -R test/alanine-dipeptide unit
