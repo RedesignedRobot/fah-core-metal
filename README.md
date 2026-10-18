@@ -149,6 +149,10 @@ rm -rf build
 ./build.sh
 ```
 
+The Command Line Tools alone are enough (no Xcode). If an older install left a partial `c++/v1` directory
+in the Command Line Tools, which fails every file with `'cstdint' file not found`, `build.sh` says so and
+builds against the SDK's libc++ instead ([CLT-only build](docs/EVIDENCE.md#try-it-and-build-it)).
+
 Packaging it for FAH's client on macOS: [docs/PACKAGING.md](docs/PACKAGING.md) covers the arguments, files
 and exit codes, the service user, signing and notarization, and the requirements, each measured or taken
 from Apple's documentation.
