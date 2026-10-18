@@ -279,7 +279,7 @@ design and 2 FAH only.
 | macOS 15.0 or later | `build.sh`, `-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0`, and the comment above it; `src/link.sh` fails a binary whose minos is below 15.0 |
 | Metal Shading Language 3.2 | Fork 90fa9544c, `platforms/metal/src/MetalContext.cpp` line 454, `options->setLanguageVersion(MTL::LanguageVersion3_2)` |
 | Apple7 and later | The GPU families of Apple Silicon Macs. The Metal platform checks no family; the M3 Ultra and the M2 are the two I ran |
-| Tested on macOS 27.2 | `BUILD-INFO` of gpuq 2196, "host macOS 27.2 26B5101f, Apple M3 Ultra"; `core-timing/results/m2/BUILD-INFO-static`, "host macOS 27.2 26B5101f, Apple M2". No run on an earlier macOS |
+| Tested on macOS 15.8.1, 27.0.1 and 27.2 | `BUILD-INFO` of gpuq 2196, "host macOS 27.2 26B5101f, Apple M3 Ultra"; `core-timing/results/m2/BUILD-INFO-static`, "host macOS 27.2 26B5101f, Apple M2". Run reports on 27.0.1 and, from issue #10, on 15.8.1 (24H212): see [Tested Macs](#tested-macs). No run on macOS 26 |
 
 ### Tested Macs
 
@@ -293,6 +293,7 @@ the build's `--info` line, the exit code and the state test lines from the bundl
 | M4 Pro | 20 | 64 GB | 27.0.1 (26A434) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100 | 11 "All tests passed." | [issue #7](https://github.com/RedesignedRobot/fah-core-metal/issues/7), a run-report form, opened 2026-10-18. GPU info "Device: Apple M4 Pro", "Driver: macOS 27.0.1" |
 | M1 Max | 32 | 64 GB | 27.0.1 (26A434) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100, inferred | 11 "All tests passed." | [issue #8](https://github.com/RedesignedRobot/fah-core-metal/issues/8), a run-report form, opened 2026-10-18. GPU info "Device: Apple M1 Max", "Driver: macOS 27.0.1". The Exit code field is empty, and its Chip field reads "Apple M1"; report.sh fills State tests from the result file only when minicore exits 100. |
 | M2 | 10 | 16 GB | 27.0.1 (26A434) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100, inferred | 11 "All tests passed." | [issue #9](https://github.com/RedesignedRobot/fah-core-metal/issues/9), a run-report form, opened 2026-10-18. GPU info "Device: Apple M2", "Driver: macOS 27.0.1". The Exit code field is empty; report.sh fills State tests from the result file only when minicore exits 100 |
+| M4 Pro | 16 | 24 GB | 15.8.1 (24H212) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100 | 11 "All tests passed." | [issue #10](https://github.com/RedesignedRobot/fah-core-metal/issues/10), a run-report form, opened 2026-10-18. GPU info "Device: Apple M4 Pro", "Driver: macOS 15.8.1"; its Chip field reads "Apple M4". The first run on macOS 15 |
 
 ## Packaging
 
