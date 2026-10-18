@@ -63,6 +63,35 @@ case $sdk in
 1[5-9]*|2[0-9]*) ;;
 *) echo "the macOS SDK is $sdk; the Metal platform compiles MSL 3.2, which needs the macOS 15 SDK" >&2; exit 2 ;;
 esac
+# Apple clang takes libc++ from <toolchain>/usr/include/c++/v1 whenever that directory exists, and then
+# leaves the SDK's usr/include/c++/v1 out of the search. A partial copy there, left by an older Command Line
+# Tools install, fails every C++ file with "'cstdint' file not found". If a probe compile hits that, every
+# clang this script starts, CMake's and link.sh's xcrun clang++, gets the SDK's libc++ through the clang
+# driver's CCC_OVERRIDE_OPTIONS ("#" keeps it quiet).
+sdk_path=$(xcrun --sdk macosx --show-sdk-path)
+probe() {
+    printf '#include <cstdint>\n#include <exception>\nint main() { return 0; }\n' |
+        xcrun clang++ -x c++ -std=c++17 -stdlib=libc++ -arch "$arch" -isysroot "$sdk_path" -fsyntax-only - 2>&1
+}
+libcxx=default
+if ! probe_log=$(probe); then
+    toolchain_libcxx=$(dirname "$(xcrun -f clang++)")/../include/c++/v1
+    if [ -d "$toolchain_libcxx" ] && [ -f "$sdk_path/usr/include/c++/v1/cstdint" ]; then
+        toolchain_libcxx=$(cd "$toolchain_libcxx" && pwd -P)
+        export CCC_OVERRIDE_OPTIONS="# +-nostdinc++ +-cxx-isystem$sdk_path/usr/include/c++/v1"
+        libcxx="$sdk_path/usr/include/c++/v1, not $toolchain_libcxx"
+        probe_log=$(probe) || libcxx=
+    else
+        libcxx=
+    fi
+    if [ -z "$libcxx" ]; then
+        echo "$probe_log" | head -n 5 >&2
+        echo "xcrun clang++ can't compile #include <cstdint> against $sdk_path; its search list:" >&2
+        echo | xcrun clang++ -x c++ -stdlib=libc++ -isysroot "$sdk_path" -E -v - 2>&1 | sed -n '/search starts/,/End of search/p' >&2
+        exit 2
+    fi
+    echo "$toolchain_libcxx hides the SDK's libc++; building with $sdk_path/usr/include/c++/v1" >&2
+fi
 
 mkdir -p "$out"
 out=$(cd "$out" && pwd)
@@ -122,6 +151,7 @@ linked=$(date +%s)
     echo "arch $arch, OpenCL $opencl_lib"
     echo "cmake $cmake_version, $generator, $jobs jobs"
     echo "clang $(xcrun clang --version | head -n 1)"
+    echo "libc++ $libcxx"
     echo "sdk macosx $sdk, host macOS $(sw_vers -productVersion) $(sw_vers -buildVersion), $(sysctl -n machdep.cpu.brand_string)"
     libs="libOpenMM_static.a plugins/libOpenMMMetal_static.a plugins/libOpenMMCPU_static.a plugins/libOpenMMPME_static.a"
     [ "$opencl" = 1 ] && libs="$libs plugins/libOpenMMOpenCL_static.a"
