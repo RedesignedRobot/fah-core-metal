@@ -136,10 +136,11 @@ The fold logs to `unit/logfile_01.txt`, exits 100 (FINISHED_UNIT) and writes its
 `unit/wuresults_01.dat`.
 
 Tested Macs: the M3 Ultra on macOS 27.2, and on macOS 27.0.1 a base M3 (10 GPU cores, 16 GB), an M4 Pro
-(20 GPU cores) and an M1 Max (32 GPU cores) from run reports
+(20 GPU cores), an M1 Max (32 GPU cores) and a base M2 (10 GPU cores, 16 GB) from run reports
 [#5](https://github.com/RedesignedRobot/fah-core-metal/issues/5),
-[#7](https://github.com/RedesignedRobot/fah-core-metal/issues/7) and
-[#8](https://github.com/RedesignedRobot/fah-core-metal/issues/8). On each the test unit passed all 11 state
+[#7](https://github.com/RedesignedRobot/fah-core-metal/issues/7),
+[#8](https://github.com/RedesignedRobot/fah-core-metal/issues/8) and
+[#9](https://github.com/RedesignedRobot/fah-core-metal/issues/9). On each the test unit passed all 11 state
 tests ([details](docs/EVIDENCE.md#tested-macs)).
 
 ## Build it
