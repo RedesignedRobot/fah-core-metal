@@ -43,6 +43,14 @@ fi
 for tool in git cmake xcrun; do
     command -v $tool > /dev/null || { echo "$tool is not on PATH" >&2; exit 2; }
 done
+# An Intel-only CMake, such as an old /usr/local Homebrew's, runs under Rosetta, and every compiler it starts
+# then fails in xcrun ("libxcrun.dylib ... missing compatible architecture"). A script cmake is not checked.
+if [ "$(uname -m)" = arm64 ] && cmake_archs=$(lipo -archs "$(command -v cmake)" 2> /dev/null); then
+    case " $cmake_archs" in
+    *" arm64"*) ;;
+    *) echo "$(command -v cmake) is $cmake_archs only; install an Apple silicon CMake (brew install cmake, in /opt/homebrew) and put it first on PATH" >&2; exit 2 ;;
+    esac
+fi
 # OpenMM's CMakeLists.txt at $commit starts with CMAKE_MINIMUM_REQUIRED(VERSION 3.24).
 cmake_version=$(cmake --version | awk 'NR == 1 {print $3}')
 case $cmake_version in
