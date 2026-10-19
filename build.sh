@@ -40,6 +40,10 @@ if [ "$arch" = arm64 ]; then
 else
     [ "$(uname -s)" = Darwin ] || { echo "build on a Mac" >&2; exit 2; }
 fi
+# The CMake.app from cmake.org's installer keeps its command line tools out of PATH.
+if ! command -v cmake > /dev/null && [ -x /Applications/CMake.app/Contents/bin/cmake ]; then
+    PATH=/Applications/CMake.app/Contents/bin:$PATH
+fi
 for tool in git cmake xcrun; do
     command -v $tool > /dev/null || { echo "$tool is not on PATH" >&2; exit 2; }
 done
