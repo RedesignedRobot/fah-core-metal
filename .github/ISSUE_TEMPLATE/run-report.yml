@@ -64,6 +64,8 @@ body:
       description: |
         The number after `exit` that `./build/core/minicore -dir unit -gpu-vendor apple -gpu 0; echo "exit $?"` printed. 100 means FINISHED_UNIT.
       placeholder: "100"
+    validations:
+      required: true
 
   - type: textarea
     id: gpu-info
