@@ -320,9 +320,12 @@ exits 126. It never folds on a CPU device.
 
 The runners' OpenCL lists one device, `Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz, vendor Intel, CPU, fp64 yes`,
 and no GPU, so the client's arguments exit 126 there: `ERROR:OpenCL device 0 is not a GPU, and no OpenCL GPU
-can run mixed precision`. Nothing in CI folds through OpenCL. A fold on an Intel or AMD GPU is untested.
-The only OpenCL folds so far ran an arm64 OpenCL build on the M3 Ultra's GPU, which reports no fp64: mixed
-precision exited 126, and single precision exited 100 with 11 state tests passed (`opencl-x86/REPORT.md`).
+can run mixed precision`. Nothing in CI folds through OpenCL. An arm64 OpenCL build on the M3 Ultra's GPU,
+which reports no fp64, exited 126 at mixed precision, and exited 100 with 11 state tests passed at single
+precision (`opencl-x86/REPORT.md`). The first fold on an Intel Mac is
+[run report #6](https://github.com/RedesignedRobot/fah-core-metal/issues/6): a Xeon W-3245 with an AMD Radeon
+Pro Vega II on macOS 15.8.1. The core logged both OpenCL devices, picked the GPU, device 1, and folded the test
+unit at mixed precision: exit 100, 11 state tests passed.
 
 ## 5. Run reports
 
