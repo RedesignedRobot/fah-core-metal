@@ -217,8 +217,9 @@ section 1, which names the evidence file for each.
 | --- | --- | --- |
 | Test unit | 2,269 atoms, 25,000 steps of 4 fs (100 ps) | `test/make-unit.py`, `test/alanine-dipeptide/core.xml`; the fold's own log line "2269 atoms" |
 | Transcript, 16 s | Lines from the fold's standard output, exit 100, 101 viewer frames, 100 XTC frames, state tests 11 pass and 0 fail | gpuq job 2197: `./build/core/minicore -dir unit -gpu-vendor apple -gpu 0` in the fresh clone of 3fc8475 |
-| OpenMM commit | 90fa9544c, three patches | `build.sh`, `patches/` |
+| OpenMM commit | openmm/openmm master 9e320c6c3, the merge of openmm#5519, with the four patches in `patches/`. Until 2026-10-23 `build.sh` pinned the fork RedesignedRobot/openmm at 90fa9544c, and every other row of this table ran that fork | `build.sh`, `patches/`, the "Upstream pin" row |
 | Build time, 15 minutes | 906 s: fetch and configure 16 s, build and install 880 s, link 10 s; load average about 70 at the start | gpuq job 2196, `BUILD-INFO` of the fresh clone of 3fc8475 (`git clone --no-local` of this branch). minicore 7,036,640 bytes, sha256 aabfedc0acd41d4e |
+| Upstream pin, 2026-10-23 | `taskpolicy -b nice -n 10 ./build.sh -j 8 <out>` at 328a546 on the M3 Ultra: exit 0 in 209 s (fetch and configure 9 s, build and install 173 s, link 27 s). BUILD-INFO "commit 9e320c6c3e966666573ccd1979072a99dc519a8d", "repo https://github.com/openmm/openmm.git", patches 0001 to 0004, CMake 4.4.4, SDK 27.2, Apple clang 21.0.0, "libc++ default". minicore 7,091,888 bytes, sha256 6ed5d184c0b33e0c9f17ed40381763ccd0f36f7a39cafd2b92daff3e5fd861db; `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal". That minicore beside `git archive` of `report.sh` and `test/`: `./report.sh` exits 100 with 11 "All tests passed." on the M3 Ultra (60 GPU cores, 96 GB, macOS 27.2 26B5101f) and on the base M2 mini (10 GPU cores, 8 GB, macOS 27.2 26B5101f, 27 s wall at nice 0). Both links carry `exit-code=100` and the full chip name | Lane fah-upstream-pin: the build under a shared studio-cpu booking, the Studio fold under a shared studio-gpu booking. `shasum -a 256` gave the same hash on both Macs before the folds |
 | The same command at 0d2d901 | Nothing on the terminal (0 bytes of stdout and stderr), exit 100 in 15 s; `unit/logfile_01.txt` ends "Folding@home Core Shutdown: FINISHED_UNIT", 101 viewer frames, `unit/wuresults_01.dat` holds the six members, and its science.log has 11 "All tests passed." | gpuq job 2237, ceb9707's source linked by `src/link.sh` against the fresh clone's OpenMM prefix (minicore sha256 5e7cc197761cb69f) |
 | Start-up interrupt on this repo's build | P18264 SIGINT 3 s into start-up: "Caught signal SIGINT(2)", "Exiting, please wait. . .", "ERROR:102: Core startup was interrupted by client.", "Folding@home Core Shutdown: INTERRUPTED", exit 102 | gpuq job 2197 |
 | Command Line Tools only | `DEVELOPER_DIR=/Library/Developer/CommandLineTools ./build.sh <out>` in a fresh clone of 352517a: exit 0 in 57 s (fetch and configure 6 s, build and install 47 s, link 3 s), CMake 4.4.4, SDK 27.0, Apple clang 21.0.0, BUILD-INFO "libc++ default"; `./report.sh <out>` with the same DEVELOPER_DIR: exit 100, 11 "All tests passed.". With a stale `usr/include/c++/v1` in a copy of the Command Line Tools, 636b9f2 fails with "'string' file not found" and "'exception' file not found" and 352517a builds (exit 0, "libc++ <sdk>/usr/include/c++/v1, not <toolchain>/usr/include/c++/v1") | Lane fah-core-metal-builds-with-the-command-l, `REPORT.md`; M3 Ultra, macOS 27.2 |
@@ -280,7 +281,7 @@ design and 2 FAH only.
 | --- | --- |
 | arm64 only | `src/link.sh`, `-arch arm64` |
 | macOS 15.0 or later | `build.sh`, `-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0`, and the comment above it; `src/link.sh` fails a binary whose minos is below 15.0 |
-| Metal Shading Language 3.2 | Fork 90fa9544c, `platforms/metal/src/MetalContext.cpp` line 454, `options->setLanguageVersion(MTL::LanguageVersion3_2)` |
+| Metal Shading Language 3.2 | OpenMM 9e320c6c3, `platforms/metal/src/MetalContext.cpp` line 486, `options->setLanguageVersion(MTL::LanguageVersion3_2)` (line 454 on the fork at 90fa9544c) |
 | Apple7 and later | The GPU families of Apple Silicon Macs. The Metal platform checks no family; the M3 Ultra and the M2 are the two I ran |
 | Tested on macOS 15.8.1, 27.0.1 and 27.2 | `BUILD-INFO` of gpuq 2196, "host macOS 27.2 26B5101f, Apple M3 Ultra"; `core-timing/results/m2/BUILD-INFO-static`, "host macOS 27.2 26B5101f, Apple M2". Run reports on 27.0.1 and, from issue #10, on 15.8.1 (24H212): see [Tested Macs](#tested-macs). No run on macOS 26 |
 
@@ -640,13 +641,14 @@ test PDB.
 
 ### Build it
 
-`./build.sh [-j JOBS] [OUT]` fetches OpenMM from
-[RedesignedRobot/openmm](https://github.com/RedesignedRobot/openmm) at 90fa9544c, branch
-`metal-mixed-master`: OpenMM master with the Metal platform (openmm#5488) and df64 mixed precision. It
-applies the three patches in `patches/` and builds OpenMM's Reference, CPU, CPU PME and Metal platforms
+`./build.sh [-j JOBS] [OUT]` fetches OpenMM from [openmm/openmm](https://github.com/openmm/openmm) at
+9e320c6c3, master at the merge of openmm#5519 (df64 mixed precision for Metal), which sits on openmm#5488
+(the Metal platform). It applies the four patches in `patches/`, all CMake plumbing for a static build,
+and builds OpenMM's Reference, CPU, CPU PME and Metal platforms
 as static libraries. Then `src/link.sh` links minicore into one arm64 executable with OpenMM inside and
 no plugin directory. The script refuses a binary that links anything outside the OS. On the M3 Ultra a fresh clone builds in
-15 minutes at `nice 10` with 6 jobs, on a machine with a load average near 70 from other work.
+15 minutes at `nice 10` with 6 jobs, on a machine with a load average near 70 from other work; that was
+the fork 90fa9544c. At 9e320c6c3 it built in 209 s with 8 jobs, load average near 27.
 
 `OUT` defaults to `./build`. It holds the OpenMM checkout, the CMake tree, the static prefix,
 `core/minicore` and `BUILD-INFO`, which records the commit, the patches' hashes, the toolchain and the
