@@ -7,10 +7,10 @@ patches/*.patch
     Edits to OpenMM's CMake files. They are OpenMM code and carry OpenMM's license for the files they
     change (MIT for the API and build files; LGPL 3 for platforms/metal).
 
-OpenMM, fetched by build.sh from https://github.com/RedesignedRobot/openmm at 90fa9544c
+OpenMM, fetched by build.sh from https://github.com/openmm/openmm at 9e320c6c3
     Portions copyright (c) 2008-2026 Stanford University and the Authors. The API, the Reference
-    platform and the CPU platform are under the MIT License. The Metal platform (openmm#5488, by Peter
-    Eastman) is under the GNU Lesser General Public License 3 or later. The full terms, including
+    platform and the CPU platform are under the MIT License. The Metal platform (openmm#5488) and its
+    mixed precision (openmm#5519), both by Peter Eastman, are under the GNU Lesser General Public License 3 or later. The full terms, including
     those of SFMT, irrXML, pocketfft and the other libraries inside OpenMM, are in the fetched tree at
     docs-source/licenses/Licenses.txt, LGPL.txt and GPL.txt.
 
