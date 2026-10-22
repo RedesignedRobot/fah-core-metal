@@ -1,5 +1,6 @@
 arm,platform,openmm,seeds,mean_kj_mol_ps,se_kj_mol_ps
 Metal mixed before #5492,Metal mixed,fork 043395619,10,-0.0047,0.0009
-Metal mixed (this build),Metal mixed,fork 90fa9544c,10,-0.0010,0.0006
+Metal mixed (old fork),Metal mixed,fork 90fa9544c,10,-0.0010,0.0006
+Metal mixed (this build),Metal mixed,openmm#5519 bb49348f7,4,-0.0045,0.0012
 CUDA mixed,CUDA mixed,OpenMM 8.6.1,10,-0.0001,0.0011
 CPU,CPU,fork 043395619,4,0.0026,0.0008
