@@ -17,9 +17,9 @@
 # as a cross-build on Apple silicon; MINICORE_OPENCL=1 adds OpenMM's OpenCL platform, for AMD GPUs.
 set -eu
 
-repo=https://github.com/RedesignedRobot/openmm.git
-# Branch metal-mixed-master: OpenMM master d3e32b4da (the Metal platform, openmm#5488) plus df64 mixed precision.
-commit=90fa9544cd38aa866e47ed415c9ef1b6dd8c5aca
+repo=https://github.com/openmm/openmm.git
+# OpenMM master at the merge of openmm#5519 (df64 mixed precision for Metal), on top of openmm#5488 (the Metal platform).
+commit=9e320c6c3e966666573ccd1979072a99dc519a8d
 jobs=6
 while getopts j: opt; do
     case $opt in
