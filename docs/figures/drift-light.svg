@@ -28,12 +28,12 @@
 <circle cx="430.0" cy="63.0" r="5" fill="#0969da"/>
 <text x="610.0" y="67.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">-0.0010 ± 0.0006</text>
 <text x="238.0" y="92.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="600">Metal mixed (this build)</text>
-<text x="238.0" y="105.0" font-size="11" fill="#59636e" text-anchor="end" font-weight="normal">openmm#5519 bb49348f7, 4 runs</text>
-<line x1="296.8" y1="95.0" x2="364.8" y2="95.0" stroke="#0969da" stroke-width="2.0"/>
-<line x1="296.8" y1="90.0" x2="296.8" y2="100.0" stroke="#0969da" stroke-width="2.0"/>
-<line x1="364.8" y1="90.0" x2="364.8" y2="100.0" stroke="#0969da" stroke-width="2.0"/>
-<circle cx="330.8" cy="95.0" r="5" fill="#0969da"/>
-<text x="610.0" y="99.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">-0.0045 ± 0.0012</text>
+<text x="238.0" y="105.0" font-size="11" fill="#59636e" text-anchor="end" font-weight="normal">openmm 9e320c6c3, 10 runs</text>
+<line x1="291.2" y1="95.0" x2="342.2" y2="95.0" stroke="#0969da" stroke-width="2.0"/>
+<line x1="291.2" y1="90.0" x2="291.2" y2="100.0" stroke="#0969da" stroke-width="2.0"/>
+<line x1="342.2" y1="90.0" x2="342.2" y2="100.0" stroke="#0969da" stroke-width="2.0"/>
+<circle cx="316.7" cy="95.0" r="5" fill="#0969da"/>
+<text x="610.0" y="99.0" font-size="12" fill="#1f2328" text-anchor="start" font-weight="normal">-0.0050 ± 0.0009</text>
 <text x="238.0" y="124.0" font-size="12" fill="#1f2328" text-anchor="end" font-weight="600">CUDA mixed</text>
 <text x="238.0" y="137.0" font-size="11" fill="#59636e" text-anchor="end" font-weight="normal">OpenMM 8.6.1, 10 runs</text>
 <line x1="424.3" y1="127.0" x2="486.7" y2="127.0" stroke="#1a7f37" stroke-width="2.0"/>

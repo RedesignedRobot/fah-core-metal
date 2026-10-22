@@ -62,8 +62,9 @@ platform, and folds them to the standard of Folding@home's own core.
   <img alt="Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on this build, CUDA mixed and CPU" src="docs/figures/drift-light.svg">
 </picture>
 
-*Energy drift in NVE. The fork this repo first built, 10 runs, sits beside CUDA (Welch t -0.7); this
-build, 4 runs, sits 0.0044 kJ/mol/ps below it (Welch t -2.7).*
+*Energy drift in NVE. The fork this repo first built, 10 runs, sits beside CUDA (Welch t -0.7). This
+build drifts -0.0050 ± 0.0009 kJ/mol/ps over 10 runs against CUDA's -0.0001 ± 0.0011, 0.0049 kJ/mol/ps
+below it (Welch t -3.5). That is -4.2e-5 kT per ns per degree of freedom.*
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/distance-dark.svg">
@@ -170,8 +171,9 @@ from Apple's documentation.
 ### Is it as accurate as FAH's core?
 
 Yes. It passed all 21 of the unit's state tests, as FAH's core did, and its errors sit with CUDA's. Its
-energy drift in NVE is -0.0045 ± 0.0012 kJ/mol/ps over 4 runs, -3.8e-5 kT per ns per degree of freedom,
-against CUDA's -0.0001 ± 0.0011.
+energy drift in NVE is -0.0050 ± 0.0009 kJ/mol/ps over 10 runs, -4.2e-5 kT per ns per degree of freedom.
+CUDA's is -0.0001 ± 0.0011, so this build loses 0.0049 kJ/mol/ps more than CUDA, and 10 runs each tell
+the two apart (Welch t -3.5).
 
 ### Can Folding@home use the Apple Silicon GPU?
 
