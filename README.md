@@ -59,11 +59,12 @@ platform, and folds them to the standard of Folding@home's own core.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/drift-dark.svg">
-  <img alt="Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on upstream OpenMM without patch 0005 and on this build with it, CUDA mixed and CPU" src="docs/figures/drift-light.svg">
+  <img alt="Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on upstream OpenMM 9e320c6c3 without and with patch 0005 and on this build, c403e95b3 with it, CUDA mixed and CPU" src="docs/figures/drift-light.svg">
 </picture>
 
-*Energy drift in NVE. This build drifts -0.0010 ± 0.0007 kJ/mol/ps over 10 runs, beside CUDA's
--0.0001 ± 0.0011 (Welch t -0.68), or -8.1e-6 kT per ns per degree of freedom. Upstream OpenMM 9e320c6c3
+*Energy drift in NVE. This build drifts -0.0005 ± 0.0007 kJ/mol/ps over 10 runs, beside CUDA's
+-0.0001 ± 0.0011 (Welch t -0.31), or -4.1e-6 kT per ns per degree of freedom. The old pin, 9e320c6c3,
+drifted -0.0010 ± 0.0007 with the same patch (Welch t +0.50 against this build). Upstream OpenMM 9e320c6c3
 without patch 0005 drifts -0.0050 ± 0.0009 over 10 runs (Welch t -3.50 against CUDA). The fork this
 repo first built sits beside CUDA too (Welch t -0.73).*
 
@@ -173,16 +174,18 @@ from Apple's documentation.
 ### Is it as accurate as FAH's core?
 
 Yes. It passed all 21 of the unit's state tests, as FAH's core did, and its errors sit with CUDA's. Its
-energy drift in NVE is -0.0010 ± 0.0007 kJ/mol/ps over 10 runs, -8.1e-6 kT per ns per degree of freedom.
-CUDA's is -0.0001 ± 0.0011, and 10 runs each don't tell the two apart (Welch t -0.68, p 0.51).
+energy drift in NVE is -0.0005 ± 0.0007 kJ/mol/ps over 10 runs, -4.1e-6 kT per ns per degree of freedom.
+CUDA's is -0.0001 ± 0.0011, and 10 runs each don't tell the two apart (Welch t -0.31, p 0.76).
 
 That takes patch 0005. Upstream OpenMM wraps molecules back into the box by the double precision box,
 which the Metal kernels never use in mixed precision (they see it rounded to float), so each reorder changes every pair length
 across that face, measured at +0.002 kJ/mol per reorder; patch 0005 wraps by the float box instead.
-Without it, upstream 9e320c6c3 drifts -0.0050 ± 0.0009 over 10 runs (Welch t -3.50 against CUDA). I
-found the cause in lab lane pin-drift-bisect (lab commit cdf10b66) and measured the 10 runs with the
-patch in lane pin-drift-confirm (lab commit 26a0344c, raw energies in
-`pin-drift-confirm/results/drift/s1..s10`). [docs/EVIDENCE.md](docs/EVIDENCE.md#energy-drift-figure-6)
+Without it, upstream 9e320c6c3, the pin before c403e95b3, drifts -0.0050 ± 0.0009 over 10 runs (Welch t
+-3.50 against CUDA); that arm was measured on 9e320c6c3 only. I found the cause in lab lane
+pin-drift-bisect (lab commit cdf10b66) and measured 10 runs of 9e320c6c3 with the patch in lane
+pin-drift-confirm (lab commit 26a0344c). The 10 runs of this build, c403e95b3 with the patch, are lanes
+pr5524-check and pin-c403-drift (lab commit 3de1b173, raw energies in
+`pin-c403-drift/results/drift/s5..s10` and `pr5524-check/results/drift/s1..s4`). [docs/EVIDENCE.md](docs/EVIDENCE.md#energy-drift-figure-6)
 has the tables.
 
 ### Can Folding@home use the Apple Silicon GPU?

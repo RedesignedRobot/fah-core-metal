@@ -526,7 +526,7 @@ def drift(t):
         hollow = x["arm"].endswith("#5492")
         body.append(circle(sx(m), y + 3, 5, t["paper"] if hollow else c, c if hollow else None))
         body.append(text(right + 10, y + 7, f"{m:+.4f} ± {se:.4f}", t["fg"], 12))
-    return svg(right + 130, bottom + 42, body, "Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on upstream OpenMM without patch 0005 and on this build with it, CUDA mixed and CPU")
+    return svg(right + 130, bottom + 42, body, "Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on upstream OpenMM 9e320c6c3 without and with patch 0005 and on this build, c403e95b3 with it, CUDA mixed and CPU")
 
 
 def parity(t):

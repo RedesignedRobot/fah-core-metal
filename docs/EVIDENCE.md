@@ -200,7 +200,7 @@ section 1, which names the evidence file for each.
 | Result members | six, same order, plain ustar | "wuresults members", "wuresults_01.dat container" |
 | Exit | 100 | "Exit" |
 | Log shapes | 87 in the real logfile_01.txt, 35 word for word | `core-realwu/scripts/logshape.py` on the real log (`fah-wu/p18264-r153-c0-g272/results/final/logfile_01.txt`) and the logfile_01.txt of gpuq 2235's 5,000-step copy prints "real 87 shapes, minicore 59, shared 35". Before ceb9707 the same on gpuq 2199 and the M2 run printed "minicore 28, shared 19". The 52 left name FAH's build and libraries, the signature check, the client's arguments, the CPU and GPU, the CUDA and OpenCL platforms, and four cbang System rows (CPU ID, Free Memory, Has Battery, On Battery) whose values come from cbang's hardware probes |
-| Energy conservation | Metal mixed on openmm/openmm 9e320c6c3 with patch 0005, what `build.sh` builds: -0.0010 ± 0.0007 kJ/mol/ps (mean ± SE, 10 seeds), Welch t -0.68 (15.3 dof, p 0.51) against CUDA mixed -0.0001 ± 0.0011 (10 seeds). Upstream 9e320c6c3 without patch 0005: -0.0050 ± 0.0009 (10 seeds), Welch t -3.50 against CUDA. Metal mixed on fork 90fa9544c, the pin until 2026-10-23: -0.0010 ± 0.0006 (10 seeds), Welch t -0.73 | Not from core-realwu. 9e320c6c3 with patch 0005: `pin-drift-confirm/REPORT.md` and `pin-drift-confirm/table.md` (lab commit 26a0344c), raw `pin-drift-confirm/results/drift/s1..s10`; the cause, `pin-drift-bisect/REPORT.md` (lab commit cdf10b66). Upstream 9e320c6c3: `pin-drift-10/REPORT.md` and `pin-drift-10/table.md` (lab commit 1b511ead), raw `pin-drift-10/results/drift/s1..s10`. Fork 90fa9544c: `drift-fix/REPORT.md`, Verdict and the drift table (lab commit 3ec69c3c), raw `drift-fix/results/raw/mm90fa/s1..s10` and `drift-fix/results/drift-runs.csv`. CUDA is OpenMM 8.6.1, raw `cuda-ref/results/drift/cuda-mixed/` |
+| Energy conservation | Metal mixed on openmm/openmm c403e95b3 with patch 0005, what `build.sh` builds: -0.0005 ± 0.0007 kJ/mol/ps (mean ± SE, 10 seeds), Welch t -0.31 (14.7 dof, p 0.76) against CUDA mixed -0.0001 ± 0.0011 (10 seeds). 9e320c6c3 with patch 0005, the pin until 2026-10-24: -0.0010 ± 0.0007 (10 seeds), Welch t -0.68 against CUDA. Upstream 9e320c6c3 without patch 0005, measured on 9e320c6c3 only: -0.0050 ± 0.0009 (10 seeds), Welch t -3.50 against CUDA. Metal mixed on fork 90fa9544c, the pin until 2026-10-23: -0.0010 ± 0.0006 (10 seeds), Welch t -0.73 | Not from core-realwu. c403e95b3 with patch 0005: `pin-c403-drift/REPORT.md` and `pin-c403-drift/table.md` (lab commit 3de1b173), raw `pr5524-check/results/drift/s1..s4` and `pin-c403-drift/results/drift/s5..s10`. 9e320c6c3 with patch 0005: `pin-drift-confirm/REPORT.md` and `pin-drift-confirm/table.md` (lab commit 26a0344c), raw `pin-drift-confirm/results/drift/s1..s10`; the cause, `pin-drift-bisect/REPORT.md` (lab commit cdf10b66). Upstream 9e320c6c3: `pin-drift-10/REPORT.md` and `pin-drift-10/table.md` (lab commit 1b511ead), raw `pin-drift-10/results/drift/s1..s10`. Fork 90fa9544c: `drift-fix/REPORT.md`, Verdict and the drift table (lab commit 3ec69c3c), raw `drift-fix/results/raw/mm90fa/s1..s10` and `drift-fix/results/drift-runs.csv`. CUDA is OpenMM 8.6.1, raw `cuda-ref/results/drift/cuda-mixed/` |
 
 ## Where it differs
 
@@ -242,22 +242,27 @@ expression over the "State test at step" lines.
 | README figure | Value | Source |
 | --- | --- | --- |
 | System and protocol | amber20-dhfr, 23,558 atoms, PME; 10 ps LangevinMiddle, then 1 ns VerletIntegrator NVE at 2 fs, constraint tolerance 1e-8; drift is the least-squares slope of total energy against time | `drift-fix/REPORT.md` section 3; `drift/scripts/run1ns.py` (`np.polyfit(times, energies, 1)`) |
-| Metal mixed, openmm/openmm 9e320c6c3 with patch 0005, what `build.sh` builds | -0.0010 ± 0.0007 kJ/mol/ps, 10 runs (seeds 1 to 10: -0.0045, +0.0015, +0.0005, -0.0029, +0.0017, -0.0023, +0.0011, -0.0033, -0.0006, -0.0011); SD between runs 0.0022; -8.1e-6 kT per ns per degree of freedom; final max relative constraint error 4.68e-8. The build is a718032d9 in the lab's OpenMM tree, the commit `patches/0005-*.patch` was made from with `git format-patch` | `pin-drift-confirm/REPORT.md` and `pin-drift-confirm/table.md` (lab commit 26a0344c), raw `pin-drift-confirm/results/drift/s1..s10`; `pin-drift-confirm/scripts/verify.py` wrote the table after checking all 40 runs of its four arms against their raw energy logs |
+| Metal mixed, openmm/openmm c403e95b3 with patch 0005, what `build.sh` builds | -0.0005 ± 0.0007 kJ/mol/ps, 10 runs (seeds 1 to 10: -0.0018, -0.0023, -0.0018, +0.0036, +0.0006, +0.0016, -0.0006, -0.0027, -0.0021, +0.0006); SD between runs 0.0021; -4.1e-6 kT per ns per degree of freedom; final max relative constraint error 4.68e-8. The source is c403e95b3 with a718032d9 cherry-picked, tree 062fae2ef. Seeds 1 to 4 ran on lane pr5524-check's build of 8f65e49f4 with the same cherry-pick, which has the same tree, and seeds 5 to 10 on lane pin-c403-drift's | `pin-c403-drift/REPORT.md` and `pin-c403-drift/table.md` (lab commit 3de1b173), raw `pr5524-check/results/drift/s1..s4` and `pin-c403-drift/results/drift/s5..s10`; `pin-c403-drift/scripts/verify.py` wrote the table after checking all 40 runs of its four arms against their raw energy logs |
+| c403e95b3 against 9e320c6c3 | openmm#5524, "Optimizations to Metal platform", merged 2026-10-23 as c403e95b3: 9 lines in 7 files. NonbondedForce runs PME on its own queue, MetalEvent uses `MTL::Event`, sort.metal's computeRange reduces with simd_min/simd_max, MetalSort's short-list cap is 1500, and df64 `fabs` tests the high word. `git rev-parse c403e95b3^{tree}` equals `8f65e49f4^{tree}`, the PR head lane pr5524-check tested | `pr5524-check/REPORT.md` (lab commit cc0b9600); `pin-c403-drift/REPORT.md`, "Tree equality and pooling" |
+| Metal mixed, openmm/openmm 9e320c6c3 with patch 0005, the pin until 2026-10-24 | -0.0010 ± 0.0007 kJ/mol/ps, 10 runs (seeds 1 to 10: -0.0045, +0.0015, +0.0005, -0.0029, +0.0017, -0.0023, +0.0011, -0.0033, -0.0006, -0.0011); SD between runs 0.0022; -8.1e-6 kT per ns per degree of freedom; final max relative constraint error 4.68e-8. The build is a718032d9 in the lab's OpenMM tree, the commit `patches/0005-*.patch` was made from with `git format-patch` | `pin-drift-confirm/REPORT.md` and `pin-drift-confirm/table.md` (lab commit 26a0344c), raw `pin-drift-confirm/results/drift/s1..s10`; `pin-drift-confirm/scripts/verify.py` wrote the table after checking all 40 runs of its four arms against their raw energy logs |
 | Patch 0005 | Upstream's `ComputeContext::reorderAtomsImpl` wraps a molecule that left the box by the double precision box vectors, while the single and mixed precision kernels find images with the box rounded to float (edge 6.16447232 nm, 2.17e-7 nm above its float value), so each reorder changes every pair length across that face. The patch wraps by the float box unless the context uses double precision, and unwraps by it in `getPositions`, the Python force and RPMD's `setPositions`. It is the first commit of openmm#5492 as submitted, which the merged form's third commit replaced | `pin-drift-bisect/REPORT.md` (lab commit cdf10b66), "Winning arm" and section 1; `patches/0005-*.patch` |
 | Energy a reorder removes | The gap between the running context and one wrapped fresh, at the step before a reorder: +0.00192 ± 0.00052 kJ/mol over 18 reorders on 9e320c6c3, -0.00022 ± 0.00050 with patch 0005. -7.7e-6 kJ/mol per step on 9e320c6c3 is -0.0038 kJ/mol/ps | `pin-drift-bisect/REPORT.md` section 3, raw `pin-drift-bisect/results/twin/{base,wrap}-s{1,2}.csv.gz` and `twinan.txt` |
 | Patch 0005 against upstream | +0.0041 kJ/mol/ps, Welch t +3.56 (16.9 dof, p 0.0024). Lane pin-drift-bisect's four earlier runs of the same commit, +0.0000 ± 0.0010, agree with the ten (Welch t -0.80, 5.9 dof) | `pin-drift-confirm/table.md`; the four, raw `pin-drift-bisect/results/drift/wrap/s1..s4` |
 | Metal mixed, openmm/openmm 9e320c6c3 without patch 0005 | -0.0050 ± 0.0009 kJ/mol/ps, 10 runs (seeds 1 to 10: -0.0068, -0.0057, -0.0077, -0.0000, -0.0053, -0.0019, -0.0037, -0.0043, -0.0048, -0.0101); SD between runs 0.0028; -4.2e-5 kT per ns per degree of freedom; final max relative constraint error 4.68e-8 | `pin-drift-10/REPORT.md` and `pin-drift-10/table.md` (lab commit 1b511ead), raw `pin-drift-10/results/drift/s1..s10` |
-| bb49348f7 against the pinned 9e320c6c3 | `git diff bb49348f7 9e320c6c3 --stat`: one file, `libraries/lepton/src/ExpressionTreeNode.cpp`, 6 lines in and 4 out, the self-assignment guard of openmm#5513 (3a2326d0). #5519 branched before #5513 landed, and 9e320c6c3 squashes #5519 onto 3a2326d0. No Metal file differs | git, in a clone of openmm/openmm with `refs/pull/5519/head` |
+| bb49348f7 against 9e320c6c3, the pin until 2026-10-24 | `git diff bb49348f7 9e320c6c3 --stat`: one file, `libraries/lepton/src/ExpressionTreeNode.cpp`, 6 lines in and 4 out, the self-assignment guard of openmm#5513 (3a2326d0). #5519 branched before #5513 landed, and 9e320c6c3 squashes #5519 onto 3a2326d0. No Metal file differs | git, in a clone of openmm/openmm with `refs/pull/5519/head` |
 | Metal mixed, fork 90fa9544c, the pin until 2026-10-23 | -0.0010 ± 0.0006 kJ/mol/ps, 10 runs | `drift-fix/results/drift-table.md`, raw `drift-fix/results/raw/mm90fa/s1..s10` |
 | Metal mixed before openmm#5492, fork 043395619 | -0.0047 ± 0.0009, 10 runs | same table, lane drift's raw files |
 | CUDA mixed, OpenMM 8.6.1, RTX 5060 Ti | -0.0001 ± 0.0011, 10 runs | same table, raw `cuda-ref/results/drift/cuda-mixed/` |
 | CPU control | +0.0026 ± 0.0008, 4 runs, fork 043395619 | same table |
+| Welch t, Metal c403e95b3 with patch 0005 against CUDA mixed | -0.31 (14.7 dof, p 0.76); difference -0.0004 kJ/mol/ps | `pin-c403-drift/table.md` |
+| Welch t, Metal c403e95b3 against 9e320c6c3, both with patch 0005 | +0.50 (17.9 dof, p 0.62); difference +0.0005 kJ/mol/ps | `pin-c403-drift/table.md` |
+| Welch t, Metal c403e95b3 with patch 0005 against 9e320c6c3 without it | +4.08 (16.4 dof, p 0.00083); difference +0.0045 kJ/mol/ps | `pin-c403-drift/table.md` |
 | Welch t, Metal 9e320c6c3 with patch 0005 against CUDA mixed | -0.68 (15.3 dof, p 0.51); difference -0.0009 kJ/mol/ps | `pin-drift-confirm/table.md` |
 | Welch t, Metal 9e320c6c3 without patch 0005 against CUDA mixed | -3.50 (17.4 dof, p 0.0027); difference -0.0049 kJ/mol/ps | `pin-drift-10/table.md`, which `pin-drift-10/scripts/verify.py` wrote after checking each JSON in `pin-drift-10/results/drift/s1..s10` and `cuda-ref/results/drift/cuda-mixed/s1..s10` against its CSV; `pin-drift-10/REPORT.md` shows the computation. The same script gives -0.73 (14.4 dof) for 90fa9544c |
 | Welch t, Metal 90fa9544c against CUDA mixed | -0.73 (14.4 dof) | `drift-fix/results/drift-table.md` |
 | openmm#5492 | "Keep exact positions when reorderAtoms wraps a molecule", merged 2026-10-14 as deea5006, an ancestor of 9e320c6c3, whose last commit wraps by the double precision box; the fork carries the PR's first commit, which wraps by the float box, as ef5a25e2c, an ancestor of 90fa9544c. Patch 0005 restores that first commit's wrap | `drift-fix/REPORT.md` Verdict; `pin-drift-bisect/REPORT.md` section 1; GitHub |
 
-`docs/data/drift.csv` holds the six rows.
+`docs/data/drift.csv` holds the seven rows.
 
 ## Parity per Mac (Figure 7)
 
@@ -493,22 +498,25 @@ limit of 5. The largest |ΔPE| is 0.61 kJ/mol on Metal and 0.28 on CUDA, against
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/drift-dark.svg">
-  <img alt="Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on upstream OpenMM without patch 0005 and on this build with it, CUDA mixed and CPU" src="figures/drift-light.svg">
+  <img alt="Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on upstream OpenMM 9e320c6c3 without and with patch 0005 and on this build, c403e95b3 with it, CUDA mixed and CPU" src="figures/drift-light.svg">
 </picture>
 
 *Figure 6. Energy drift of DHFR (23,558 atoms) over 1 ns of NVE at 2 fs: the least-squares slope of each
 run's total energy, mean ± SE over independent runs (`docs/data/drift.csv`).*
 
-Metal mixed on openmm/openmm 9e320c6c3 with patch 0005, what `build.sh` builds, drifts -0.0010 ± 0.0007
+Metal mixed on openmm/openmm c403e95b3 with patch 0005, what `build.sh` builds, drifts -0.0005 ± 0.0007
 kJ/mol/ps over 10 runs. CUDA mixed, the precision core 0x27 runs, drifts -0.0001 ± 0.0011 over 10, and
-Welch's t between the two is -0.68 (p 0.51): 10 runs each don't tell them apart. In units of kT, the
-Metal drift is -8.1e-6 per ns per degree of freedom. Patch 0005 wraps molecules by the box the kernels
+Welch's t between the two is -0.31 (p 0.76): 10 runs each don't tell them apart. In units of kT, the
+Metal drift is -4.1e-6 per ns per degree of freedom. Lab lanes pr5524-check (seeds 1 to 4) and
+pin-c403-drift (seeds 5 to 10, lab commit 3de1b173) measured it. 9e320c6c3 with the same patch, the pin
+until 2026-10-24, drifted -0.0010 ± 0.0007 over 10 runs (Welch t -0.68 against CUDA, +0.50 against
+c403e95b3), so openmm#5524 leaves the drift where the patch put it. Patch 0005 wraps molecules by the box the kernels
 see: upstream wraps them by the double precision box, which the Metal kernels never use in mixed precision, so each reorder
 changes every pair length across that face, measured at +0.002 kJ/mol per reorder. Without it,
 9e320c6c3 drifts -0.0050 ± 0.0009 over 10 runs (Welch t -3.50 against CUDA), and the patch moves the
-drift by +0.0041 (Welch t +3.56). Lab lane pin-drift-bisect (lab commit cdf10b66) found the cause and
-lane pin-drift-confirm (lab commit 26a0344c, raw `pin-drift-confirm/results/drift/s1..s10`) measured
-the 10 runs. The fork this repo pinned until 2026-10-23, 90fa9544c, carries the same wrap and drifted
+drift by +0.0041 (Welch t +3.56); the arm without the patch was measured on 9e320c6c3 only. Lab lane
+pin-drift-bisect (lab commit cdf10b66) found the cause and lane pin-drift-confirm (lab commit 26a0344c,
+raw `pin-drift-confirm/results/drift/s1..s10`) measured the 10 runs of 9e320c6c3 with the patch. The fork this repo pinned until 2026-10-23, 90fa9544c, carries the same wrap and drifted
 -0.0010 ± 0.0006 over 10 runs, which CUDA's 10 couldn't tell apart (Welch t -0.73). Before openmm#5492 fixed how OpenMM rewraps molecules, Metal mixed
 on the fork drifted -0.0047 ± 0.0009.
 
@@ -559,7 +567,7 @@ The M2, a base 8 GB chip, passes the same checks at 3fc8475; it has not run ceb9
 | Result | A tar of logfile_01.txt, checkpointIntegrator.xml, checkpointState.xml.bz2, positions.xtc, science.log, xtcAtoms.csv.bz2 | The same six members in the same order, in the same tar format |
 | Exit | 100, FINISHED_UNIT | 100, FINISHED_UNIT |
 | Logs | 87 line shapes in logfile_01.txt | The same sections in the same order |
-| Energy conservation, DHFR in NVE, runs of 1 ns | OpenMM 8.6.1 CUDA mixed, the precision core 0x27 runs: -0.0001 ± 0.0011 kJ/mol/ps, 10 runs | Metal mixed on what `build.sh` builds (openmm/openmm 9e320c6c3 with patch 0005): -0.0010 ± 0.0007 kJ/mol/ps, 10 runs, Welch t -0.68 against CUDA. Upstream 9e320c6c3 without patch 0005: -0.0050 ± 0.0009, 10 runs, Welch t -3.50. The fork pinned until 2026-10-23, 90fa9544c: -0.0010 ± 0.0006, 10 runs |
+| Energy conservation, DHFR in NVE, runs of 1 ns | OpenMM 8.6.1 CUDA mixed, the precision core 0x27 runs: -0.0001 ± 0.0011 kJ/mol/ps, 10 runs | Metal mixed on what `build.sh` builds (openmm/openmm c403e95b3 with patch 0005): -0.0005 ± 0.0007 kJ/mol/ps, 10 runs, Welch t -0.31 against CUDA. 9e320c6c3 with patch 0005, the pin until 2026-10-24: -0.0010 ± 0.0007, 10 runs, Welch t -0.68. Upstream 9e320c6c3 without patch 0005: -0.0050 ± 0.0009, 10 runs, Welch t -3.50. The fork pinned until 2026-10-23, 90fa9544c: -0.0010 ± 0.0006, 10 runs |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/parity-dark.svg">
