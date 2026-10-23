@@ -18,8 +18,9 @@
 set -eu
 
 repo=https://github.com/openmm/openmm.git
-# OpenMM master at the merge of openmm#5519 (df64 mixed precision for Metal), on top of openmm#5488 (the Metal platform).
-commit=9e320c6c3e966666573ccd1979072a99dc519a8d
+# OpenMM master at the merge of openmm#5524 (Metal optimizations), on top of openmm#5519 (df64 mixed precision for Metal)
+# and openmm#5488 (the Metal platform), all three by Peter Eastman.
+commit=c403e95b35546bc700c97875c9265a92d1b43ecb
 jobs=6
 while getopts j: opt; do
     case $opt in
