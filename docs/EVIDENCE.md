@@ -200,7 +200,7 @@ section 1, which names the evidence file for each.
 | Result members | six, same order, plain ustar | "wuresults members", "wuresults_01.dat container" |
 | Exit | 100 | "Exit" |
 | Log shapes | 87 in the real logfile_01.txt, 35 word for word | `core-realwu/scripts/logshape.py` on the real log (`fah-wu/p18264-r153-c0-g272/results/final/logfile_01.txt`) and the logfile_01.txt of gpuq 2235's 5,000-step copy prints "real 87 shapes, minicore 59, shared 35". Before ceb9707 the same on gpuq 2199 and the M2 run printed "minicore 28, shared 19". The 52 left name FAH's build and libraries, the signature check, the client's arguments, the CPU and GPU, the CUDA and OpenCL platforms, and four cbang System rows (CPU ID, Free Memory, Has Battery, On Battery) whose values come from cbang's hardware probes |
-| Energy conservation | Metal mixed on openmm/openmm 9e320c6c3, the commit `build.sh` pins: -0.0050 ± 0.0009 kJ/mol/ps (mean ± SE, 10 seeds), Welch t -3.5 against CUDA mixed -0.0001 ± 0.0011 (10 seeds). Metal mixed on fork 90fa9544c, the pin until 2026-10-23: -0.0010 ± 0.0006 (10 seeds), Welch t -0.7 | Not from core-realwu. 9e320c6c3: `pin-drift-10/REPORT.md` and `pin-drift-10/table.md` (lab commit 1b511ead), raw `pin-drift-10/results/drift/s1..s10`. Fork 90fa9544c: `drift-fix/REPORT.md`, Verdict and the drift table (lab commit 3ec69c3c), raw `drift-fix/results/raw/mm90fa/s1..s10` and `drift-fix/results/drift-runs.csv`. CUDA is OpenMM 8.6.1, raw `cuda-ref/results/drift/cuda-mixed/` |
+| Energy conservation | Metal mixed on openmm/openmm 9e320c6c3 with patch 0005, what `build.sh` builds: -0.0010 ± 0.0007 kJ/mol/ps (mean ± SE, 10 seeds), Welch t -0.68 (15.3 dof, p 0.51) against CUDA mixed -0.0001 ± 0.0011 (10 seeds). Upstream 9e320c6c3 without patch 0005: -0.0050 ± 0.0009 (10 seeds), Welch t -3.50 against CUDA. Metal mixed on fork 90fa9544c, the pin until 2026-10-23: -0.0010 ± 0.0006 (10 seeds), Welch t -0.73 | Not from core-realwu. 9e320c6c3 with patch 0005: `pin-drift-confirm/REPORT.md` and `pin-drift-confirm/table.md` (lab commit 26a0344c), raw `pin-drift-confirm/results/drift/s1..s10`; the cause, `pin-drift-bisect/REPORT.md` (lab commit cdf10b66). Upstream 9e320c6c3: `pin-drift-10/REPORT.md` and `pin-drift-10/table.md` (lab commit 1b511ead), raw `pin-drift-10/results/drift/s1..s10`. Fork 90fa9544c: `drift-fix/REPORT.md`, Verdict and the drift table (lab commit 3ec69c3c), raw `drift-fix/results/raw/mm90fa/s1..s10` and `drift-fix/results/drift-runs.csv`. CUDA is OpenMM 8.6.1, raw `cuda-ref/results/drift/cuda-mixed/` |
 
 ## Where it differs
 
@@ -217,9 +217,10 @@ section 1, which names the evidence file for each.
 | --- | --- | --- |
 | Test unit | 2,269 atoms, 25,000 steps of 4 fs (100 ps) | `test/make-unit.py`, `test/alanine-dipeptide/core.xml`; the fold's own log line "2269 atoms" |
 | Transcript, 16 s | Lines from the fold's standard output, exit 100, 101 viewer frames, 100 XTC frames, state tests 11 pass and 0 fail | gpuq job 2197: `./build/core/minicore -dir unit -gpu-vendor apple -gpu 0` in the fresh clone of 3fc8475 |
-| OpenMM commit | openmm/openmm master 9e320c6c3, the merge of openmm#5519, with the four patches in `patches/`. Until 2026-10-23 `build.sh` pinned the fork RedesignedRobot/openmm at 90fa9544c, and every other row of this table ran that fork | `build.sh`, `patches/`, the "Upstream pin" row |
+| OpenMM commit | openmm/openmm master 9e320c6c3, the merge of openmm#5519, with the five patches in `patches/`: 0001 to 0004 are CMake plumbing for a static build, and 0005 (from a718032d9, "Common: wrap molecules by the box the kernels see", 19 lines in 4 common files) wraps molecules by the box the kernels see. Until 2026-10-23 `build.sh` pinned the fork RedesignedRobot/openmm at 90fa9544c, and every other row of this table ran that fork | `build.sh`, `patches/`, the "Upstream pin" and "Patch 0005" rows |
 | Build time, 15 minutes | 906 s: fetch and configure 16 s, build and install 880 s, link 10 s; load average about 70 at the start | gpuq job 2196, `BUILD-INFO` of the fresh clone of 3fc8475 (`git clone --no-local` of this branch). minicore 7,036,640 bytes, sha256 aabfedc0acd41d4e |
 | Upstream pin, 2026-10-23 | `taskpolicy -b nice -n 10 ./build.sh -j 8 <out>` at 328a546 on the M3 Ultra: exit 0 in 209 s (fetch and configure 9 s, build and install 173 s, link 27 s). BUILD-INFO "commit 9e320c6c3e966666573ccd1979072a99dc519a8d", "repo https://github.com/openmm/openmm.git", patches 0001 to 0004, CMake 4.4.4, SDK 27.2, Apple clang 21.0.0, "libc++ default". minicore 7,091,888 bytes, sha256 6ed5d184c0b33e0c9f17ed40381763ccd0f36f7a39cafd2b92daff3e5fd861db; `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal". That minicore beside `git archive` of `report.sh` and `test/`: `./report.sh` exits 100 with 11 "All tests passed." on the M3 Ultra (60 GPU cores, 96 GB, macOS 27.2 26B5101f) and on the base M2 mini (10 GPU cores, 8 GB, macOS 27.2 26B5101f, 27 s wall at nice 0). Both links carry `exit-code=100` and the full chip name | Lane fah-upstream-pin: the build under a shared studio-cpu booking, the Studio fold under a shared studio-gpu booking. `shasum -a 256` gave the same hash on both Macs before the folds |
+| Patch 0005, 2026-10-23 | `taskpolicy -b nice -n 10 ./build.sh -j 8 <out>` with `build.sh` and `patches/` as in d758fd6 on the M3 Ultra: exit 0 in 255 s (fetch and configure 21 s, build and install 218 s, link 16 s). `git apply` took all five patches in order at 9e320c6c3. BUILD-INFO "commit 9e320c6c3e966666573ccd1979072a99dc519a8d", "repo https://github.com/openmm/openmm.git", patches 0001 to 0005, "patch 0005-Common-wrap-molecules-by-the-box-the-kernels-see.patch sha256 07bedbb0e99a740ee89ff5946fc27bd8e9131edf03d43447e7a539eaa3496837", CMake 4.4.4, SDK 27.2, Apple clang 21.0.0, "libc++ default". minicore 7,092,064 bytes, sha256 982350d4f5dbf9f008991b69e998d17c7e7e259ec1aaf046b167c87effad0fb2; `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal". That minicore beside `git archive` of `report.sh` and `test/`: `./report.sh` exits 100 with 11 "All tests passed." on the M3 Ultra (60 GPU cores, 96 GB, macOS 27.2 26B5101f, 20 s wall at nice 10) and on the base M2 mini (10 GPU cores, 8 GB, macOS 27.2 26B5101f, 26 s wall at nice 0). The links carry `exit-code=100` and `chip=Apple%20M3%20Ultra` and `chip=Apple%20M2` | Lane fah-patch-wrap: the build under a shared studio-cpu booking, the Studio fold under a shared studio-gpu booking. `shasum -a 256` gave the same hash on both Macs before the folds |
 | The same command at 0d2d901 | Nothing on the terminal (0 bytes of stdout and stderr), exit 100 in 15 s; `unit/logfile_01.txt` ends "Folding@home Core Shutdown: FINISHED_UNIT", 101 viewer frames, `unit/wuresults_01.dat` holds the six members, and its science.log has 11 "All tests passed." | gpuq job 2237, ceb9707's source linked by `src/link.sh` against the fresh clone's OpenMM prefix (minicore sha256 5e7cc197761cb69f) |
 | Start-up interrupt on this repo's build | P18264 SIGINT 3 s into start-up: "Caught signal SIGINT(2)", "Exiting, please wait. . .", "ERROR:102: Core startup was interrupted by client.", "Folding@home Core Shutdown: INTERRUPTED", exit 102 | gpuq job 2197 |
 | Command Line Tools only | `DEVELOPER_DIR=/Library/Developer/CommandLineTools ./build.sh <out>` in a fresh clone of 352517a: exit 0 in 57 s (fetch and configure 6 s, build and install 47 s, link 3 s), CMake 4.4.4, SDK 27.0, Apple clang 21.0.0, BUILD-INFO "libc++ default"; `./report.sh <out>` with the same DEVELOPER_DIR: exit 100, 11 "All tests passed.". With a stale `usr/include/c++/v1` in a copy of the Command Line Tools, 636b9f2 fails with "'string' file not found" and "'exception' file not found" and 352517a builds (exit 0, "libc++ <sdk>/usr/include/c++/v1, not <toolchain>/usr/include/c++/v1") | Lane fah-core-metal-builds-with-the-command-l, `REPORT.md`; M3 Ultra, macOS 27.2 |
@@ -241,17 +242,22 @@ expression over the "State test at step" lines.
 | README figure | Value | Source |
 | --- | --- | --- |
 | System and protocol | amber20-dhfr, 23,558 atoms, PME; 10 ps LangevinMiddle, then 1 ns VerletIntegrator NVE at 2 fs, constraint tolerance 1e-8; drift is the least-squares slope of total energy against time | `drift-fix/REPORT.md` section 3; `drift/scripts/run1ns.py` (`np.polyfit(times, energies, 1)`) |
-| Metal mixed, openmm/openmm 9e320c6c3, the commit `build.sh` pins | -0.0050 ± 0.0009 kJ/mol/ps, 10 runs (seeds 1 to 10: -0.0068, -0.0057, -0.0077, -0.0000, -0.0053, -0.0019, -0.0037, -0.0043, -0.0048, -0.0101); SD between runs 0.0028; -4.2e-5 kT per ns per degree of freedom; final max relative constraint error 4.68e-8 | `pin-drift-10/REPORT.md` and `pin-drift-10/table.md` (lab commit 1b511ead), raw `pin-drift-10/results/drift/s1..s10` |
+| Metal mixed, openmm/openmm 9e320c6c3 with patch 0005, what `build.sh` builds | -0.0010 ± 0.0007 kJ/mol/ps, 10 runs (seeds 1 to 10: -0.0045, +0.0015, +0.0005, -0.0029, +0.0017, -0.0023, +0.0011, -0.0033, -0.0006, -0.0011); SD between runs 0.0022; -8.1e-6 kT per ns per degree of freedom; final max relative constraint error 4.68e-8. The build is a718032d9 in the lab's OpenMM tree, the commit `patches/0005-*.patch` was made from with `git format-patch` | `pin-drift-confirm/REPORT.md` and `pin-drift-confirm/table.md` (lab commit 26a0344c), raw `pin-drift-confirm/results/drift/s1..s10`; `pin-drift-confirm/scripts/verify.py` wrote the table after checking all 40 runs of its four arms against their raw energy logs |
+| Patch 0005 | Upstream's `ComputeContext::reorderAtomsImpl` wraps a molecule that left the box by the double precision box vectors, while the single and mixed precision kernels find images with the box rounded to float (edge 6.16447232 nm, 2.17e-7 nm above its float value), so each reorder changes every pair length across that face. The patch wraps by the float box unless the context uses double precision, and unwraps by it in `getPositions`, the Python force and RPMD's `setPositions`. It is the first commit of openmm#5492 as submitted, which the merged form's third commit replaced | `pin-drift-bisect/REPORT.md` (lab commit cdf10b66), "Winning arm" and section 1; `patches/0005-*.patch` |
+| Energy a reorder removes | The gap between the running context and one wrapped fresh, at the step before a reorder: +0.00192 ± 0.00052 kJ/mol over 18 reorders on 9e320c6c3, -0.00022 ± 0.00050 with patch 0005. -7.7e-6 kJ/mol per step on 9e320c6c3 is -0.0038 kJ/mol/ps | `pin-drift-bisect/REPORT.md` section 3, raw `pin-drift-bisect/results/twin/{base,wrap}-s{1,2}.csv.gz` and `twinan.txt` |
+| Patch 0005 against upstream | +0.0041 kJ/mol/ps, Welch t +3.56 (16.9 dof, p 0.0024). Lane pin-drift-bisect's four earlier runs of the same commit, +0.0000 ± 0.0010, agree with the ten (Welch t -0.80, 5.9 dof) | `pin-drift-confirm/table.md`; the four, raw `pin-drift-bisect/results/drift/wrap/s1..s4` |
+| Metal mixed, openmm/openmm 9e320c6c3 without patch 0005 | -0.0050 ± 0.0009 kJ/mol/ps, 10 runs (seeds 1 to 10: -0.0068, -0.0057, -0.0077, -0.0000, -0.0053, -0.0019, -0.0037, -0.0043, -0.0048, -0.0101); SD between runs 0.0028; -4.2e-5 kT per ns per degree of freedom; final max relative constraint error 4.68e-8 | `pin-drift-10/REPORT.md` and `pin-drift-10/table.md` (lab commit 1b511ead), raw `pin-drift-10/results/drift/s1..s10` |
 | bb49348f7 against the pinned 9e320c6c3 | `git diff bb49348f7 9e320c6c3 --stat`: one file, `libraries/lepton/src/ExpressionTreeNode.cpp`, 6 lines in and 4 out, the self-assignment guard of openmm#5513 (3a2326d0). #5519 branched before #5513 landed, and 9e320c6c3 squashes #5519 onto 3a2326d0. No Metal file differs | git, in a clone of openmm/openmm with `refs/pull/5519/head` |
 | Metal mixed, fork 90fa9544c, the pin until 2026-10-23 | -0.0010 ± 0.0006 kJ/mol/ps, 10 runs | `drift-fix/results/drift-table.md`, raw `drift-fix/results/raw/mm90fa/s1..s10` |
 | Metal mixed before openmm#5492, fork 043395619 | -0.0047 ± 0.0009, 10 runs | same table, lane drift's raw files |
 | CUDA mixed, OpenMM 8.6.1, RTX 5060 Ti | -0.0001 ± 0.0011, 10 runs | same table, raw `cuda-ref/results/drift/cuda-mixed/` |
 | CPU control | +0.0026 ± 0.0008, 4 runs, fork 043395619 | same table |
-| Welch t, Metal 9e320c6c3 against CUDA mixed | -3.5 (17.4 dof, p 0.0027); difference -0.0049 kJ/mol/ps | `pin-drift-10/table.md`, which `pin-drift-10/scripts/verify.py` wrote after checking each JSON in `pin-drift-10/results/drift/s1..s10` and `cuda-ref/results/drift/cuda-mixed/s1..s10` against its CSV; `pin-drift-10/REPORT.md` shows the computation. The same script gives -0.73 (14.4 dof) for 90fa9544c |
-| Welch t, Metal 90fa9544c against CUDA mixed | -0.7 (14.4 dof) | `drift-fix/results/drift-table.md` |
-| openmm#5492 | "Keep exact positions when reorderAtoms wraps a molecule", merged 2026-10-14 as deea5006, an ancestor of 9e320c6c3; the fork carries it as ef5a25e2c, an ancestor of 90fa9544c | `drift-fix/REPORT.md` Verdict; GitHub |
+| Welch t, Metal 9e320c6c3 with patch 0005 against CUDA mixed | -0.68 (15.3 dof, p 0.51); difference -0.0009 kJ/mol/ps | `pin-drift-confirm/table.md` |
+| Welch t, Metal 9e320c6c3 without patch 0005 against CUDA mixed | -3.50 (17.4 dof, p 0.0027); difference -0.0049 kJ/mol/ps | `pin-drift-10/table.md`, which `pin-drift-10/scripts/verify.py` wrote after checking each JSON in `pin-drift-10/results/drift/s1..s10` and `cuda-ref/results/drift/cuda-mixed/s1..s10` against its CSV; `pin-drift-10/REPORT.md` shows the computation. The same script gives -0.73 (14.4 dof) for 90fa9544c |
+| Welch t, Metal 90fa9544c against CUDA mixed | -0.73 (14.4 dof) | `drift-fix/results/drift-table.md` |
+| openmm#5492 | "Keep exact positions when reorderAtoms wraps a molecule", merged 2026-10-14 as deea5006, an ancestor of 9e320c6c3, whose last commit wraps by the double precision box; the fork carries the PR's first commit, which wraps by the float box, as ef5a25e2c, an ancestor of 90fa9544c. Patch 0005 restores that first commit's wrap | `drift-fix/REPORT.md` Verdict; `pin-drift-bisect/REPORT.md` section 1; GitHub |
 
-`docs/data/drift.csv` holds the five rows.
+`docs/data/drift.csv` holds the six rows.
 
 ## Parity per Mac (Figure 7)
 
@@ -292,7 +298,7 @@ the build's `--info` line, the exit code and the state test lines from the bundl
 
 | Chip | GPU cores | Memory | macOS | Build | Exit | State tests | Source |
 | --- | ---: | ---: | --- | --- | ---: | --- | --- |
-| M3 Ultra | 60 | 96 GB | 27.2 (26B5101f) | this repo at 2a08b87, minicore sha256 949a2f95 | 100 | 11 "All tests passed." | `packaging-guide/REPORT.md` section 5: every run that started exited 100 with 11 passes. `service-user/REPORT.md` header for the GPU cores; the logfile_01.txt header for the memory |
+| M3 Ultra | 60 | 96 GB | 27.2 (26B5101f) | this repo at d758fd6 with patch 0005, minicore sha256 982350d4 | 100 | 11 "All tests passed." | The "Patch 0005" row in [Try it and Build it](#try-it-and-build-it); the same minicore passed on the base M2 mini (10 GPU cores, 8 GB). Before it, this repo at 2a08b87 (minicore sha256 949a2f95): `packaging-guide/REPORT.md` section 5: every run that started exited 100 with 11 passes. `service-user/REPORT.md` header for the GPU cores; the logfile_01.txt header for the memory |
 | M3 | 10 | 16 GB | 27.0.1 (26A434) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100 | 11 "All tests passed." | [issue #5](https://github.com/RedesignedRobot/fah-core-metal/issues/5), a run-report form, opened 2026-10-17. GPU info "Device: Apple M3", "Driver: macOS 27.0.1". The report notes 11 build warnings |
 | M4 Pro | 20 | 64 GB | 27.0.1 (26A434) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100 | 11 "All tests passed." | [issue #7](https://github.com/RedesignedRobot/fah-core-metal/issues/7), a run-report form, opened 2026-10-18. GPU info "Device: Apple M4 Pro", "Driver: macOS 27.0.1" |
 | M1 Max | 32 | 64 GB | 27.0.1 (26A434) | `--info` "minicore (fah-core-metal), OpenMM 8.6, platforms: Reference CPU Metal"; commit not given | 100, confirmed later | 11 "All tests passed." | [issue #8](https://github.com/RedesignedRobot/fah-core-metal/issues/8), a run-report form, opened 2026-10-18. GPU info "Device: Apple M1 Max", "Driver: macOS 27.0.1". The Exit code field is empty, and its Chip field reads "Apple M1". The reporter confirmed exit 100 for this run and the M2 run on the [Folding Forum](https://forum.foldingathome.org/viewtopic.php?p=375299#p375299) on 2026-10-19, and left the field out when filling in the form by hand |
@@ -487,18 +493,23 @@ limit of 5. The largest |ΔPE| is 0.61 kJ/mol on Metal and 0.28 on CUDA, against
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/drift-dark.svg">
-  <img alt="Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on this build, CUDA mixed and CPU" src="figures/drift-light.svg">
+  <img alt="Energy drift of DHFR in NVE, Metal on the old fork before and after #5492, Metal on upstream OpenMM without patch 0005 and on this build with it, CUDA mixed and CPU" src="figures/drift-light.svg">
 </picture>
 
 *Figure 6. Energy drift of DHFR (23,558 atoms) over 1 ns of NVE at 2 fs: the least-squares slope of each
 run's total energy, mean ± SE over independent runs (`docs/data/drift.csv`).*
 
-Metal mixed on openmm/openmm 9e320c6c3, the commit `build.sh` pins, drifts -0.0050 ± 0.0009 kJ/mol/ps
-over 10 runs. CUDA mixed, the precision core 0x27 runs, drifts -0.0001 ± 0.0011 over 10, and Welch's t
-between the two is -3.5: Metal loses 0.0049 kJ/mol/ps more. In units of kT, the Metal drift is -4.2e-5
-per ns per degree of freedom. The fork
-this repo pinned until 2026-10-23, 90fa9544c, drifted -0.0010 ± 0.0006 over 10 runs, which CUDA's 10
-couldn't tell apart (Welch t -0.7). Before openmm#5492 fixed how OpenMM rewraps molecules, Metal mixed
+Metal mixed on openmm/openmm 9e320c6c3 with patch 0005, what `build.sh` builds, drifts -0.0010 ± 0.0007
+kJ/mol/ps over 10 runs. CUDA mixed, the precision core 0x27 runs, drifts -0.0001 ± 0.0011 over 10, and
+Welch's t between the two is -0.68 (p 0.51): 10 runs each don't tell them apart. In units of kT, the
+Metal drift is -8.1e-6 per ns per degree of freedom. Patch 0005 wraps molecules by the box the kernels
+see: upstream wraps them by the double precision box, which the kernels never use, so each reorder
+changes every pair length across that face, measured at +0.002 kJ/mol per reorder. Without it,
+9e320c6c3 drifts -0.0050 ± 0.0009 over 10 runs (Welch t -3.50 against CUDA), and the patch moves the
+drift by +0.0041 (Welch t +3.56). Lab lane pin-drift-bisect (lab commit cdf10b66) found the cause and
+lane pin-drift-confirm (lab commit 26a0344c, raw `pin-drift-confirm/results/drift/s1..s10`) measured
+the 10 runs. The fork this repo pinned until 2026-10-23, 90fa9544c, carries the same wrap and drifted
+-0.0010 ± 0.0006 over 10 runs, which CUDA's 10 couldn't tell apart (Welch t -0.73). Before openmm#5492 fixed how OpenMM rewraps molecules, Metal mixed
 on the fork drifted -0.0047 ± 0.0009.
 
 
@@ -548,7 +559,7 @@ The M2, a base 8 GB chip, passes the same checks at 3fc8475; it has not run ceb9
 | Result | A tar of logfile_01.txt, checkpointIntegrator.xml, checkpointState.xml.bz2, positions.xtc, science.log, xtcAtoms.csv.bz2 | The same six members in the same order, in the same tar format |
 | Exit | 100, FINISHED_UNIT | 100, FINISHED_UNIT |
 | Logs | 87 line shapes in logfile_01.txt | The same sections in the same order |
-| Energy conservation, DHFR in NVE, runs of 1 ns | OpenMM 8.6.1 CUDA mixed, the precision core 0x27 runs: -0.0001 ± 0.0011 kJ/mol/ps, 10 runs | Metal mixed at the pinned OpenMM code (openmm/openmm 9e320c6c3): -0.0050 ± 0.0009 kJ/mol/ps, 10 runs, Welch t -3.5 against CUDA. The fork pinned until 2026-10-23, 90fa9544c: -0.0010 ± 0.0006, 10 runs |
+| Energy conservation, DHFR in NVE, runs of 1 ns | OpenMM 8.6.1 CUDA mixed, the precision core 0x27 runs: -0.0001 ± 0.0011 kJ/mol/ps, 10 runs | Metal mixed on what `build.sh` builds (openmm/openmm 9e320c6c3 with patch 0005): -0.0010 ± 0.0007 kJ/mol/ps, 10 runs, Welch t -0.68 against CUDA. Upstream 9e320c6c3 without patch 0005: -0.0050 ± 0.0009, 10 runs, Welch t -3.50. The fork pinned until 2026-10-23, 90fa9544c: -0.0010 ± 0.0006, 10 runs |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/parity-dark.svg">
@@ -645,12 +656,13 @@ test PDB.
 
 `./build.sh [-j JOBS] [OUT]` fetches OpenMM from [openmm/openmm](https://github.com/openmm/openmm) at
 9e320c6c3, master at the merge of openmm#5519 (df64 mixed precision for Metal), which sits on openmm#5488
-(the Metal platform). It applies the four patches in `patches/`, all CMake plumbing for a static build,
-and builds OpenMM's Reference, CPU, CPU PME and Metal platforms
+(the Metal platform). It applies the five patches in `patches/`: four are CMake plumbing for a static
+build, and 0005 wraps molecules by the box the kernels see, which brings the energy drift back beside
+CUDA's (Figure 6). Then it builds OpenMM's Reference, CPU, CPU PME and Metal platforms
 as static libraries. Then `src/link.sh` links minicore into one arm64 executable with OpenMM inside and
 no plugin directory. The script refuses a binary that links anything outside the OS. On the M3 Ultra a fresh clone builds in
 15 minutes at `nice 10` with 6 jobs, on a machine with a load average near 70 from other work; that was
-the fork 90fa9544c. At 9e320c6c3 it built in 209 s with 8 jobs, load average near 27.
+the fork 90fa9544c. At 9e320c6c3 it built in 209 s with 8 jobs, load average near 27, and with patch 0005 in 255 s.
 
 `OUT` defaults to `./build`. It holds the OpenMM checkout, the CMake tree, the static prefix,
 `core/minicore` and `BUILD-INFO`, which records the commit, the patches' hashes, the toolchain and the
