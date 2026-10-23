@@ -503,7 +503,7 @@ Metal mixed on openmm/openmm 9e320c6c3 with patch 0005, what `build.sh` builds, 
 kJ/mol/ps over 10 runs. CUDA mixed, the precision core 0x27 runs, drifts -0.0001 ± 0.0011 over 10, and
 Welch's t between the two is -0.68 (p 0.51): 10 runs each don't tell them apart. In units of kT, the
 Metal drift is -8.1e-6 per ns per degree of freedom. Patch 0005 wraps molecules by the box the kernels
-see: upstream wraps them by the double precision box, which the kernels never use, so each reorder
+see: upstream wraps them by the double precision box, which the Metal kernels never use in mixed precision, so each reorder
 changes every pair length across that face, measured at +0.002 kJ/mol per reorder. Without it,
 9e320c6c3 drifts -0.0050 ± 0.0009 over 10 runs (Welch t -3.50 against CUDA), and the patch moves the
 drift by +0.0041 (Welch t +3.56). Lab lane pin-drift-bisect (lab commit cdf10b66) found the cause and

@@ -177,7 +177,7 @@ energy drift in NVE is -0.0010 ± 0.0007 kJ/mol/ps over 10 runs, -8.1e-6 kT per 
 CUDA's is -0.0001 ± 0.0011, and 10 runs each don't tell the two apart (Welch t -0.68, p 0.51).
 
 That takes patch 0005. Upstream OpenMM wraps molecules back into the box by the double precision box,
-which the kernels never use (they see it rounded to float), so each reorder changes every pair length
+which the Metal kernels never use in mixed precision (they see it rounded to float), so each reorder changes every pair length
 across that face, measured at +0.002 kJ/mol per reorder; patch 0005 wraps by the float box instead.
 Without it, upstream 9e320c6c3 drifts -0.0050 ± 0.0009 over 10 runs (Welch t -3.50 against CUDA). I
 found the cause in lab lane pin-drift-bisect (lab commit cdf10b66) and measured the 10 runs with the
