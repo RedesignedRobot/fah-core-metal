@@ -1,0 +1,109 @@
+From a718032d9aca2b10fae08bbcdf2ca53541fba34f Mon Sep 17 00:00:00 2001
+From: Amir Ayub <dev.amirayub@gmail.com>
+Date: Fri, 23 Oct 2026 10:19:52 +0300
+Subject: [PATCH] Common: wrap molecules by the box the kernels see
+
+reorderAtoms() shifts a molecule that has left the box by whole double
+precision box vectors, while the single and mixed precision kernels find
+periodic images with the box rounded to float. Every pair between a
+wrapped molecule and a neighbor across the box face then changes length
+by the box edge's rounding error, and on amber20-dhfr (edge 6.16447232
+nm, 2.17e-7 nm above its float value) each reorder drops the potential
+energy by about 2e-3 kJ/mol in mixed precision.
+
+Wrap by the box vectors rounded to float unless the context uses double
+precision, and undo the wrap with the same vectors in getPositions(),
+the Python force and RPMD's setPositions(), so returned positions stay
+continuous. This is the first commit of #5492, which its third commit
+replaced with the double precision vectors.
+---
+ .../common/include/openmm/common/ComputeContext.h     |  6 ++++++
+ platforms/common/src/CommonKernels.cpp                |  4 ++--
+ platforms/common/src/ComputeContext.cpp               | 11 ++++++++++-
+ .../rpmd/platforms/common/src/CommonRpmdKernels.cpp   |  2 +-
+ 4 files changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/platforms/common/include/openmm/common/ComputeContext.h b/platforms/common/include/openmm/common/ComputeContext.h
+index 51ff62691..5c9a1cea6 100644
+--- a/platforms/common/include/openmm/common/ComputeContext.h
++++ b/platforms/common/include/openmm/common/ComputeContext.h
+@@ -514,6 +514,12 @@ public:
+      * Set the vectors defining the periodic box.
+      */
+     virtual void setPeriodicBoxVectors(const Vec3& a, const Vec3& b, const Vec3& c) = 0; 
++    /**
++     * Get the vectors by which reorderAtoms() wraps molecules into the periodic box, and which the cell offsets
++     * count.  These are the box vectors as the kernels see them, rounded to single precision unless the context
++     * uses double precision, so wrapping a molecule leaves every distance a kernel computes unchanged.
++     */
++    void getWrappingBoxVectors(Vec3& a, Vec3& b, Vec3& c) const;
+     /**
+      * Compute the reciprocal space box vectors.
+      */
+diff --git a/platforms/common/src/CommonKernels.cpp b/platforms/common/src/CommonKernels.cpp
+index 6abcf571c..0adee4860 100644
+--- a/platforms/common/src/CommonKernels.cpp
++++ b/platforms/common/src/CommonKernels.cpp
+@@ -120,7 +120,7 @@ void CommonUpdateStateDataKernel::getPositions(ContextImpl& context, vector<Vec3
+         const vector<int>& order = cc.getAtomIndex();
+         int numParticles = cc.getNumAtoms();
+         Vec3 boxVectors[3];
+-        cc.getPeriodicBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
++        cc.getWrappingBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
+         int numThreads = threads.getNumThreads();
+         int start = threadIndex*numParticles/numThreads;
+         int end = (threadIndex+1)*numParticles/numThreads;
+@@ -4933,7 +4933,7 @@ void CommonCalcPythonForceKernel::getPositions() {
+         }
+         if (!allowPeriodic) {
+             Vec3 boxVectors[3];
+-            cc.getPeriodicBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
++            cc.getWrappingBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
+             const vector<int>& order = cc.getAtomIndex();
+             vector<int> inverseOrder(order.size());
+             for (int i = 0; i < cc.getNumAtoms(); i++)
+diff --git a/platforms/common/src/ComputeContext.cpp b/platforms/common/src/ComputeContext.cpp
+index be7164a0e..900cade11 100644
+--- a/platforms/common/src/ComputeContext.cpp
++++ b/platforms/common/src/ComputeContext.cpp
+@@ -186,6 +186,15 @@ string ComputeContext::intToString(int value) const {
+     return s.str();
+ }
+ 
++void ComputeContext::getWrappingBoxVectors(Vec3& a, Vec3& b, Vec3& c) const {
++    getPeriodicBoxVectors(a, b, c);
++    if (!getUseDoublePrecision()) {
++        a = Vec3((float) a[0], (float) a[1], (float) a[2]);
++        b = Vec3((float) b[0], (float) b[1], (float) b[2]);
++        c = Vec3((float) c[0], (float) c[1], (float) c[2]);
++    }
++}
++
+ void ComputeContext::computeReciprocalBoxVectors(mm_double4 recipBoxVectors[3]) {
+     Vec3 boxVectors[3];
+     getPeriodicBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
+@@ -696,7 +705,7 @@ void ComputeContext::reorderAtomsImpl() {
+     Real miny = oldPosq[0].y, maxy = oldPosq[0].y;
+     Real minz = oldPosq[0].z, maxz = oldPosq[0].z;
+     Vec3 periodicBoxX, periodicBoxY, periodicBoxZ;
+-    getPeriodicBoxVectors(periodicBoxX, periodicBoxY, periodicBoxZ);
++    getWrappingBoxVectors(periodicBoxX, periodicBoxY, periodicBoxZ);
+     Vec3 invPeriodicBoxSize(1.0/periodicBoxX[0], 1.0/periodicBoxY[1], 1.0/periodicBoxZ[2]);
+     if (getNonbondedUtilities().getUsePeriodic()) {
+         minx = miny = minz = 0.0;
+diff --git a/plugins/rpmd/platforms/common/src/CommonRpmdKernels.cpp b/plugins/rpmd/platforms/common/src/CommonRpmdKernels.cpp
+index 3ea373f45..12c4bd142 100644
+--- a/plugins/rpmd/platforms/common/src/CommonRpmdKernels.cpp
++++ b/plugins/rpmd/platforms/common/src/CommonRpmdKernels.cpp
+@@ -363,7 +363,7 @@ void CommonIntegrateRPMDStepKernel::setPositions(int copy, const vector<Vec3>& p
+     
+     const vector<int>& order = cc.getAtomIndex();
+     Vec3 a, b, c;
+-    cc.getPeriodicBoxVectors(a, b, c);
++    cc.getWrappingBoxVectors(a, b, c);
+     vector<Vec3> offsetPos(numParticles);
+     for (int i = 0; i < numParticles; ++i) {
+         mm_int4 offset = cc.getPosCellOffsets()[i];
+-- 
+2.54.0 (Apple Git-157)
+

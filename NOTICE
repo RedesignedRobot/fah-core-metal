@@ -4,8 +4,10 @@ Everything else this repo uses is OpenMM's code under OpenMM's licenses. build.s
 time and the repo holds none of it, except the patches.
 
 patches/*.patch
-    Edits to OpenMM's CMake files. They are OpenMM code and carry OpenMM's license for the files they
-    change (MIT for the API and build files; LGPL 3 for platforms/metal).
+    Edits to OpenMM's files: 0001 to 0004 change its CMake files, and 0005 changes how its common platform
+    code wraps molecules into the periodic box. They are OpenMM code and carry OpenMM's license for the
+    files they change (MIT for the API, the build files and the RPMD plugin; LGPL 3 for platforms/metal
+    and platforms/common).
 
 OpenMM, fetched by build.sh from https://github.com/openmm/openmm at 9e320c6c3
     Portions copyright (c) 2008-2026 Stanford University and the Authors. The API, the Reference
