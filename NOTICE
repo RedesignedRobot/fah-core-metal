@@ -9,10 +9,10 @@ patches/*.patch
     files they change (MIT for the API, the build files and the RPMD plugin; LGPL 3 for platforms/metal
     and platforms/common).
 
-OpenMM, fetched by build.sh from https://github.com/openmm/openmm at 9e320c6c3
+OpenMM, fetched by build.sh from https://github.com/openmm/openmm at c403e95b3
     Portions copyright (c) 2008-2026 Stanford University and the Authors. The API, the Reference
-    platform and the CPU platform are under the MIT License. The Metal platform (openmm#5488) and its
-    mixed precision (openmm#5519), both by Peter Eastman, are under the GNU Lesser General Public License 3 or later. The full terms, including
+    platform and the CPU platform are under the MIT License. The Metal platform (openmm#5488), its
+    mixed precision (openmm#5519) and its optimizations (openmm#5524), all by Peter Eastman, are under the GNU Lesser General Public License 3 or later. The full terms, including
     those of SFMT, irrXML, pocketfft and the other libraries inside OpenMM, are in the fetched tree at
     docs-source/licenses/Licenses.txt, LGPL.txt and GPL.txt.
 

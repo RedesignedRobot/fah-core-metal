@@ -206,8 +206,8 @@ No. FAH signs its cores and their results with its own private key, so that step
 
 - [OpenMM](https://openmm.org), by Peter Eastman and the OpenMM contributors, does the molecular dynamics.
 - Peter Eastman's Metal platform for OpenMM, [openmm#5488](https://github.com/openmm/openmm/pull/5488),
-  is the GPU backend, and his [openmm#5519](https://github.com/openmm/openmm/pull/5519) gave it mixed
-  precision.
+  is the GPU backend, his [openmm#5519](https://github.com/openmm/openmm/pull/5519) gave it mixed
+  precision, and his [openmm#5524](https://github.com/openmm/openmm/pull/5524) optimized it.
 - Andrew Thall's "Extended-Precision Floating-Point Numbers for GPU Computation" (2006) describes the
   double-float arithmetic behind the df64 mixed precision.
 - [Folding@home](https://foldingathome.org) defines the work units, the client and core 0x27 that this
